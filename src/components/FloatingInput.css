@@ -57,6 +57,11 @@
   opacity: 0;
   transform: translateY(-50%) scale(0.96);
 }
+/* khi Chrome tự điền (autofill) cũng ẩn nhãn để không đè lên chữ */
+.flf-input:-webkit-autofill ~ .flf-label {
+  opacity: 0;
+  transform: translateY(-50%) scale(0.96);
+}
 /* bộ đếm ký tự */
 .flf-counter {
   position: absolute;
