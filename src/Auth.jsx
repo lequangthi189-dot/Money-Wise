@@ -70,7 +70,6 @@ const T = {
     phPhone: "0901234567",
   },
 };
-
 const inputWrap = { position: "relative" };
 const eyeBtn = {
   position: "absolute",
