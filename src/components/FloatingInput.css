@@ -1,0 +1,117 @@
+/* ===== Premium floating-label input (FloatingInput) ===== */
+.flf {
+  margin-bottom: 16px;
+}
+.flf-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--input-bg, var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: var(--r-md, 12px);
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+.flf-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--border-strong);
+}
+.flf-input {
+  width: 100%;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 15px 14px;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+/* Chặn nền trắng/vàng do Chrome tự điền (autofill) làm lệch màu ô + làm mờ con mắt */
+.flf-input:-webkit-autofill,
+.flf-input:-webkit-autofill:hover,
+.flf-input:-webkit-autofill:focus,
+.flf-input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg, var(--surface-2)) inset !important;
+  box-shadow: 0 0 0 1000px var(--input-bg, var(--surface-2)) inset !important;
+  caret-color: var(--text);
+  transition: background-color 99999s ease-out 0s;
+}
+.flf-label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0 5px;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  pointer-events: none;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease,
+    color 0.16s ease;
+}
+/* khi focus hoặc đã có chữ -> nhãn mờ dần rồi biến mất (như placeholder) */
+.flf-input:focus ~ .flf-label,
+.flf-input:not(:placeholder-shown) ~ .flf-label {
+  opacity: 0;
+  transform: translateY(-50%) scale(0.96);
+}
+/* bộ đếm ký tự */
+.flf-counter {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+/* nút ẩn/hiện mật khẩu */
+.flf-eye {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+}
+.flf-eye:hover {
+  color: var(--text);
+}
+/* Ẩn con mắt / nút xóa mặc định của trình duyệt (Edge/IE/Chrome) để không đè lên nút của mình */
+.flf-input::-ms-reveal,
+.flf-input::-ms-clear {
+  display: none;
+}
+/* select mã quốc gia nằm gọn trong ô (field điện thoại) */
+.flf-dial {
+  flex: 0 0 auto;
+  width: 116px;
+  background: transparent !important;
+  border: none !important;
+  border-right: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: var(--text);
+  padding: 14px 8px 14px 12px !important;
+}
+/* Neumorphism: ô lõm thay vì viền */
+[data-theme="neu"] .flf-box {
+  border-color: transparent;
+  box-shadow:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.1),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.75);
+}
+[data-theme="neu"] .flf-box:focus-within {
+  box-shadow:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.14),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.85);
+}

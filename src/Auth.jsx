@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 import "./Theme-Lg.css";
+import FloatingInput from "./components/FloatingInput";
 
 const THEMES = [
   { id: "glass", dot: "td-glass", name: "Modern Glassmorphism" },
@@ -34,10 +35,6 @@ const T = {
     errLogin: "Vui lòng nhập email và mật khẩu.",
     errLen: "Mật khẩu cần ít nhất 6 ký tự.",
     errMatch: "Mật khẩu xác nhận không khớp.",
-    phName: "Nguyễn Văn A",
-    phUser: "nguyenvana",
-    phEmail: "ban@email.com",
-    phPhone: "0901234567",
   },
   en: {
     tagline: "Smart money management for students",
@@ -64,28 +61,9 @@ const T = {
     errLogin: "Please enter email and password.",
     errLen: "Password must be at least 6 characters.",
     errMatch: "Password confirmation does not match.",
-    phName: "John Doe",
-    phUser: "johndoe",
-    phEmail: "you@email.com",
-    phPhone: "0901234567",
   },
 };
 
-const inputWrap = { position: "relative" };
-const eyeBtn = {
-  position: "absolute",
-  right: "6px",
-  top: "50%",
-  transform: "translateY(-50%)",
-  background: "none",
-  border: "none",
-  color: "var(--text-dim)",
-  cursor: "pointer",
-  display: "grid",
-  placeItems: "center",
-  width: "30px",
-  height: "30px",
-};
 const linkStyle = {
   color: "var(--accent)",
   cursor: "pointer",
@@ -111,30 +89,6 @@ function AuthIcons() {
       >
         <path d="M19 7V5a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2" />
         <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
-      </symbol>
-      <symbol
-        id="a-eye"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-        <circle cx="12" cy="12" r="3" />
-      </symbol>
-      <symbol
-        id="a-eye-off"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-        <line x1="1" y1="1" x2="23" y2="23" />
       </symbol>
     </svg>
   );
@@ -216,8 +170,6 @@ export default function Auth({
   const nextTheme = THEMES[(currentThemeIndex + 1) % THEMES.length];
 
   const [mode, setMode] = useState("login"); // 'login' | 'register'
-  const [showPw, setShowPw] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
@@ -355,89 +307,63 @@ export default function Auth({
 
           {!isLogin && (
             <>
-              <div className="field">
-                <label>{tr.name}</label>
-                <input
-                  value={form.name}
-                  onChange={upd("name")}
-                  placeholder={tr.phName}
-                />
-              </div>
-              <div className="field">
-                <label>{tr.username}</label>
-                <input
-                  value={form.username}
-                  onChange={upd("username")}
-                  placeholder={tr.phUser}
-                />
-              </div>
+              <FloatingInput
+                label={tr.name}
+                value={form.name}
+                onChange={upd("name")}
+                maxLength={50}
+                name="name"
+                autoComplete="name"
+              />
+              <FloatingInput
+                label={tr.username}
+                value={form.username}
+                onChange={upd("username")}
+                maxLength={30}
+                name="username"
+                autoComplete="username"
+              />
             </>
           )}
 
-          <div className="field">
-            <label>{tr.email}</label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={upd("email")}
-              placeholder={tr.phEmail}
-            />
-          </div>
+          <FloatingInput
+            label={tr.email}
+            type="email"
+            value={form.email}
+            onChange={upd("email")}
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+          />
 
           {!isLogin && (
-            <div className="field">
-              <label>{tr.phone}</label>
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={upd("phone")}
-                placeholder={tr.phPhone}
-              />
-            </div>
+            <FloatingInput
+              label={tr.phone}
+              type="tel"
+              inputMode="tel"
+              value={form.phone}
+              onChange={upd("phone")}
+            />
           )}
 
-          <div className="field">
-            <label>{tr.password}</label>
-            <div style={inputWrap}>
-              <input
-                type={showPw ? "text" : "password"}
-                value={form.password}
-                onChange={upd("password")}
-                placeholder="••••••••"
-                style={{ paddingRight: "42px" }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPw((s) => !s)}
-                style={eyeBtn}
-                aria-label="show/hide"
-              >
-                <Ic n={showPw ? "a-eye-off" : "a-eye"} size={18} />
-              </button>
-            </div>
-          </div>
+          <FloatingInput
+            label={tr.password}
+            type="password"
+            value={form.password}
+            onChange={upd("password")}
+            name="password"
+            autoComplete={isLogin ? "current-password" : "new-password"}
+          />
 
           {!isLogin && (
-            <div className="field">
-              <label>{tr.confirm}</label>
-              <div style={inputWrap}>
-                <input
-                  type={showConfirm ? "text" : "password"}
-                  value={form.confirm}
-                  onChange={upd("confirm")}
-                  placeholder="••••••••"
-                  style={{ paddingRight: "42px" }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm((s) => !s)}
-                  style={eyeBtn}
-                  aria-label="show/hide"
-                >
-                  <Ic n={showConfirm ? "a-eye-off" : "a-eye"} size={18} />
-                </button>
-              </div>
-            </div>
+            <FloatingInput
+              label={tr.confirm}
+              type="password"
+              value={form.confirm}
+              onChange={upd("confirm")}
+              name="confirm"
+              autoComplete="new-password"
+            />
           )}
 
           {isLogin && (
