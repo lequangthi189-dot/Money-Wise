@@ -35,6 +35,14 @@ const T = {
     errLogin: "Vui lòng nhập email và mật khẩu.",
     errLen: "Mật khẩu cần ít nhất 6 ký tự.",
     errMatch: "Mật khẩu xác nhận không khớp.",
+    errEmailOnly: "Vui lòng nhập email.",
+    forgotTitle: "Khôi phục mật khẩu",
+    forgotDesc: "Nhập email đã đăng ký để đặt lại mật khẩu.",
+    emailLabel: "Địa chỉ Email",
+    emailPlaceholder: "Nhập email",
+    sendReset: "Gửi",
+    resetSent:
+      "Đã gửi liên kết đặt lại tới email của bạn. Vui lòng kiểm tra hộp thư (cả mục Spam).",
   },
   en: {
     tagline: "Smart money management for students",
@@ -61,6 +69,14 @@ const T = {
     errLogin: "Please enter email and password.",
     errLen: "Password must be at least 6 characters.",
     errMatch: "Password confirmation does not match.",
+    errEmailOnly: "Please enter your email.",
+    forgotTitle: "Recover password",
+    forgotDesc: "Enter your registered email to reset your password.",
+    emailLabel: "Email address",
+    emailPlaceholder: "Enter email",
+    sendReset: "Send",
+    resetSent:
+      "A reset link has been sent to your email. Please check your inbox (including Spam).",
   },
 };
 
@@ -169,8 +185,9 @@ export default function Auth({
   const currentThemeIndex = THEMES.findIndex((t) => t.id === currentTheme.id);
   const nextTheme = THEMES[(currentThemeIndex + 1) % THEMES.length];
 
-  const [mode, setMode] = useState("login"); // 'login' | 'register'
+  const [mode, setMode] = useState("login"); // 'login' | 'register' | 'forgot'
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [form, setForm] = useState({
     name: "",
     username: "",
@@ -182,10 +199,12 @@ export default function Auth({
 
   const upd = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const isLogin = mode === "login";
+  const isForgot = mode === "forgot";
 
   function switchMode(m) {
     setMode(m);
     setError("");
+    setInfo("");
   }
 
   function submit() {
@@ -207,6 +226,34 @@ export default function Auth({
     // TODO: gọi Supabase auth ở đây (signInWithPassword / signUp), rồi:
     if (onAuthed) onAuthed(form);
   }
+
+  function submitForgot() {
+    setError("");
+    setInfo("");
+    if (!form.email) return setError(tr.errEmailOnly);
+    // TODO: nối Supabase để gửi email đặt lại mật khẩu:
+    //   const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
+    //     redirectTo: window.location.origin,
+    //   });
+    //   if (error) return setError(error.message);
+    setInfo(tr.resetSent);
+  }
+
+  const errorBox = error && (
+    <div
+      style={{
+        fontSize: ".8rem",
+        color: "var(--danger)",
+        background: "rgba(248,113,113,.12)",
+        border: "1px solid rgba(248,113,113,.3)",
+        borderRadius: "10px",
+        padding: "10px 12px",
+        marginBottom: "14px",
+      }}
+    >
+      {error}
+    </div>
+  );
 
   return (
     <div
@@ -290,161 +337,234 @@ export default function Auth({
         </div>
 
         <div className="card glass" style={{ padding: "24px" }}>
-          <div className="seg" style={{ marginBottom: "20px" }}>
-            <button
-              className={isLogin ? "on" : ""}
-              onClick={() => switchMode("login")}
-            >
-              {tr.login}
-            </button>
-            <button
-              className={!isLogin ? "on" : ""}
-              onClick={() => switchMode("register")}
-            >
-              {tr.register}
-            </button>
-          </div>
-
-          {!isLogin && (
+          {isForgot ? (
             <>
-              <FloatingInput
-                label={tr.name}
-                value={form.name}
-                onChange={upd("name")}
-                maxLength={50}
-                name="name"
-                autoComplete="name"
-              />
-              <FloatingInput
-                label={tr.username}
-                value={form.username}
-                onChange={upd("username")}
-                maxLength={30}
-                name="username"
-                autoComplete="username"
-              />
-            </>
-          )}
+              <h2
+                style={{
+                  fontSize: "1.6rem",
+                  fontWeight: 700,
+                  textAlign: "center",
+                  marginBottom: "12px",
+                }}
+              >
+                {tr.forgotTitle}
+              </h2>
+              <p
+                style={{
+                  fontSize: ".82rem",
+                  color: "var(--text-dim)",
+                  textAlign: "center",
+                  marginBottom: "22px",
+                  lineHeight: 1.6,
+                }}
+              >
+                {tr.forgotDesc}
+              </p>
 
-          <FloatingInput
-            label={tr.email}
-            type="email"
-            value={form.email}
-            onChange={upd("email")}
-            name="email"
-            autoComplete="email"
-            inputMode="email"
-          />
+              <div className="field">
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={upd("email")}
+                  placeholder={tr.emailPlaceholder}
+                  inputMode="email"
+                  autoComplete="email"
+                />
+              </div>
 
-          {!isLogin && (
-            <FloatingInput
-              label={tr.phone}
-              type="tel"
-              inputMode="tel"
-              value={form.phone}
-              onChange={upd("phone")}
-            />
-          )}
+              {info && (
+                <div
+                  style={{
+                    fontSize: ".8rem",
+                    color: "var(--ok, #34d399)",
+                    background: "rgba(52,211,153,.12)",
+                    border: "1px solid rgba(52,211,153,.3)",
+                    borderRadius: "10px",
+                    padding: "10px 12px",
+                    marginBottom: "14px",
+                  }}
+                >
+                  {info}
+                </div>
+              )}
+              {errorBox}
 
-          <FloatingInput
-            label={tr.password}
-            type="password"
-            value={form.password}
-            onChange={upd("password")}
-            name="password"
-            autoComplete={isLogin ? "current-password" : "new-password"}
-          />
+              <button
+                className="btn btn-primary"
+                style={{ width: "100%" }}
+                onClick={submitForgot}
+              >
+                {tr.sendReset}
+              </button>
 
-          {!isLogin && (
-            <FloatingInput
-              label={tr.confirm}
-              type="password"
-              value={form.confirm}
-              onChange={upd("confirm")}
-              name="confirm"
-              autoComplete="new-password"
-            />
-          )}
-
-          {isLogin && (
-            <div
-              style={{
-                textAlign: "right",
-                marginTop: "-2px",
-                marginBottom: "14px",
-              }}
-            >
-              <a style={{ ...linkStyle, fontSize: ".8rem" }}>{tr.forgot}</a>
-            </div>
-          )}
-
-          {error && (
-            <div
-              style={{
-                fontSize: ".8rem",
-                color: "var(--danger)",
-                background: "rgba(248,113,113,.12)",
-                border: "1px solid rgba(248,113,113,.3)",
-                borderRadius: "10px",
-                padding: "10px 12px",
-                marginBottom: "14px",
-              }}
-            >
-              {error}
-            </div>
-          )}
-
-          <button
-            className="btn btn-primary"
-            style={{ width: "100%" }}
-            onClick={submit}
-          >
-            {isLogin ? tr.submitLogin : tr.submitRegister}
-          </button>
-
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              alignItems: "flex-start",
-              marginTop: "16px",
-              padding: "11px 13px",
-              borderRadius: "12px",
-              background: "var(--surface-2)",
-              fontSize: ".76rem",
-              color: "var(--text-dim)",
-              lineHeight: 1.5,
-            }}
-          >
-            <span style={{ fontSize: "1.1rem", flex: "0 0 auto" }}>🔥</span>
-            <span>{isLogin ? tr.streakLogin : tr.streakRegister}</span>
-          </div>
-        </div>
-
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: ".78rem",
-            color: "var(--text-faint)",
-            marginTop: "18px",
-          }}
-        >
-          {isLogin ? (
-            <>
-              {tr.noAcc}{" "}
-              <a onClick={() => switchMode("register")} style={linkStyle}>
-                {tr.goRegister}
-              </a>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: ".82rem",
+                  marginTop: "18px",
+                }}
+              >
+                <a onClick={() => switchMode("login")} style={linkStyle}>
+                  {tr.goLogin}
+                </a>
+                <a onClick={() => switchMode("register")} style={linkStyle}>
+                  {tr.goRegister}
+                </a>
+              </div>
             </>
           ) : (
             <>
-              {tr.hasAcc}{" "}
-              <a onClick={() => switchMode("login")} style={linkStyle}>
-                {tr.goLogin}
-              </a>
+              <div className="seg" style={{ marginBottom: "20px" }}>
+                <button
+                  className={isLogin ? "on" : ""}
+                  onClick={() => switchMode("login")}
+                >
+                  {tr.login}
+                </button>
+                <button
+                  className={!isLogin ? "on" : ""}
+                  onClick={() => switchMode("register")}
+                >
+                  {tr.register}
+                </button>
+              </div>
+
+              {!isLogin && (
+                <>
+                  <FloatingInput
+                    label={tr.name}
+                    value={form.name}
+                    onChange={upd("name")}
+                    maxLength={50}
+                    name="name"
+                    autoComplete="name"
+                  />
+                  <FloatingInput
+                    label={tr.username}
+                    value={form.username}
+                    onChange={upd("username")}
+                    maxLength={30}
+                    name="username"
+                    autoComplete="username"
+                  />
+                </>
+              )}
+
+              <FloatingInput
+                label={tr.email}
+                type="email"
+                value={form.email}
+                onChange={upd("email")}
+                name="email"
+                autoComplete="email"
+                inputMode="email"
+              />
+
+              {!isLogin && (
+                <FloatingInput
+                  label={tr.phone}
+                  type="tel"
+                  inputMode="tel"
+                  value={form.phone}
+                  onChange={upd("phone")}
+                />
+              )}
+
+              <FloatingInput
+                label={tr.password}
+                type="password"
+                value={form.password}
+                onChange={upd("password")}
+                name="password"
+                autoComplete={isLogin ? "current-password" : "new-password"}
+              />
+
+              {!isLogin && (
+                <FloatingInput
+                  label={tr.confirm}
+                  type="password"
+                  value={form.confirm}
+                  onChange={upd("confirm")}
+                  name="confirm"
+                  autoComplete="new-password"
+                />
+              )}
+
+              {isLogin && (
+                <div
+                  style={{
+                    textAlign: "right",
+                    marginTop: "-2px",
+                    marginBottom: "14px",
+                  }}
+                >
+                  <a
+                    onClick={() => switchMode("forgot")}
+                    style={{ ...linkStyle, fontSize: ".8rem" }}
+                  >
+                    {tr.forgot}
+                  </a>
+                </div>
+              )}
+
+              {errorBox}
+
+              <button
+                className="btn btn-primary"
+                style={{ width: "100%" }}
+                onClick={submit}
+              >
+                {isLogin ? tr.submitLogin : tr.submitRegister}
+              </button>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  alignItems: "flex-start",
+                  marginTop: "16px",
+                  padding: "11px 13px",
+                  borderRadius: "12px",
+                  background: "var(--surface-2)",
+                  fontSize: ".76rem",
+                  color: "var(--text-dim)",
+                  lineHeight: 1.5,
+                }}
+              >
+                <span style={{ fontSize: "1.1rem", flex: "0 0 auto" }}>🔥</span>
+                <span>{isLogin ? tr.streakLogin : tr.streakRegister}</span>
+              </div>
             </>
           )}
-        </p>
+        </div>
+
+        {!isForgot && (
+          <p
+            style={{
+              textAlign: "center",
+              fontSize: ".78rem",
+              color: "var(--text-faint)",
+              marginTop: "18px",
+            }}
+          >
+            {mode === "register" ? (
+              <>
+                {tr.hasAcc}{" "}
+                <a onClick={() => switchMode("login")} style={linkStyle}>
+                  {tr.goLogin}
+                </a>
+              </>
+            ) : (
+              <>
+                {tr.noAcc}{" "}
+                <a onClick={() => switchMode("register")} style={linkStyle}>
+                  {tr.goRegister}
+                </a>
+              </>
+            )}
+          </p>
+        )}
       </div>
     </div>
   );
