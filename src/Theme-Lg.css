@@ -1,24 +1,5 @@
 /*Định nghĩa*/
 
-/*Theme: Sleek Dark Minimalist*/
-[data-theme="dark"] {
-  --page-bg: #0a0a0c;
-  --text: #ededf2;
-  --text-dim: rgba(237, 237, 242, 0.55);
-  --text-faint: rgba(237, 237, 242, 0.34);
-  --surface: #141417;
-  --surface-2: #1b1b20;
-  --surface-hover: #212128;
-  --border: rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.13);
-  --blur: 0px;
-  --shadow: none;
-  --side-bg: #0e0e11;
-  --input-bg: #161619;
-  --track: rgba(255, 255, 255, 0.09);
-  --accent: #6366f1;
-}
-
 /*Theme: Glassmorphism (default)*/
 [data-theme="glass"] {
   --page-bg:
@@ -98,7 +79,6 @@
   border: none;
 }
 /* --- override theme còn lại --- */
-[data-theme="dark"] .logo,
 [data-theme="neu"] .logo {
   box-shadow: none;
 }
@@ -110,13 +90,6 @@
 [data-theme="neu"] .topbar {
   background: var(--page-bg);
   box-shadow: 0 6px 14px rgba(198, 202, 214, 0.5);
-}
-[data-theme="dark"] .btn-primary {
-  box-shadow: none;
-  background: var(--accent);
-}
-[data-theme="dark"] .fab {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 [data-theme="neu"] .chatpanel {
   background: #e6e9f0;
@@ -147,9 +120,6 @@
 }
 .td-glass {
   background: linear-gradient(135deg, #7c3aed, #06b6d4);
-}
-.td-dark {
-  background: #18181b;
 }
 .td-neu {
   background: #e6e9f0;
@@ -187,9 +157,6 @@
 .pv-glass {
   background: linear-gradient(160deg, #13102b, #0a0a18);
 }
-.pv-dark {
-  background: #0a0a0c;
-}
 .pv-neu {
   background: #e6e9f0;
 }
@@ -206,9 +173,6 @@
 .pv-glass .mini {
   background: rgba(255, 255, 255, 0.14);
   backdrop-filter: blur(4px);
-}
-.pv-dark .mini {
-  background: #1b1b20;
 }
 .pv-neu .mini {
   background: #e6e9f0;

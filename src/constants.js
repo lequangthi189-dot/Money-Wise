@@ -19,11 +19,5 @@ export const THEMES = [
     prev: "pv-glass",
     name: "Modern Glassmorphism",
   },
-  {
-    id: "dark",
-    dot: "td-dark",
-    prev: "pv-dark",
-    name: "Sleek Dark Minimalist",
-  },
   { id: "neu", dot: "td-neu", prev: "pv-neu", name: "Soft UI / Neumorphism" },
 ];
