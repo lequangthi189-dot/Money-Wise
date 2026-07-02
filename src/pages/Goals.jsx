@@ -1,111 +1,154 @@
-import { THEMES } from "../constants";
 import { Icon } from "../components/icons";
 
-export default function Settings({
-  theme,
-  setTheme,
-  fontSize,
-  setFontSize,
-  lang,
-  setLang,
-  s,
-}) {
+const goals = [
+  {
+    name: "Mua điện thoại",
+    icon: "📱",
+    saved: "9.200.000",
+    target: "15.000.000",
+    percent: 61,
+    due: "Còn 4 tháng",
+    color: "#60a5fa",
+    forecast: "Cần tiết kiệm 1.450.000 đ/tháng để đạt mục tiêu.",
+  },
+  {
+    name: "Du lịch Đà Lạt",
+    icon: "✈️",
+    saved: "3.100.000",
+    target: "5.000.000",
+    percent: 62,
+    due: "Còn 2 tháng",
+    color: "#34d399",
+    forecast: "Theo tiến độ hiện tại, mục tiêu có thể hoàn thành sớm 1 tuần.",
+  },
+  {
+    name: "Mua laptop",
+    icon: "💻",
+    saved: "4.000.000",
+    target: "25.000.000",
+    percent: 16,
+    due: "Còn 10 tháng",
+    color: "#a78bfa",
+    forecast: "Tăng thêm 900.000 đ/tháng để bắt kịp kế hoạch.",
+  },
+];
+
+export default function Goals() {
   return (
     <>
-      <div className="card glass" style={{ marginBottom: "18px" }}>
-        <div className="card-h">
-          <h3>{s.theme}</h3>
-          <span className="muted">{s.themeSub}</span>
-        </div>
-        <div className="themecards">
-          {THEMES.map((t) => (
-            <div
-              key={t.id}
-              className={"themecard" + (theme === t.id ? " sel" : "")}
-              onClick={() => setTheme(t.id)}
-            >
-              <div className={"prev " + t.prev}>
-                <div className="mini" style={{ width: "60%" }}></div>
-                <div className="mini" style={{ width: "90%" }}></div>
-                <div className="mini" style={{ width: "75%" }}></div>
-              </div>
-              <div className="nm">{t.name}</div>
-            </div>
-          ))}
-        </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          marginBottom: "18px",
+        }}
+      >
+        <button className="btn btn-primary">
+          <Icon n="i-plus" size={16} /> Thêm mục tiêu
+        </button>
+        <div style={{ flex: "1" }}></div>
+        <select style={{ width: "auto" }}>
+          <option>Đang thực hiện</option>
+          <option>Đã hoàn thành</option>
+          <option>Tất cả mục tiêu</option>
+        </select>
       </div>
 
-      <div className="grid g-2">
-        <div className="card glass">
-          <div className="card-h">
-            <h3>{s.display}</h3>
-          </div>
-          <div className="field">
-            <label>
-              {s.fontSize} ({fontSize}px)
-            </label>
-            <input
-              type="range"
-              min="14"
-              max="20"
-              value={fontSize}
-              onChange={(e) => setFontSize(+e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label>{s.language}</label>
-            <select value={lang} onChange={(e) => setLang(e.target.value)}>
-              <option value="vi">Tiếng Việt</option>
-              <option value="en">English</option>
-            </select>
-          </div>
-          <div className="field">
-            <label>{s.widgets}</label>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-            >
-              {s.widgetList.map((w, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "10px 12px",
-                    borderRadius: "10px",
-                    background: "var(--surface-2)",
-                  }}
-                >
-                  ⠿ {w}
-                </div>
-              ))}
+      <div className="grid g-3">
+        {goals.map((goal) => (
+          <div className="goalcard glass" key={goal.name}>
+            <div className="gh">
+              <div className="ico" style={{ background: goal.color + "22" }}>
+                {goal.icon}
+              </div>
+              <div>
+                <b>{goal.name}</b>
+                <small>{goal.due}</small>
+              </div>
+            </div>
+
+            <div className="nums">
+              <span>
+                <b>{goal.saved} đ</b> đã có
+              </span>
+              <span>{goal.target} đ</span>
+            </div>
+            <div className="track">
+              <div
+                className={goal.percent >= 60 ? "bar ok" : "bar"}
+                style={{ width: goal.percent + "%" }}
+              ></div>
+            </div>
+            <div className="nums">
+              <span>Tiến độ</span>
+              <b>{goal.percent}%</b>
+            </div>
+
+            <div className="forecast">
+              <Icon n="i-clock" size={15} />
+              <span>{goal.forecast}</span>
             </div>
           </div>
+        ))}
+      </div>
+
+      <div className="grid g-12" style={{ marginTop: "18px" }}>
+        <div className="card glass">
+          <div className="card-h">
+            <h3>Tạo mục tiêu mới</h3>
+            <span className="muted">Ước tính tiến độ tiết kiệm</span>
+          </div>
+          <div className="field">
+            <label>Tên mục tiêu</label>
+            <input placeholder="Ví dụ: Quỹ dự phòng" />
+          </div>
+          <div className="field">
+            <label>Số tiền mục tiêu</label>
+            <input placeholder="0 đ" />
+          </div>
+          <div className="field">
+            <label>Ngày hoàn thành</label>
+            <input type="date" />
+          </div>
+          <button className="btn btn-primary" style={{ width: "100%" }}>
+            Lưu mục tiêu
+          </button>
         </div>
 
         <div className="card glass">
           <div className="card-h">
-            <h3>{s.account}</h3>
+            <h3>Tổng quan mục tiêu</h3>
+            <span className="muted">3 mục tiêu đang chạy</span>
           </div>
-          <div className="field">
-            <label>{s.name}</label>
-            <input defaultValue="Thi Nguyễn" />
-          </div>
-          <div className="field">
-            <label>{s.email}</label>
-            <input defaultValue="thi@huflit.edu.vn" />
-          </div>
-          <div className="field">
-            <label>{s.phone}</label>
-            <input defaultValue="0909 xxx xxx" />
-          </div>
-          <div className="btn-row">
-            <button className="btn" style={{ flex: "1" }}>
-              {s.changePw}
-            </button>
-            <button className="btn" style={{ color: "var(--danger)" }}>
-              <Icon n="i-logout" size={15} /> {s.logout}
-            </button>
+          <div className="grid g-3">
+            <div className="stat glass">
+              <div className="row">
+                <label>Đã tiết kiệm</label>
+                <div className="ico ico-ok">
+                  <Icon n="i-wallet" />
+                </div>
+              </div>
+              <div className="val sm">16.300.000 đ</div>
+            </div>
+            <div className="stat glass">
+              <div className="row">
+                <label>Cần đạt</label>
+                <div className="ico ico-pri">
+                  <Icon n="i-flag" />
+                </div>
+              </div>
+              <div className="val sm">45.000.000 đ</div>
+            </div>
+            <div className="stat glass">
+              <div className="row">
+                <label>Bình quân</label>
+                <div className="ico ico-warn">
+                  <Icon n="i-percent" />
+                </div>
+              </div>
+              <div className="val sm">46%</div>
+            </div>
           </div>
         </div>
       </div>

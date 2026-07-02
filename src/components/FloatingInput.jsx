@@ -1,10 +1,11 @@
 import { useState } from "react";
 import "./FloatingInput.css";
 
-// Ô nhập "Premium": nhãn nổi trượt lên viền khi focus / có chữ.
+// Ô nhập : nhãn nổi trượt lên viền khi focus / có chữ.
 // - maxLength  -> hiện bộ đếm ký tự (vd 21/30)
-// - type="password" -> tự có nút ẩn/hiện mật khẩu
 // - left + leftPad -> chèn phần phụ bên trái (vd select mã quốc gia cho ô điện thoại)
+// - "password" -> tự có nút ẩn/hiện mật khẩu
+
 export default function FloatingInput({
   label,
   value,

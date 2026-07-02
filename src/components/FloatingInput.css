@@ -90,7 +90,7 @@
 .flf-eye:hover {
   color: var(--text);
 }
-/* Ẩn con mắt / nút xóa mặc định của trình duyệt (Edge/IE/Chrome) để không đè lên nút của mình */
+/* Ẩn con mắt / nút xóa mặc định của trình duyệt để không đè lên nút của mình */
 .flf-input::-ms-reveal,
 .flf-input::-ms-clear {
   display: none;
