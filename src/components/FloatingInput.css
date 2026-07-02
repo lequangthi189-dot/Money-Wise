@@ -1,4 +1,4 @@
-/* ===== Premium floating-label input (FloatingInput) ===== */
+/*floating-label input */
 .flf {
   margin-bottom: 16px;
 }
@@ -27,7 +27,7 @@
   color: var(--text);
   font-size: 0.95rem;
 }
-/* Chặn nền trắng/vàng do Chrome tự điền (autofill) làm lệch màu ô + làm mờ con mắt */
+/* Chặn nền trắng/vàng do autofill làm lệch màu ô + làm mờ con mắt */
 .flf-input:-webkit-autofill,
 .flf-input:-webkit-autofill:hover,
 .flf-input:-webkit-autofill:focus,
@@ -51,9 +51,14 @@
     transform 0.16s ease,
     color 0.16s ease;
 }
-/* khi focus hoặc đã có chữ -> nhãn mờ dần rồi biến mất (như placeholder) */
+/* khi focus hoặc đã có chữ thì nhãn mờ dần rồi biến mất (như placeholder) */
 .flf-input:focus ~ .flf-label,
 .flf-input:not(:placeholder-shown) ~ .flf-label {
+  opacity: 0;
+  transform: translateY(-50%) scale(0.96);
+}
+/* khi autofill cũng ẩn nhãn để không đè lên chữ */
+.flf-input:-webkit-autofill ~ .flf-label {
   opacity: 0;
   transform: translateY(-50%) scale(0.96);
 }
@@ -89,19 +94,6 @@
 .flf-input::-ms-reveal,
 .flf-input::-ms-clear {
   display: none;
-}
-/* select mã quốc gia nằm gọn trong ô (field điện thoại) */
-.flf-dial {
-  flex: 0 0 auto;
-  width: 116px;
-  background: transparent !important;
-  border: none !important;
-  border-right: 1px solid var(--border) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  outline: none !important;
-  color: var(--text);
-  padding: 14px 8px 14px 12px !important;
 }
 /* Neumorphism: ô lõm thay vì viền */
 [data-theme="neu"] .flf-box {
