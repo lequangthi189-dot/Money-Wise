@@ -5,7 +5,6 @@ import FloatingInput from "./components/FloatingInput";
 
 const THEMES = [
   { id: "glass", dot: "td-glass", name: "Modern Glassmorphism" },
-  { id: "dark", dot: "td-dark", name: "Sleek Dark Minimalist" },
   { id: "neu", dot: "td-neu", name: "Soft UI / Neumorphism" },
 ];
 
