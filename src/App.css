@@ -1218,6 +1218,21 @@ select {
     -5px -5px 11px #ffffff,
     0 0 0 2px rgba(139, 124, 246, 0.4) !important;
 }
+
+/* Soft UI: ô search = 1 pill nổi (raised), input bên trong trong suốt hoàn toàn */
+[data-theme="neu"] .search {
+  background: #e9ecf3 !important;
+  border: none !important;
+  box-shadow:
+    6px 6px 13px #c9cdd9,
+    -6px -6px 13px #ffffff !important;
+}
+[data-theme="neu"] .search input {
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
 .root {
   background: var(--page-bg);
   background-attachment: fixed;
