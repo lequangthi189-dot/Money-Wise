@@ -1,4 +1,78 @@
-export default function Transactions() {
+const TXNS = [
+  {
+    id: 1,
+    icon: "☕",
+    cls: "c-coffee",
+    name: "Trà sữa Phúc Long",
+    date: "25/06",
+    method: "Ví điện tử",
+    type: "out",
+    amount: "-35.000 ₫",
+  },
+  {
+    id: 2,
+    icon: "🍜",
+    cls: "c-food",
+    name: "Cơm trưa căng tin",
+    date: "25/06",
+    method: "Tiền mặt",
+    type: "out",
+    amount: "-45.000 ₫",
+  },
+  {
+    id: 3,
+    icon: "💰",
+    cls: "c-salary",
+    name: "Lương làm thêm",
+    date: "24/06",
+    method: "Chuyển khoản",
+    type: "in",
+    amount: "+1.500.000 ₫",
+  },
+  {
+    id: 4,
+    icon: "🛵",
+    cls: "c-move",
+    name: "Đổ xăng",
+    date: "24/06",
+    method: "Tiền mặt",
+    type: "out",
+    amount: "-65.000 ₫",
+  },
+  {
+    id: 5,
+    icon: "🎮",
+    cls: "c-fun",
+    name: "Vé xem phim CGV",
+    date: "23/06",
+    method: "Thẻ",
+    type: "out",
+    amount: "-120.000 ₫",
+  },
+  {
+    id: 6,
+    icon: "🎓",
+    cls: "c-salary",
+    name: "Học bổng kỳ 2",
+    date: "22/06",
+    method: "Chuyển khoản",
+    type: "in",
+    amount: "+2.000.000 ₫",
+  },
+];
+
+export default function Transactions({ query = "" }) {
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? TXNS.filter(
+        (tx) =>
+          tx.name.toLowerCase().includes(q) ||
+          tx.method.toLowerCase().includes(q) ||
+          tx.amount.toLowerCase().includes(q) ||
+          tx.date.includes(q),
+      )
+    : TXNS;
+
   return (
     <>
       <div className="grid g-12">
@@ -81,162 +155,66 @@ export default function Transactions() {
               <span className="pill">Danh mục</span>
             </div>
           </div>
-          <div className="tx">
-            <div className="cat c-coffee">☕</div>
-            <div className="meta">
-              <b>Trà sữa Phúc Long</b>
-              <small>25/06 · Ví điện tử</small>
-            </div>
-            <span className="badge b-out">Chi</span>
+
+          {q && (
             <div
-              className="amt out"
-              style={{ minWidth: "90px", textAlign: "right" }}
+              style={{
+                fontSize: ".78rem",
+                color: "var(--text-dim)",
+                marginBottom: "10px",
+              }}
             >
-              -35.000 ₫
+              Kết quả cho “{query}”: {filtered.length} giao dịch
             </div>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
+          )}
+
+          {filtered.map((tx) => (
+            <div className="tx" key={tx.id}>
+              <div className={"cat " + tx.cls}>{tx.icon}</div>
+              <div className="meta">
+                <b>{tx.name}</b>
+                <small>
+                  {tx.date} · {tx.method}
+                </small>
+              </div>
+              <span
+                className={"badge " + (tx.type === "in" ? "b-in" : "b-out")}
+              >
+                {tx.type === "in" ? "Thu" : "Chi"}
+              </span>
+              <div
+                className={"amt " + tx.type}
+                style={{ minWidth: "90px", textAlign: "right" }}
+              >
+                {tx.amount}
+              </div>
+              <div className="act">
+                <button>
+                  <svg>
+                    <use href="#i-edit" />
+                  </svg>
+                </button>
+                <button>
+                  <svg>
+                    <use href="#i-trash" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
-          <div className="tx">
-            <div className="cat c-food">🍜</div>
-            <div className="meta">
-              <b>Cơm trưa căng tin</b>
-              <small>25/06 · Tiền mặt</small>
-            </div>
-            <span className="badge b-out">Chi</span>
+          ))}
+
+          {filtered.length === 0 && (
             <div
-              className="amt out"
-              style={{ minWidth: "90px", textAlign: "right" }}
+              style={{
+                padding: "26px 10px",
+                textAlign: "center",
+                color: "var(--text-dim)",
+                fontSize: ".85rem",
+              }}
             >
-              -45.000 ₫
+              Không tìm thấy giao dịch nào khớp “{query}”.
             </div>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="tx">
-            <div className="cat c-salary">💰</div>
-            <div className="meta">
-              <b>Lương làm thêm</b>
-              <small>24/06 · Chuyển khoản</small>
-            </div>
-            <span className="badge b-in">Thu</span>
-            <div
-              className="amt in"
-              style={{ minWidth: "90px", textAlign: "right" }}
-            >
-              +1.500.000 ₫
-            </div>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="tx">
-            <div className="cat c-move">🛵</div>
-            <div className="meta">
-              <b>Đổ xăng</b>
-              <small>24/06 · Tiền mặt</small>
-            </div>
-            <span className="badge b-out">Chi</span>
-            <div
-              className="amt out"
-              style={{ minWidth: "90px", textAlign: "right" }}
-            >
-              -65.000 ₫
-            </div>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="tx">
-            <div className="cat c-fun">🎮</div>
-            <div className="meta">
-              <b>Vé xem phim CGV</b>
-              <small>23/06 · Thẻ</small>
-            </div>
-            <span className="badge b-out">Chi</span>
-            <div
-              className="amt out"
-              style={{ minWidth: "90px", textAlign: "right" }}
-            >
-              -120.000 ₫
-            </div>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="tx">
-            <div className="cat c-salary">🎓</div>
-            <div className="meta">
-              <b>Học bổng kỳ 2</b>
-              <small>22/06 · Chuyển khoản</small>
-            </div>
-            <span className="badge b-in">Thu</span>
-            <div
-              className="amt in"
-              style={{ minWidth: "90px", textAlign: "right" }}
-            >
-              +2.000.000 ₫
-            </div>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </>

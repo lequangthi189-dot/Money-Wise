@@ -59,6 +59,28 @@ export default function Settings({
               <option value="en">English</option>
             </select>
           </div>
+          <div className="field">
+            <label>{s.widgets}</label>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
+              {s.widgetList.map((w, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    padding: "10px 12px",
+                    borderRadius: "10px",
+                    background: "var(--surface-2)",
+                  }}
+                >
+                  ⠿ {w}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="card glass">

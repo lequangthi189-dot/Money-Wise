@@ -1,4 +1,4 @@
-/*floating-label input */
+/* ===== Premium floating-label input (FloatingInput) ===== */
 .flf {
   margin-bottom: 16px;
 }
@@ -27,7 +27,7 @@
   color: var(--text);
   font-size: 0.95rem;
 }
-/* Chặn nền trắng/vàng do autofill làm lệch màu ô + làm mờ con mắt */
+/* Chặn nền trắng/vàng do Chrome tự điền (autofill) làm lệch màu ô + làm mờ con mắt */
 .flf-input:-webkit-autofill,
 .flf-input:-webkit-autofill:hover,
 .flf-input:-webkit-autofill:focus,
@@ -51,13 +51,13 @@
     transform 0.16s ease,
     color 0.16s ease;
 }
-/* khi focus hoặc đã có chữ thì nhãn mờ dần rồi biến mất (như placeholder) */
+/* khi focus hoặc đã có chữ -> nhãn mờ dần rồi biến mất (như placeholder) */
 .flf-input:focus ~ .flf-label,
 .flf-input:not(:placeholder-shown) ~ .flf-label {
   opacity: 0;
   transform: translateY(-50%) scale(0.96);
 }
-/* khi autofill cũng ẩn nhãn để không đè lên chữ */
+/* khi Chrome tự điền (autofill) cũng ẩn nhãn để không đè lên chữ */
 .flf-input:-webkit-autofill ~ .flf-label {
   opacity: 0;
   transform: translateY(-50%) scale(0.96);
@@ -90,20 +90,35 @@
 .flf-eye:hover {
   color: var(--text);
 }
-/* Ẩn con mắt / nút xóa mặc định của trình duyệt để không đè lên nút của mình */
+/* Ẩn con mắt / nút xóa mặc định của trình duyệt (Edge/IE/Chrome) để không đè lên nút của mình */
 .flf-input::-ms-reveal,
 .flf-input::-ms-clear {
   display: none;
 }
-/* Neumorphism: ô lõm thay vì viền */
+/* select mã quốc gia nằm gọn trong ô (field điện thoại) */
+.flf-dial {
+  flex: 0 0 auto;
+  width: 116px;
+  background: transparent !important;
+  border: none !important;
+  border-right: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: var(--text);
+  padding: 14px 8px 14px 12px !important;
+}
+/* Neumorphism: ô nổi (raised) */
 [data-theme="neu"] .flf-box {
-  border-color: transparent;
+  border: none;
+  background: #e9ecf3;
   box-shadow:
-    inset 2px 2px 5px rgba(0, 0, 0, 0.1),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.75);
+    6px 6px 13px #c9cdd9,
+    -6px -6px 13px #ffffff;
 }
 [data-theme="neu"] .flf-box:focus-within {
   box-shadow:
-    inset 2px 2px 5px rgba(0, 0, 0, 0.14),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.85);
+    5px 5px 11px #c9cdd9,
+    -5px -5px 11px #ffffff,
+    0 0 0 2px rgba(139, 124, 246, 0.4);
 }

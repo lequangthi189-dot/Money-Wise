@@ -79,6 +79,7 @@
   border: none;
 }
 /* --- override theme còn lại --- */
+[data-theme="dark"] .logo,
 [data-theme="neu"] .logo {
   box-shadow: none;
 }
@@ -90,6 +91,9 @@
 [data-theme="neu"] .topbar {
   background: var(--page-bg);
   box-shadow: 0 6px 14px rgba(198, 202, 214, 0.5);
+}
+[data-theme="dark"] .fab {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 [data-theme="neu"] .chatpanel {
   background: #e6e9f0;
