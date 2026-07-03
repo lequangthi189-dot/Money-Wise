@@ -5,8 +5,8 @@
   --r-md: 12px;
   --r-lg: 18px;
   --r-xl: 24px;
-  --side-w: 248px;
-  --topbar-h: 64px;
+  --side-w: 240px;
+  --topbar-h: 76px;
   --accent: #8b7cf6;
   --accent-2: #22d3ee;
   --ok: #34d399;
@@ -42,7 +42,7 @@ body {
 .app {
   display: grid;
   grid-template-columns: var(--side-w) 1fr;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* sidebar */
@@ -56,7 +56,9 @@ body {
   padding: 18px 14px;
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
   box-shadow: var(--shadow);
   transition:
     background var(--t),
@@ -118,6 +120,19 @@ body {
   flex-direction: column;
   gap: 3px;
   margin-top: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+.nav::-webkit-scrollbar {
+  width: 5px;
+}
+.nav::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
 }
 .nav-label {
   font-size: 0.66rem;
@@ -164,6 +179,7 @@ body {
   border-top: 1px solid var(--border);
   padding-top: 10px;
   margin-top: 8px;
+  flex: 0 0 auto;
 }
 .userchip {
   display: flex;
@@ -206,6 +222,7 @@ body {
 }
 .topbar {
   height: var(--topbar-h);
+  min-height: var(--topbar-h);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -234,6 +251,8 @@ body {
   align-items: center;
   gap: 10px;
 }
+
+/* search box (icon nằm TRONG ô) */
 .search {
   display: flex;
   align-items: center;
@@ -242,7 +261,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 8px 14px;
-  width: 230px;
+  width: 240px;
   color: var(--text-dim);
 }
 .search svg {
@@ -256,8 +275,12 @@ body {
   outline: none;
   color: var(--text);
   font-size: 0.85rem;
+  line-height: 1.4;
   width: 100%;
+  padding: 2px 2px;
+  caret-color: var(--accent);
 }
+
 .icon-btn {
   width: 40px;
   height: 40px;
@@ -1179,6 +1202,21 @@ select {
 #root {
   min-height: 100vh;
   width: 100%;
+}
+
+/* Soft UI (neu): ô nhập FloatingInput kiểu NỔI (raised) — đè chắc bằng !important */
+[data-theme="neu"] .flf-box {
+  background: #e9ecf3 !important;
+  border: none !important;
+  box-shadow:
+    6px 6px 13px #c9cdd9,
+    -6px -6px 13px #ffffff !important;
+}
+[data-theme="neu"] .flf-box:focus-within {
+  box-shadow:
+    5px 5px 11px #c9cdd9,
+    -5px -5px 11px #ffffff,
+    0 0 0 2px rgba(139, 124, 246, 0.4) !important;
 }
 .root {
   background: var(--page-bg);

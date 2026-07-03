@@ -25,6 +25,7 @@ const VIEWS = {
 
 export default function App() {
   const [view, setView] = useState("dashboard");
+  const [query, setQuery] = useState("");
   const [theme, setTheme] = useState("glass");
   const [lang, setLang] = useState("vi");
   const [chatOpen, setChatOpen] = useState(false);
@@ -117,7 +118,15 @@ export default function App() {
             <div className="top-actions">
               <div className="search">
                 <Icon n="i-search" size={16} />
-                <input placeholder={t.search} />
+                <input
+                  placeholder={t.search}
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    if (e.target.value && view !== "transactions")
+                      setView("transactions");
+                  }}
+                />
               </div>
 
               <div className="themeswitch">
@@ -164,7 +173,7 @@ export default function App() {
                   s={t.settings}
                 />
               ) : (
-                <ViewComp />
+                <ViewComp query={query} />
               )}
             </section>
           </div>
