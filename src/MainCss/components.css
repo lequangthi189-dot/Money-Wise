@@ -1,0 +1,272 @@
+/* components.css — linh kiện dùng chung: card, lưới, tiến độ, badge/pill, form, nút, màu danh mục, tiện ích */
+/* generic cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  transition:
+    background var(--t),
+    border var(--t);
+}
+.card.glass {
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+}
+.card-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.card-h h3 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.card-h .muted {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.grid {
+  display: grid;
+  gap: 18px;
+}
+.g-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+.g-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.g-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.g-21 {
+  grid-template-columns: 1.55fr 1fr;
+}
+.g-12 {
+  grid-template-columns: 1fr 1.6fr;
+}
+
+/* progress */
+.track {
+  height: 9px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: hidden;
+}
+.bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+.bar.ok {
+  background: var(--ok);
+}
+.bar.warn {
+  background: var(--warn);
+}
+.bar.danger {
+  background: var(--danger);
+}
+
+/* badges / pills */
+.badge {
+  font-size: 0.7rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+.b-in {
+  background: rgba(52, 211, 153, 0.16);
+  color: var(--ok);
+}
+.b-out {
+  background: rgba(248, 113, 113, 0.16);
+  color: var(--danger);
+}
+.b-warn {
+  background: rgba(251, 191, 36, 0.16);
+  color: var(--warn);
+}
+.pill {
+  font-size: 0.8rem;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+.pill:hover {
+  color: var(--text);
+}
+.pill.on {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* forms */
+.field {
+  margin-bottom: 14px;
+}
+.field label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 11px 13px;
+  color: var(--text);
+  font-size: 0.88rem;
+  outline: none;
+  font-family: inherit;
+  transition: border var(--t-fast);
+}
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent);
+}
+textarea {
+  resize: vertical;
+  min-height: 64px;
+}
+select {
+  cursor: pointer;
+}
+.seg {
+  display: inline-flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 4px;
+  gap: 4px;
+  width: 100%;
+}
+.seg button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: inherit;
+}
+.seg button.on {
+  background: var(--accent);
+  color: #fff;
+}
+.seg button.on.in {
+  background: var(--ok);
+}
+.btn {
+  padding: 11px 18px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.88rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all var(--t-fast);
+}
+.btn:hover {
+  background: var(--surface-hover);
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 18px rgba(139, 124, 246, 0.35);
+}
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* colored category swatches */
+.c-food {
+  background: rgba(248, 113, 113, 0.18);
+  color: #fca5a5;
+}
+.c-move {
+  background: rgba(96, 165, 250, 0.18);
+  color: #93c5fd;
+}
+.c-edu {
+  background: rgba(167, 139, 250, 0.18);
+  color: #c4b5fd;
+}
+.c-rent {
+  background: rgba(52, 211, 153, 0.18);
+  color: #6ee7b7;
+}
+.c-fun {
+  background: rgba(251, 191, 36, 0.18);
+  color: #fcd34d;
+}
+.c-shop {
+  background: rgba(244, 114, 182, 0.18);
+  color: #f9a8d4;
+}
+.c-coffee {
+  background: rgba(217, 119, 6, 0.2);
+  color: #fbbf24;
+}
+.c-health {
+  background: rgba(34, 211, 238, 0.18);
+  color: #67e8f9;
+}
+.c-salary {
+  background: rgba(52, 211, 153, 0.18);
+  color: #6ee7b7;
+}
+
+/* --- tiện ích chung --- */
+.empty-note {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  text-align: center;
+  padding: 18px;
+}
+.hr {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-radius: var(--r-md);
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: var(--warn);
+  font-size: 0.84rem;
+  margin-bottom: 18px;
+}
+.alert svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+.alert b {
+  color: var(--text);
+}

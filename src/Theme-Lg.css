@@ -63,8 +63,7 @@
 [data-theme="neu"] input,
 [data-theme="neu"] select,
 [data-theme="neu"] textarea,
-[data-theme="neu"] .track,
-[data-theme="neu"] .search {
+[data-theme="neu"] .track {
   box-shadow:
     inset 3px 3px 6px #c6cad6,
     inset -3px -3px 6px #ffffff;
@@ -79,7 +78,6 @@
   border: none;
 }
 /* --- override theme còn lại --- */
-[data-theme="dark"] .logo,
 [data-theme="neu"] .logo {
   box-shadow: none;
 }
@@ -92,14 +90,42 @@
   background: var(--page-bg);
   box-shadow: 0 6px 14px rgba(198, 202, 214, 0.5);
 }
-[data-theme="dark"] .fab {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-}
 [data-theme="neu"] .chatpanel {
   background: #e6e9f0;
 }
 
-/* --- NÚT GẠT ĐỔI THEME (thiếu cái này nên dot/cờ bị vỡ) --- */
+/* ================================================================
+   Soft UI (neu): gộp từ theme-neu.css
+   Ô nhập FloatingInput & ô search kiểu NỔI (raised), input search phẳng
+   ================================================================ */
+[data-theme="neu"] .flf-box {
+  background: #e9ecf3 !important;
+  border: none !important;
+  box-shadow:
+    6px 6px 13px #c9cdd9,
+    -6px -6px 13px #ffffff !important;
+}
+[data-theme="neu"] .flf-box:focus-within {
+  box-shadow:
+    5px 5px 11px #c9cdd9,
+    -5px -5px 11px #ffffff,
+    0 0 0 2px rgba(139, 124, 246, 0.4) !important;
+}
+[data-theme="neu"] .search {
+  background: #e9ecf3 !important;
+  border: none !important;
+  box-shadow:
+    6px 6px 13px #c9cdd9,
+    -6px -6px 13px #ffffff !important;
+}
+[data-theme="neu"] .search input {
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* --- NÚT GẠT ĐỔI THEME (dot/cờ) --- */
 .themeswitch {
   display: flex;
   gap: 4px;

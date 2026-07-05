@@ -1,38 +1,3 @@
-import { Icon } from "../components/icons";
-
-const goals = [
-  {
-    name: "Mua điện thoại",
-    icon: "📱",
-    saved: "9.200.000",
-    target: "15.000.000",
-    percent: 61,
-    due: "Còn 4 tháng",
-    color: "#60a5fa",
-    forecast: "Cần tiết kiệm 1.450.000 đ/tháng để đạt mục tiêu.",
-  },
-  {
-    name: "Du lịch Đà Lạt",
-    icon: "✈️",
-    saved: "3.100.000",
-    target: "5.000.000",
-    percent: 62,
-    due: "Còn 2 tháng",
-    color: "#34d399",
-    forecast: "Theo tiến độ hiện tại, mục tiêu có thể hoàn thành sớm 1 tuần.",
-  },
-  {
-    name: "Mua laptop",
-    icon: "💻",
-    saved: "4.000.000",
-    target: "25.000.000",
-    percent: 16,
-    due: "Còn 10 tháng",
-    color: "#a78bfa",
-    forecast: "Tăng thêm 900.000 đ/tháng để bắt kịp kế hoạch.",
-  },
-];
-
 export default function Goals() {
   return (
     <>
@@ -40,115 +5,149 @@ export default function Goals() {
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "12px",
+          justifyContent: "space-between",
           marginBottom: "18px",
         }}
       >
+        <div>
+          <h2 style={{ fontSize: "1.05rem", fontWeight: "600" }}>
+            Mục tiêu tiết kiệm
+          </h2>
+          <p style={{ fontSize: ".8rem", color: "var(--text-dim)" }}>
+            Theo dõi tiến độ tích lũy & dự báo lãi suất
+          </p>
+        </div>
         <button className="btn btn-primary">
-          <Icon n="i-plus" size={16} /> Thêm mục tiêu
+          <svg
+            width="16"
+            height="16"
+            style={{ verticalAlign: "-3px", marginRight: "5px" }}
+          >
+            <use href="#i-plus" />
+          </svg>
+          Tạo mục tiêu
         </button>
-        <div style={{ flex: "1" }}></div>
-        <select style={{ width: "auto" }}>
-          <option>Đang thực hiện</option>
-          <option>Đã hoàn thành</option>
-          <option>Tất cả mục tiêu</option>
-        </select>
       </div>
 
       <div className="grid g-3">
-        {goals.map((goal) => (
-          <div className="goalcard glass" key={goal.name}>
-            <div className="gh">
-              <div className="ico" style={{ background: goal.color + "22" }}>
-                {goal.icon}
-              </div>
-              <div>
-                <b>{goal.name}</b>
-                <small>{goal.due}</small>
-              </div>
-            </div>
-
-            <div className="nums">
-              <span>
-                <b>{goal.saved} đ</b> đã có
-              </span>
-              <span>{goal.target} đ</span>
-            </div>
-            <div className="track">
-              <div
-                className={goal.percent >= 60 ? "bar ok" : "bar"}
-                style={{ width: goal.percent + "%" }}
-              ></div>
-            </div>
-            <div className="nums">
-              <span>Tiến độ</span>
-              <b>{goal.percent}%</b>
-            </div>
-
-            <div className="forecast">
-              <Icon n="i-clock" size={15} />
-              <span>{goal.forecast}</span>
+        <div className="goalcard glass">
+          <div className="gh">
+            <div className="ico c-shop">📱</div>
+            <div>
+              <b>Mua điện thoại</b>
+              <small>Mục tiêu: 15.000.000 ₫</small>
             </div>
           </div>
-        ))}
+          <div className="track" style={{ height: "11px" }}>
+            <div className="bar" style={{ width: "61%" }}></div>
+          </div>
+          <div className="nums">
+            <span>
+              Đã tích lũy <b>9.200.000 ₫</b>
+            </span>
+            <span>
+              <b>61%</b>
+            </span>
+          </div>
+          <div className="forecast">
+            <svg width="16" height="16">
+              <use href="#i-clock" />
+            </svg>
+            Lãi suất 5,5%/năm · Dự kiến đạt <b>tháng 11/2026</b>
+          </div>
+        </div>
+        <div className="goalcard glass">
+          <div className="gh">
+            <div className="ico c-fun">✈️</div>
+            <div>
+              <b>Du lịch Đà Lạt</b>
+              <small>Mục tiêu: 5.000.000 ₫</small>
+            </div>
+          </div>
+          <div className="track" style={{ height: "11px" }}>
+            <div className="bar ok" style={{ width: "62%" }}></div>
+          </div>
+          <div className="nums">
+            <span>
+              Đã tích lũy <b>3.100.000 ₫</b>
+            </span>
+            <span>
+              <b>62%</b>
+            </span>
+          </div>
+          <div className="forecast">
+            <svg width="16" height="16">
+              <use href="#i-clock" />
+            </svg>
+            Lãi suất 0,3%/tháng · Dự kiến đạt <b>tháng 9/2026</b>
+          </div>
+        </div>
+        <div className="goalcard glass">
+          <div className="gh">
+            <div className="ico c-edu">💻</div>
+            <div>
+              <b>Mua laptop</b>
+              <small>Mục tiêu: 25.000.000 ₫</small>
+            </div>
+          </div>
+          <div className="track" style={{ height: "11px" }}>
+            <div className="bar" style={{ width: "16%" }}></div>
+          </div>
+          <div className="nums">
+            <span>
+              Đã tích lũy <b>4.000.000 ₫</b>
+            </span>
+            <span>
+              <b>16%</b>
+            </span>
+          </div>
+          <div className="forecast">
+            <svg width="16" height="16">
+              <use href="#i-clock" />
+            </svg>
+            Lãi suất 6%/năm · Dự kiến đạt <b>tháng 8/2027</b>
+          </div>
+        </div>
       </div>
 
-      <div className="grid g-12" style={{ marginTop: "18px" }}>
-        <div className="card glass">
-          <div className="card-h">
-            <h3>Tạo mục tiêu mới</h3>
-            <span className="muted">Ước tính tiến độ tiết kiệm</span>
-          </div>
+      <div className="card glass" style={{ marginTop: "18px" }}>
+        <div className="card-h">
+          <h3>Tạo mục tiêu mới</h3>
+        </div>
+        <div className="grid g-3" style={{ gap: "14px" }}>
           <div className="field">
             <label>Tên mục tiêu</label>
-            <input placeholder="Ví dụ: Quỹ dự phòng" />
+            <input placeholder="VD: Mua xe máy" />
           </div>
           <div className="field">
             <label>Số tiền mục tiêu</label>
-            <input placeholder="0 đ" />
+            <input placeholder="0 ₫" />
           </div>
           <div className="field">
-            <label>Ngày hoàn thành</label>
-            <input type="date" />
+            <label>Lãi suất</label>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <input placeholder="5,5" style={{ flex: "1" }} />
+              <select style={{ width: "auto" }}>
+                <option>%/năm</option>
+                <option>%/tháng</option>
+              </select>
+            </div>
           </div>
-          <button className="btn btn-primary" style={{ width: "100%" }}>
-            Lưu mục tiêu
-          </button>
-        </div>
-
-        <div className="card glass">
-          <div className="card-h">
-            <h3>Tổng quan mục tiêu</h3>
-            <span className="muted">3 mục tiêu đang chạy</span>
+          <div className="field">
+            <label>Góp thêm mỗi tháng</label>
+            <input placeholder="0 ₫" />
           </div>
-          <div className="grid g-3">
-            <div className="stat glass">
-              <div className="row">
-                <label>Đã tiết kiệm</label>
-                <div className="ico ico-ok">
-                  <Icon n="i-wallet" />
-                </div>
-              </div>
-              <div className="val sm">16.300.000 đ</div>
-            </div>
-            <div className="stat glass">
-              <div className="row">
-                <label>Cần đạt</label>
-                <div className="ico ico-pri">
-                  <Icon n="i-flag" />
-                </div>
-              </div>
-              <div className="val sm">45.000.000 đ</div>
-            </div>
-            <div className="stat glass">
-              <div className="row">
-                <label>Bình quân</label>
-                <div className="ico ico-warn">
-                  <Icon n="i-percent" />
-                </div>
-              </div>
-              <div className="val sm">46%</div>
-            </div>
+          <div className="field">
+            <label>Số dư ban đầu</label>
+            <input placeholder="0 ₫" />
+          </div>
+          <div
+            className="field"
+            style={{ display: "flex", alignItems: "flex-end" }}
+          >
+            <button className="btn btn-primary" style={{ width: "100%" }}>
+              Tạo & dự báo
+            </button>
           </div>
         </div>
       </div>

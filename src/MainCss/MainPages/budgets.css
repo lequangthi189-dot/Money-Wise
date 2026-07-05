@@ -1,0 +1,27 @@
+/* budgets.css — Hạn mức / ngân sách */
+/* budget rows */
+.budrow {
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border);
+}
+.budrow:last-child {
+  border-bottom: none;
+}
+.budrow .top {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 9px;
+}
+.budrow .top b {
+  font-size: 0.88rem;
+  font-weight: 500;
+  flex: 1;
+}
+.budrow .top .nums {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.budrow .top .nums b {
+  color: var(--text);
+}
