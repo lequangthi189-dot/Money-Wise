@@ -1,0 +1,170 @@
+/* chatpanel.css — Chatbot AI (nút nổi + khung chat) */
+/* chatbot */
+.fab {
+  position: fixed;
+  right: 26px;
+  bottom: 26px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 30px rgba(139, 124, 246, 0.5);
+  z-index: 60;
+  transition: transform var(--t-fast);
+}
+.fab:hover {
+  transform: scale(1.06);
+}
+.fab svg {
+  width: 26px;
+  height: 26px;
+}
+.chatpanel {
+  position: fixed;
+  right: 26px;
+  bottom: 96px;
+  width: 360px;
+  max-height: 560px;
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  z-index: 60;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.chatpanel.show {
+  display: flex;
+  animation: fade 0.25s ease;
+}
+.chathead {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.chathead .bot {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+.chathead b {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+.chathead small {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--ok);
+}
+.chathead .x {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+.chatbody {
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+.msg {
+  max-width: 82%;
+  padding: 11px 14px;
+  border-radius: 16px;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+.msg.bot {
+  background: var(--surface-2);
+  border-radius: 16px 16px 16px 4px;
+  align-self: flex-start;
+}
+.msg.me {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  border-radius: 16px 16px 4px 16px;
+  align-self: flex-end;
+}
+.parsed {
+  margin-top: 9px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px;
+  font-size: 0.78rem;
+}
+.parsed .pr {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+.parsed .pr span {
+  color: var(--text-dim);
+}
+.parsed .pr b {
+  font-weight: 600;
+}
+.parsed .pbtn {
+  display: flex;
+  gap: 8px;
+  margin-top: 9px;
+}
+.parsed .pbtn button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+.parsed .ok {
+  background: var(--ok);
+  color: #04261b;
+}
+.parsed .edit {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.chatfoot {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+.chatfoot input {
+  border-radius: 999px;
+  padding: 10px 15px;
+}
+.chatfoot .send {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}

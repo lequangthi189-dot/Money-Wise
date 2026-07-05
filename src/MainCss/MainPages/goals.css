@@ -1,0 +1,60 @@
+/* goals.css — Mục tiêu tiết kiệm */
+/* goal cards */
+.goalcard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.goalcard.glass {
+  backdrop-filter: blur(var(--blur));
+}
+.goalcard .gh {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.goalcard .gh .ico {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  font-size: 1.3rem;
+}
+.goalcard .gh b {
+  font-size: 1rem;
+  font-weight: 600;
+  display: block;
+}
+.goalcard .gh small {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}
+.goalcard .nums {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin: 14px 0 7px;
+}
+.goalcard .nums b {
+  color: var(--text);
+  font-weight: 600;
+}
+.goalcard .forecast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+.goalcard .forecast b {
+  color: var(--accent);
+}

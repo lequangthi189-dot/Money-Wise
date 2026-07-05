@@ -1,0 +1,80 @@
+/* dashboard.css — Tổng quan: thẻ số liệu */
+/* stat cards */
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  transition: transform var(--t-fast);
+}
+.stat.glass {
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+}
+.stat:hover {
+  transform: translateY(-2px);
+}
+.stat .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.stat .ico {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+}
+.ico-pri {
+  background: rgba(139, 124, 246, 0.18);
+  color: var(--accent);
+}
+.ico-ok {
+  background: rgba(52, 211, 153, 0.16);
+  color: var(--ok);
+}
+.ico-warn {
+  background: rgba(251, 191, 36, 0.16);
+  color: var(--warn);
+}
+.ico-cyan {
+  background: rgba(34, 211, 238, 0.16);
+  color: var(--accent-2);
+}
+.stat .ico svg {
+  width: 21px;
+  height: 21px;
+}
+.stat label {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.stat .val {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-top: 2px;
+}
+.stat .val.sm {
+  font-size: 1.35rem;
+}
+.chg {
+  font-size: 0.74rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 8px;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+.chg.up {
+  color: var(--ok);
+  background: rgba(52, 211, 153, 0.14);
+}
+.chg.down {
+  color: var(--danger);
+  background: rgba(248, 113, 113, 0.14);
+}
