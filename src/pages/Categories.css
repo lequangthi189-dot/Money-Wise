@@ -1,0 +1,36 @@
+.icon-choice {
+  background-color: var(--surface-2);
+  background-image: none;
+  border: none;
+  box-shadow: none;
+  border-radius: 10px;
+  color: var(--text);
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  margin: 2px;
+  padding: 0;
+}
+
+.icon-choice:hover {
+  background: var(--surface-hover);
+}
+
+.icon-choice.active {
+  border-color: var(--accent);
+}
+
+.category-group-title {
+  margin: 14px 0 8px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.category-group-title.income-title {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
