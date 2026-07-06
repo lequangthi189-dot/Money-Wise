@@ -1,6 +1,11 @@
+import { useState } from "react";
 
 export default function Budgets({ t }) {
   const b = t.budgets;
+  const [totalLimit, setTotalLimit] = useState(4000000);
+  const [totalSpent, setTotalSpent] = useState(2180000);
+  const [limitInput, setLimitInput] = useState("4000000");
+  const [limitType, setLimitType] = useState("total");
   const swatch = {
     width: "32px",
     height: "32px",
@@ -61,6 +66,19 @@ export default function Budgets({ t }) {
       badge: "b-in",
     },
   ];
+  const totalPct = Math.round((totalSpent / totalLimit) * 100);
+  const totalLeft = totalLimit - totalSpent;
+  function handleSaveLimit() {
+    const value = Number(limitInput.replaceAll(".", "").replaceAll(",", ""));
+
+    if (value <= 0 || Number.isNaN(value)) {
+      alert("Hạn mức phải lớn hơn 0");
+      return;
+    }
+
+    setTotalLimit(value);
+  }
+  const [selectedCategory, setSelectedCategory] = useState("coffee");
 
   return (
     <>
@@ -78,14 +96,14 @@ export default function Budgets({ t }) {
                   letterSpacing: "-.5px",
                 }}
               >
-                2.180.000 ₫
+                {totalSpent.toLocaleString("vi-VN")} ₫
               </div>
               <small style={{ color: "var(--text-dim)" }}>
-                {b.spentOver("3.000.000 ₫")}
+                {b.spentOver(totalLimit.toLocaleString("vi-VN") + " ₫")}
               </small>
             </div>
             <div className="track" style={{ height: "13px" }}>
-              <div className="bar warn" style={{ width: "73%" }}></div>
+              <div className="bar warn" style={{ width: totalPct + "%" }}></div>
             </div>
             <div
               style={{
@@ -95,9 +113,9 @@ export default function Budgets({ t }) {
                 fontSize: ".8rem",
               }}
             >
-              <span style={{ color: "var(--warn)" }}>{b.usedPct("73%")}</span>
+              <span style={{ color: "var(--warn)" }}>{b.usedPct(totalPct + "%")}</span>
               <span style={{ color: "var(--text-dim)" }}>
-                {b.left("820.000 ₫")}
+                {b.left(totalLeft.toLocaleString("vi-VN") + " ₫")}
               </span>
             </div>
           </div>
@@ -105,25 +123,45 @@ export default function Budgets({ t }) {
             <div className="card-h">
               <h3>{b.setTitle}</h3>
             </div>
-            <div className="field">
+           <div className="field">
               <label>{b.kind}</label>
-              <select>
-                <option>{b.kindTotal}</option>
-                <option>{b.kindByCat}</option>
+              <select
+                value={limitType}
+                onChange={(e) => setLimitType(e.target.value)}
+              >
+                <option value="total">{b.kindTotal}</option>
+                <option value="category">{b.kindByCat}</option>
               </select>
             </div>
-            <div className="field">
-              <label>{b.category}</label>
-              <select>
-                <option>☕ {t.cats.coffee}</option>
-                <option>🍜 {t.cats.food}</option>
-              </select>
-            </div>
+            {limitType === "category" && (
+              <div className="field">
+                <label>{b.category}</label>
+
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  <option value="coffee">☕ {t.cats.coffee}</option>
+                  <option value="food">🍜 {t.cats.food}</option>
+                  <option value="fun">🎮 {t.cats.fun}</option>
+                  <option value="move">🛵 {t.cats.move}</option>
+                  <option value="shop">🛍️ {t.cats.shop}</option>
+                </select>
+              </div>
+            )}
             <div className="field">
               <label>{b.limitAmount}</label>
-              <input defaultValue="300.000" placeholder="0 ₫" />
+              <input
+                value={limitInput}
+                onChange={(e) => setLimitInput(e.target.value)}
+                placeholder="0 ₫"
+              />
             </div>
-            <button className="btn btn-primary" style={{ width: "100%" }}>
+            <button
+              className="btn btn-primary"
+              style={{ width: "100%" }}
+              onClick={handleSaveLimit}
+            >
               {b.saveLimit}
             </button>
           </div>
