@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
+import "./Css/base.css";
 import "./App.css";
+import "./Css/components.css";
+import "./Css/chatpanel.css";
+import "./Css/Pages/dashboard.css";
+import "./Css/Pages/transactions.css";
+import "./Css/Pages/categories.css";
+import "./Css/Pages/budgets.css";
+import "./Css/Pages/reports.css";
+import "./Css/Pages/goals.css";
 import "./Theme-Lg.css";
 import Auth from "./Auth";
 import { i18n } from "./i18n";
@@ -31,6 +40,7 @@ export default function App() {
   const [chatOpen, setChatOpen] = useState(false);
   const [fontSize, setFontSize] = useState(16);
   const [authed, setAuthed] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
 
   useEffect(() => {
     document.documentElement.style.fontSize = fontSize + "px";
@@ -104,7 +114,22 @@ export default function App() {
                 <b>Thi Nguyễn</b>
                 <small>thi@huflit.edu.vn</small>
               </div>
-              <Icon n="i-logout" size={17} />
+              <button
+                onClick={() => setShowLogout(true)}
+                aria-label="Đăng xuất"
+                title="Đăng xuất"
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--text-dim)",
+                  display: "grid",
+                  placeItems: "center",
+                  padding: "4px",
+                }}
+              >
+                <Icon n="i-logout" size={17} />
+              </button>
             </div>
           </div>
         </aside>
@@ -173,7 +198,7 @@ export default function App() {
                   s={t.settings}
                 />
               ) : (
-                <ViewComp query={query} />
+                <ViewComp query={query} t={t} />
               )}
             </section>
           </div>
@@ -184,6 +209,94 @@ export default function App() {
         <Icon n="i-msg" size={26} />
       </button>
       {chatOpen && <ChatPanel onClose={() => setChatOpen(false)} />}
+
+      {showLogout && (
+        <div
+          onClick={() => setShowLogout(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 100,
+            background: "rgba(0,0,0,0.5)",
+            backdropFilter: "blur(3px)",
+            WebkitBackdropFilter: "blur(3px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="card glass"
+            style={{
+              width: "min(92vw, 360px)",
+              padding: "26px 24px",
+              textAlign: "center",
+              animation: "fade 0.2s ease",
+            }}
+          >
+            <div
+              style={{
+                width: "52px",
+                height: "52px",
+                borderRadius: "50%",
+                background: "rgba(248,113,113,0.15)",
+                color: "var(--danger)",
+                display: "grid",
+                placeItems: "center",
+                margin: "0 auto 16px",
+              }}
+            >
+              <Icon n="i-logout" size={26} />
+            </div>
+            <h3
+              style={{
+                fontSize: "1.15rem",
+                fontWeight: 700,
+                marginBottom: "8px",
+              }}
+            >
+              Đăng xuất?
+            </h3>
+            <p
+              style={{
+                fontSize: "0.85rem",
+                color: "var(--text-dim)",
+                lineHeight: 1.5,
+                marginBottom: "22px",
+              }}
+            >
+              Bạn có chắc muốn đăng xuất khỏi tài khoản này?
+            </p>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                className="btn"
+                style={{ flex: 1 }}
+                onClick={() => setShowLogout(false)}
+              >
+                Hủy
+              </button>
+              <button
+                className="btn"
+                style={{
+                  flex: 1,
+                  background: "var(--danger)",
+                  color: "#fff",
+                  border: "none",
+                }}
+                onClick={() => {
+                  setShowLogout(false);
+                  setView("dashboard");
+                  setAuthed(false);
+                }}
+              >
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

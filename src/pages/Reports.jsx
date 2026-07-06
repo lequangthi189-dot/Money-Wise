@@ -1,4 +1,27 @@
-export default function Reports() {
+const BARS = [
+  { h: "55%" },
+  { h: "70%" },
+  { h: "48%" },
+  { h: "82%" },
+  { h: "64%" },
+  {
+    h: "73%",
+    grad: "linear-gradient(180deg,var(--accent-2),rgba(34,211,238,.3))",
+  },
+];
+
+export default function Reports({ t }) {
+  const r = t.reports;
+  const pie = [
+    { c: "#f87171", name: t.cats.food, v: "34%" },
+    { c: "#60a5fa", name: t.cats.move, v: "22%" },
+    { c: "#fbbf24", name: t.cats.fun, v: "18%" },
+    { c: "#a78bfa", name: t.cats.other, v: "26%" },
+  ];
+  const pieRing = ["34 66", "22 78", "18 82", "26 74"];
+  const pieColors = ["#f87171", "#60a5fa", "#fbbf24", "#a78bfa"];
+  const pieOff = ["0", "-34", "-56", "-74"];
+
   return (
     <>
       <div
@@ -10,8 +33,9 @@ export default function Reports() {
         }}
       >
         <select style={{ width: "auto" }}>
-          <option>Tháng 6, 2026</option>
-          <option>Tháng 5, 2026</option>
+          {r.monthOpts.map((m, i) => (
+            <option key={i}>{m}</option>
+          ))}
         </select>
         <div style={{ flex: "1" }}></div>
         <button className="btn">
@@ -22,14 +46,14 @@ export default function Reports() {
           >
             <use href="#i-copy" />
           </svg>
-          Tạo mã chia sẻ
+          {r.makeShare}
         </button>
       </div>
 
       <div className="grid g-3">
         <div className="stat glass">
           <div className="row">
-            <label>Tổng thu</label>
+            <label>{r.totalIn}</label>
             <div className="ico ico-ok">
               <svg>
                 <use href="#i-chart" />
@@ -42,7 +66,7 @@ export default function Reports() {
         </div>
         <div className="stat glass">
           <div className="row">
-            <label>Tổng chi</label>
+            <label>{r.totalOut}</label>
             <div className="ico ico-warn">
               <svg>
                 <use href="#i-swap" />
@@ -55,7 +79,7 @@ export default function Reports() {
         </div>
         <div className="stat glass">
           <div className="row">
-            <label>Số dư cuối tháng</label>
+            <label>{r.endBalance}</label>
             <div className="ico ico-pri">
               <svg>
                 <use href="#i-wallet" />
@@ -69,8 +93,8 @@ export default function Reports() {
       <div className="grid g-2" style={{ marginTop: "18px" }}>
         <div className="card glass">
           <div className="card-h">
-            <h3>Cơ cấu chi tiêu</h3>
-            <span className="muted">Biểu đồ tròn</span>
+            <h3>{r.structure}</h3>
+            <span className="muted">{r.pieChart}</span>
           </div>
           <div className="donut-wrap">
             <div className="donut">
@@ -83,121 +107,61 @@ export default function Reports() {
                   stroke="var(--track)"
                   strokeWidth="5"
                 />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.9"
-                  fill="none"
-                  stroke="#f87171"
-                  strokeWidth="5"
-                  strokeDasharray="34 66"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.9"
-                  fill="none"
-                  stroke="#60a5fa"
-                  strokeWidth="5"
-                  strokeDasharray="22 78"
-                  strokeDashoffset="-34"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.9"
-                  fill="none"
-                  stroke="#fbbf24"
-                  strokeWidth="5"
-                  strokeDasharray="18 82"
-                  strokeDashoffset="-56"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.9"
-                  fill="none"
-                  stroke="#a78bfa"
-                  strokeWidth="5"
-                  strokeDasharray="26 74"
-                  strokeDashoffset="-74"
-                  transform="rotate(-90 21 21)"
-                />
+                {pieRing.map((dash, i) => (
+                  <circle
+                    key={i}
+                    cx="21"
+                    cy="21"
+                    r="15.9"
+                    fill="none"
+                    stroke={pieColors[i]}
+                    strokeWidth="5"
+                    strokeDasharray={dash}
+                    strokeDashoffset={pieOff[i]}
+                    transform="rotate(-90 21 21)"
+                  />
+                ))}
               </svg>
               <div className="center">
                 <b>2.18tr</b>
-                <small>tổng chi</small>
+                <small>{r.totalSpent}</small>
               </div>
             </div>
             <div className="legend">
-              <div className="li">
-                <span className="sw" style={{ background: "#f87171" }}></span>Ăn
-                uống<b>34%</b>
-              </div>
-              <div className="li">
-                <span className="sw" style={{ background: "#60a5fa" }}></span>Đi
-                lại<b>22%</b>
-              </div>
-              <div className="li">
-                <span className="sw" style={{ background: "#fbbf24" }}></span>
-                Giải trí<b>18%</b>
-              </div>
-              <div className="li">
-                <span className="sw" style={{ background: "#a78bfa" }}></span>
-                Khác<b>26%</b>
-              </div>
+              {pie.map((l, i) => (
+                <div className="li" key={i}>
+                  <span className="sw" style={{ background: l.c }}></span>
+                  {l.name}
+                  <b>{l.v}</b>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
         <div className="card glass">
           <div className="card-h">
-            <h3>So sánh 6 tháng</h3>
-            <span className="muted">Biểu đồ cột</span>
+            <h3>{r.compare6}</h3>
+            <span className="muted">{r.barChart}</span>
           </div>
           <div className="barchart">
-            <div className="col">
-              <div className="bw" style={{ height: "55%" }}></div>
-              <small>T1</small>
-            </div>
-            <div className="col">
-              <div className="bw" style={{ height: "70%" }}></div>
-              <small>T2</small>
-            </div>
-            <div className="col">
-              <div className="bw" style={{ height: "48%" }}></div>
-              <small>T3</small>
-            </div>
-            <div className="col">
-              <div className="bw" style={{ height: "82%" }}></div>
-              <small>T4</small>
-            </div>
-            <div className="col">
-              <div className="bw" style={{ height: "64%" }}></div>
-              <small>T5</small>
-            </div>
-            <div className="col">
-              <div
-                className="bw"
-                style={{
-                  height: "73%",
-                  background:
-                    "linear-gradient(180deg,var(--accent-2),rgba(34,211,238,.3))",
-                }}
-              ></div>
-              <small>T6</small>
-            </div>
+            {BARS.map((bar, i) => (
+              <div className="col" key={i}>
+                <div
+                  className="bw"
+                  style={{ height: bar.h, background: bar.grad || undefined }}
+                ></div>
+                <small>{r.months6[i]}</small>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       <div className="card glass" style={{ marginTop: "18px" }}>
         <div className="card-h">
-          <h3>Xu hướng chi tiêu</h3>
-          <span className="muted">Biểu đồ đường</span>
+          <h3>{r.trend}</h3>
+          <span className="muted">{r.lineChart}</span>
         </div>
         <svg
           width="100%"
@@ -230,7 +194,7 @@ export default function Reports() {
 
       <div className="card glass" style={{ marginTop: "18px" }}>
         <div className="card-h">
-          <h3>Chia sẻ báo cáo (chỉ đọc)</h3>
+          <h3>{r.shareTitle}</h3>
         </div>
         <p
           style={{
@@ -239,7 +203,7 @@ export default function Reports() {
             marginBottom: "8px",
           }}
         >
-          Người nhận mã chỉ xem được báo cáo, không chỉnh sửa được dữ liệu.
+          {r.shareDesc}
         </p>
         <div className="sharebox">
           <svg width="18" height="18" style={{ color: "var(--text-dim)" }}>
