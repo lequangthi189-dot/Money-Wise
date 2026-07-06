@@ -1,3 +1,4 @@
+
 export default function Budgets({ t }) {
   const b = t.budgets;
   const swatch = {
