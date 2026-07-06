@@ -1,3 +1,4 @@
+// name = dữ liệu mẫu (sau lấy từ Supabase); mkey = phương thức (dịch qua t.methods)
 const TXNS = [
   {
     id: 1,
@@ -5,7 +6,7 @@ const TXNS = [
     cls: "c-coffee",
     name: "Trà sữa Phúc Long",
     date: "25/06",
-    method: "Ví điện tử",
+    mkey: "ewallet",
     type: "out",
     amount: "-35.000 ₫",
   },
@@ -15,7 +16,7 @@ const TXNS = [
     cls: "c-food",
     name: "Cơm trưa căng tin",
     date: "25/06",
-    method: "Tiền mặt",
+    mkey: "cash",
     type: "out",
     amount: "-45.000 ₫",
   },
@@ -25,7 +26,7 @@ const TXNS = [
     cls: "c-salary",
     name: "Lương làm thêm",
     date: "24/06",
-    method: "Chuyển khoản",
+    mkey: "transfer",
     type: "in",
     amount: "+1.500.000 ₫",
   },
@@ -35,7 +36,7 @@ const TXNS = [
     cls: "c-move",
     name: "Đổ xăng",
     date: "24/06",
-    method: "Tiền mặt",
+    mkey: "cash",
     type: "out",
     amount: "-65.000 ₫",
   },
@@ -45,7 +46,7 @@ const TXNS = [
     cls: "c-fun",
     name: "Vé xem phim CGV",
     date: "23/06",
-    method: "Thẻ",
+    mkey: "card",
     type: "out",
     amount: "-120.000 ₫",
   },
@@ -55,19 +56,20 @@ const TXNS = [
     cls: "c-salary",
     name: "Học bổng kỳ 2",
     date: "22/06",
-    method: "Chuyển khoản",
+    mkey: "transfer",
     type: "in",
     amount: "+2.000.000 ₫",
   },
 ];
 
-export default function Transactions({ query = "" }) {
+export default function Transactions({ query = "", t }) {
+  const tr = t.transactions;
   const q = query.trim().toLowerCase();
   const filtered = q
     ? TXNS.filter(
         (tx) =>
           tx.name.toLowerCase().includes(q) ||
-          tx.method.toLowerCase().includes(q) ||
+          t.methods[tx.mkey].toLowerCase().includes(q) ||
           tx.amount.toLowerCase().includes(q) ||
           tx.date.includes(q),
       )
@@ -78,54 +80,54 @@ export default function Transactions({ query = "" }) {
       <div className="grid g-12">
         <div className="card glass">
           <div className="card-h">
-            <h3>Thêm giao dịch</h3>
+            <h3>{tr.add}</h3>
           </div>
           <div className="field">
-            <label>Loại giao dịch</label>
+            <label>{tr.type}</label>
             <div className="seg">
-              <button className="on out">Chi tiền</button>
-              <button>Thu tiền</button>
+              <button className="on out">{tr.expense}</button>
+              <button>{tr.income}</button>
             </div>
           </div>
           <div className="field">
-            <label>Số tiền</label>
+            <label>{tr.amount}</label>
             <input defaultValue="35.000" placeholder="0 ₫" />
           </div>
           <div className="field">
-            <label>Danh mục</label>
+            <label>{tr.category}</label>
             <select>
-              <option>☕ Cà phê/trà sữa</option>
-              <option>🍜 Ăn uống</option>
-              <option>🛵 Đi lại</option>
-              <option>🎮 Giải trí</option>
+              <option>☕ {t.cats.coffee}</option>
+              <option>🍜 {t.cats.food}</option>
+              <option>🛵 {t.cats.move}</option>
+              <option>🎮 {t.cats.fun}</option>
             </select>
           </div>
           <div className="grid g-2" style={{ gap: "12px" }}>
             <div className="field">
-              <label>Ngày</label>
+              <label>{tr.date}</label>
               <input type="date" defaultValue="2026-06-25" />
             </div>
             <div className="field">
-              <label>Phương thức</label>
+              <label>{tr.method}</label>
               <select>
-                <option>Ví điện tử</option>
-                <option>Tiền mặt</option>
-                <option>Thẻ</option>
+                <option>{t.methods.ewallet}</option>
+                <option>{t.methods.cash}</option>
+                <option>{t.methods.card}</option>
               </select>
             </div>
           </div>
           <div className="field">
-            <label>Ghi chú</label>
+            <label>{tr.note}</label>
             <textarea
-              placeholder="Ghi chú thêm…"
+              placeholder={tr.notePh}
               defaultValue="Trà sữa Phúc Long"
             ></textarea>
           </div>
           <div className="btn-row">
             <button className="btn btn-primary" style={{ flex: "1" }}>
-              Lưu giao dịch
+              {tr.save}
             </button>
-            <button className="btn">Hủy</button>
+            <button className="btn">{tr.cancel}</button>
           </div>
           <div className="hr"></div>
           <div
@@ -141,18 +143,18 @@ export default function Transactions({ query = "" }) {
             <svg width="18" height="18" style={{ color: "var(--accent)" }}>
               <use href="#i-msg" />
             </svg>
-            Hoặc nhập nhanh bằng chatbot AI →
+            {tr.quickChat}
           </div>
         </div>
 
         <div className="card glass">
           <div className="card-h">
-            <h3>Danh sách giao dịch</h3>
+            <h3>{tr.list}</h3>
             <div style={{ display: "flex", gap: "7px" }}>
-              <span className="pill on">Tháng</span>
-              <span className="pill">Tuần</span>
-              <span className="pill">Ngày</span>
-              <span className="pill">Danh mục</span>
+              <span className="pill on">{tr.fMonth}</span>
+              <span className="pill">{tr.fWeek}</span>
+              <span className="pill">{tr.fDay}</span>
+              <span className="pill">{tr.fCat}</span>
             </div>
           </div>
 
@@ -164,7 +166,7 @@ export default function Transactions({ query = "" }) {
                 marginBottom: "10px",
               }}
             >
-              Kết quả cho “{query}”: {filtered.length} giao dịch
+              {tr.result(query, filtered.length)}
             </div>
           )}
 
@@ -174,13 +176,13 @@ export default function Transactions({ query = "" }) {
               <div className="meta">
                 <b>{tx.name}</b>
                 <small>
-                  {tx.date} · {tx.method}
+                  {tx.date} · {t.methods[tx.mkey]}
                 </small>
               </div>
               <span
                 className={"badge " + (tx.type === "in" ? "b-in" : "b-out")}
               >
-                {tx.type === "in" ? "Thu" : "Chi"}
+                {tx.type === "in" ? t.thu : t.chi}
               </span>
               <div
                 className={"amt " + tx.type}
@@ -190,12 +192,12 @@ export default function Transactions({ query = "" }) {
               </div>
               <div className="act">
                 <button>
-                  <svg>
+                  <svg width="15" height="15">
                     <use href="#i-edit" />
                   </svg>
                 </button>
                 <button>
-                  <svg>
+                  <svg width="15" height="15">
                     <use href="#i-trash" />
                   </svg>
                 </button>
@@ -212,7 +214,7 @@ export default function Transactions({ query = "" }) {
                 fontSize: ".85rem",
               }}
             >
-              Không tìm thấy giao dịch nào khớp “{query}”.
+              {tr.noResult(query)}
             </div>
           )}
         </div>

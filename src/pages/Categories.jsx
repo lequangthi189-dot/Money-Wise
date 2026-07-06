@@ -1,259 +1,85 @@
-export default function Categories() {
+import "../Css/Pages/categories.css";
+
+const EXPENSE = [
+  { id: 1, icon: "🍜", cls: "c-food", key: "food" },
+  { id: 2, icon: "🛵", cls: "c-move", key: "move" },
+  { id: 3, icon: "📚", cls: "c-edu", key: "edu" },
+  { id: 4, icon: "🏠", cls: "c-rent", key: "rent" },
+  { id: 5, icon: "🎮", cls: "c-fun", key: "fun" },
+  { id: 6, icon: "🛍️", cls: "c-shop", key: "shop" },
+  { id: 7, icon: "☕", cls: "c-coffee", key: "coffee" },
+  { id: 8, icon: "❤️", cls: "c-health", key: "health" },
+];
+const INCOME = [
+  { id: 9, icon: "💰", cls: "c-salary", key: "salary" },
+  { id: 10, icon: "👨‍👩‍👧", cls: "c-salary", key: "family" },
+  { id: 11, icon: "🎓", cls: "c-salary", key: "scholar" },
+];
+
+function CatCard({ c, type, t }) {
   return (
-    <>
-      <div className="card glass">
-        <div className="card-h">
-          <div>
-            <h3>Danh mục chi tiêu</h3>
-            <span className="muted">8 mặc định · 3 tự tạo · tối đa 20</span>
-          </div>
-          <button className="btn btn-primary">
-            <svg
-              width="16"
-              height="16"
-              style={{ verticalAlign: "-3px", marginRight: "5px" }}
-            >
-              <use href="#i-plus" />
-            </svg>
-            Thêm danh mục
-          </button>
-        </div>
-        <div
-          style={{
-            fontSize: ".72rem",
-            textTransform: "uppercase",
-            letterSpacing: ".1em",
-            color: "var(--text-faint)",
-            marginBottom: "11px",
-          }}
-        >
-          Danh mục chi
-        </div>
-        <div className="catgrid">
-          <div className="catcard">
-            <div className="cat c-food">🍜</div>
-            <div className="meta">
-              <b>Ăn uống</b>
-            </div>
-            <span className="badge b-out">Chi</span>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="catcard">
-            <div className="cat c-move">🛵</div>
-            <div className="meta">
-              <b>Đi lại</b>
-            </div>
-            <span className="badge b-out">Chi</span>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="catcard">
-            <div className="cat c-edu">📚</div>
-            <div className="meta">
-              <b>Học phí</b>
-            </div>
-            <span className="badge b-out">Chi</span>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="catcard">
-            <div className="cat c-rent">🏠</div>
-            <div className="meta">
-              <b>Thuê trọ</b>
-            </div>
-            <span className="badge b-out">Chi</span>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="catcard">
-            <div className="cat c-fun">🎮</div>
-            <div className="meta">
-              <b>Giải trí</b>
-            </div>
-            <span className="badge b-out">Chi</span>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="catcard">
-            <div className="cat c-shop">🛍️</div>
-            <div className="meta">
-              <b>Mua sắm</b>
-            </div>
-            <span className="badge b-out">Chi</span>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="catcard">
-            <div className="cat c-coffee">☕</div>
-            <div className="meta">
-              <b>Cà phê/trà sữa</b>
-            </div>
-            <span className="badge b-out">Chi</span>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="catcard">
-            <div className="cat c-health">❤️</div>
-            <div className="meta">
-              <b>Sức khỏe</b>
-            </div>
-            <span className="badge b-out">Chi</span>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div
-          style={{
-            fontSize: ".72rem",
-            textTransform: "uppercase",
-            letterSpacing: ".1em",
-            color: "var(--text-faint)",
-            margin: "20px 0 11px",
-          }}
-        >
-          Danh mục thu
-        </div>
-        <div className="catgrid">
-          <div className="catcard">
-            <div className="cat c-salary">💰</div>
-            <div className="meta">
-              <b>Lương làm thêm</b>
-            </div>
-            <span className="badge b-in">Thu</span>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="catcard">
-            <div className="cat c-salary">👨‍👩‍👧</div>
-            <div className="meta">
-              <b>Bố mẹ gửi</b>
-            </div>
-            <span className="badge b-in">Thu</span>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="catcard">
-            <div className="cat c-salary">🎓</div>
-            <div className="meta">
-              <b>Học bổng</b>
-            </div>
-            <span className="badge b-in">Thu</span>
-            <div className="act">
-              <button>
-                <svg>
-                  <use href="#i-edit" />
-                </svg>
-              </button>
-              <button>
-                <svg>
-                  <use href="#i-trash" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
+    <div className="catcard">
+      <div className={"cat " + c.cls}>{c.icon}</div>
+      <div className="meta">
+        <b>{t.cats[c.key]}</b>
       </div>
-    </>
+      <span className={"badge " + (type === "in" ? "b-in" : "b-out")}>
+        {type === "in" ? t.thu : t.chi}
+      </span>
+      <div className="act">
+        <button aria-label="edit">
+          <svg width="15" height="15">
+            <use href="#i-edit" />
+          </svg>
+        </button>
+        <button aria-label="delete">
+          <svg width="15" height="15">
+            <use href="#i-trash" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function Categories({ t }) {
+  const c = t.categories;
+  return (
+    <div className="card glass">
+      <div className="card-h">
+        <div>
+          <h3>{c.heading}</h3>
+          <span className="muted">{c.sub}</span>
+        </div>
+        <button className="btn btn-primary">
+          <svg
+            width="16"
+            height="16"
+            style={{ marginRight: "6px", verticalAlign: "-2px" }}
+          >
+            <use href="#i-plus" />
+          </svg>
+          {c.add}
+        </button>
+      </div>
+
+      <div className="nav-label" style={{ padding: "6px 0" }}>
+        {c.expenseGroup}
+      </div>
+      <div className="catgrid">
+        {EXPENSE.map((x) => (
+          <CatCard key={x.id} c={x} type="out" t={t} />
+        ))}
+      </div>
+
+      <div className="nav-label" style={{ padding: "16px 0 6px" }}>
+        {c.incomeGroup}
+      </div>
+      <div className="catgrid">
+        {INCOME.map((x) => (
+          <CatCard key={x.id} c={x} type="in" t={t} />
+        ))}
+      </div>
+    </div>
   );
 }

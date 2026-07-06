@@ -1,7 +1,9 @@
 import { useState } from "react";
+import "./Css/base.css";
 import "./App.css";
+import "./Css/components.css";
 import "./Theme-Lg.css";
-import "./auth.css";
+import "./Auth.css";
 
 const THEMES = [
   { id: "glass", dot: "td-glass", name: "Modern Glassmorphism" },

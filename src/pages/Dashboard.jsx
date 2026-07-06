@@ -1,20 +1,98 @@
-export default function Dashboard() {
+const DONUT = [
+  { color: "#f87171", dash: "34 66", off: "0" },
+  { color: "#60a5fa", dash: "22 78", off: "-34" },
+  { color: "#fbbf24", dash: "18 82", off: "-56" },
+  { color: "#a78bfa", dash: "14 86", off: "-74" },
+  { color: "#34d399", dash: "12 88", off: "-88" },
+];
+
+export default function Dashboard({ t }) {
+  const d = t.dashboard;
+  const legend = [
+    { c: "#f87171", name: t.cats.food, v: "741.000 ₫" },
+    { c: "#60a5fa", name: t.cats.move, v: "480.000 ₫" },
+    { c: "#fbbf24", name: t.cats.fun, v: "392.000 ₫" },
+    { c: "#a78bfa", name: t.cats.coffee, v: "305.000 ₫" },
+    { c: "#34d399", name: t.cats.other, v: "262.000 ₫" },
+  ];
+  const goals = [
+    {
+      icon: "📱",
+      name: t.goals.phone,
+      pct: 61,
+      bar: "",
+      cur: "9.200.000",
+      tot: "15.000.000",
+    },
+    {
+      icon: "✈️",
+      name: t.goals.trip,
+      pct: 62,
+      bar: "ok",
+      cur: "3.100.000",
+      tot: "5.000.000",
+    },
+    {
+      icon: "💻",
+      name: t.goals.laptop,
+      pct: 16,
+      bar: "",
+      cur: "4.000.000",
+      tot: "25.000.000",
+    },
+  ];
+  const recent = [
+    {
+      icon: "☕",
+      cls: "c-coffee",
+      name: "Trà sữa Phúc Long",
+      when: `${d.today} · 14:20`,
+      mkey: "ewallet",
+      type: "out",
+      amt: "-35.000 ₫",
+    },
+    {
+      icon: "🍜",
+      cls: "c-food",
+      name: "Cơm trưa",
+      when: `${d.today} · 12:05`,
+      mkey: "cash",
+      type: "out",
+      amt: "-45.000 ₫",
+    },
+    {
+      icon: "🛵",
+      cls: "c-move",
+      name: "Đổ xăng",
+      when: `${d.today} · 08:30`,
+      mkey: "cash",
+      type: "out",
+      amt: "-65.000 ₫",
+    },
+    {
+      icon: "💰",
+      cls: "c-salary",
+      name: "Lương làm thêm",
+      when: d.yesterday,
+      mkey: "transfer",
+      type: "in",
+      amt: "+1.500.000 ₫",
+    },
+  ];
+
   return (
     <>
       <div className="alert">
         <svg>
           <use href="#i-warn" />
         </svg>
-        <div>
-          Danh mục <b>Cà phê/trà sữa</b> đã dùng <b>86%</b> hạn mức tháng — còn
-          lại 42.000 ₫
-        </div>
+        <div>{d.alert(t.cats.coffee, "86%", "42.000 ₫")}</div>
       </div>
 
       <div className="grid g-4">
         <div className="stat glass">
           <div className="row">
-            <label>Số dư hiện tại</label>
+            <label>{d.balance}</label>
             <div className="ico ico-pri">
               <svg>
                 <use href="#i-wallet" />
@@ -22,11 +100,11 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="val">4.250.000 ₫</div>
-          <span className="chg up">↑ 8,2% so với tháng trước</span>
+          <span className="chg up">↑ 8,2% {d.vsLastMonth}</span>
         </div>
         <div className="stat glass">
           <div className="row">
-            <label>Chi hôm nay</label>
+            <label>{d.spentToday}</label>
             <div className="ico ico-warn">
               <svg>
                 <use href="#i-swap" />
@@ -34,11 +112,11 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="val">145.000 ₫</div>
-          <span className="chg down">3 giao dịch</span>
+          <span className="chg down">{d.txCount(3)}</span>
         </div>
         <div className="stat glass">
           <div className="row">
-            <label>Chi tuần này</label>
+            <label>{d.spentWeek}</label>
             <div className="ico ico-cyan">
               <svg>
                 <use href="#i-chart" />
@@ -46,11 +124,11 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="val">820.000 ₫</div>
-          <span className="chg up">↓ 12% so với tuần trước</span>
+          <span className="chg up">↓ 12% {d.vsLastWeek}</span>
         </div>
         <div className="stat glass">
           <div className="row">
-            <label>Chuỗi ghi chép</label>
+            <label>{d.streakCard}</label>
             <div className="ico ico-ok">
               <svg>
                 <use href="#i-flag" />
@@ -60,18 +138,18 @@ export default function Dashboard() {
           <div className="val">
             12{" "}
             <span style={{ fontSize: "1rem", color: "var(--text-dim)" }}>
-              ngày
+              {d.days}
             </span>
           </div>
-          <span className="chg up">🔥 Kỷ lục: 18 ngày</span>
+          <span className="chg up">{d.record(18)}</span>
         </div>
       </div>
 
       <div className="grid g-21" style={{ marginTop: "18px" }}>
         <div className="card glass">
           <div className="card-h">
-            <h3>Chi tiêu theo danh mục</h3>
-            <span className="muted">Tháng 6/2026</span>
+            <h3>{d.byCategory}</h3>
+            <span className="muted">{d.month}</span>
           </div>
           <div className="donut-wrap">
             <div className="donut">
@@ -84,200 +162,95 @@ export default function Dashboard() {
                   stroke="var(--track)"
                   strokeWidth="5"
                 />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.9"
-                  fill="none"
-                  stroke="#f87171"
-                  strokeWidth="5"
-                  strokeDasharray="34 66"
-                  strokeDashoffset="0"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.9"
-                  fill="none"
-                  stroke="#60a5fa"
-                  strokeWidth="5"
-                  strokeDasharray="22 78"
-                  strokeDashoffset="-34"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.9"
-                  fill="none"
-                  stroke="#fbbf24"
-                  strokeWidth="5"
-                  strokeDasharray="18 82"
-                  strokeDashoffset="-56"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.9"
-                  fill="none"
-                  stroke="#a78bfa"
-                  strokeWidth="5"
-                  strokeDasharray="14 86"
-                  strokeDashoffset="-74"
-                  transform="rotate(-90 21 21)"
-                />
-                <circle
-                  cx="21"
-                  cy="21"
-                  r="15.9"
-                  fill="none"
-                  stroke="#34d399"
-                  strokeWidth="5"
-                  strokeDasharray="12 88"
-                  strokeDashoffset="-88"
-                  transform="rotate(-90 21 21)"
-                />
+                {DONUT.map((s, i) => (
+                  <circle
+                    key={i}
+                    cx="21"
+                    cy="21"
+                    r="15.9"
+                    fill="none"
+                    stroke={s.color}
+                    strokeWidth="5"
+                    strokeDasharray={s.dash}
+                    strokeDashoffset={s.off}
+                    transform="rotate(-90 21 21)"
+                  />
+                ))}
               </svg>
               <div className="center">
                 <b>2.18tr</b>
-                <small>tổng chi</small>
+                <small>{d.totalSpent}</small>
               </div>
             </div>
             <div className="legend">
-              <div className="li">
-                <span className="sw" style={{ background: "#f87171" }}></span>Ăn
-                uống<b>741.000 ₫</b>
-              </div>
-              <div className="li">
-                <span className="sw" style={{ background: "#60a5fa" }}></span>Đi
-                lại<b>480.000 ₫</b>
-              </div>
-              <div className="li">
-                <span className="sw" style={{ background: "#fbbf24" }}></span>
-                Giải trí<b>392.000 ₫</b>
-              </div>
-              <div className="li">
-                <span className="sw" style={{ background: "#a78bfa" }}></span>Cà
-                phê/trà sữa<b>305.000 ₫</b>
-              </div>
-              <div className="li">
-                <span className="sw" style={{ background: "#34d399" }}></span>
-                Khác<b>262.000 ₫</b>
-              </div>
+              {legend.map((l, i) => (
+                <div className="li" key={i}>
+                  <span className="sw" style={{ background: l.c }}></span>
+                  {l.name}
+                  <b>{l.v}</b>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
         <div className="card glass">
           <div className="card-h">
-            <h3>Mục tiêu tiết kiệm</h3>
-            <span className="muted">3 đang chạy</span>
+            <h3>{d.savingsGoals}</h3>
+            <span className="muted">{d.running(3)}</span>
           </div>
           <div
             style={{ display: "flex", flexDirection: "column", gap: "16px" }}
           >
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: ".84rem",
-                  marginBottom: "7px",
-                }}
-              >
-                <span>📱 Mua điện thoại</span>
-                <b>61%</b>
+            {goals.map((g, i) => (
+              <div key={i}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: ".84rem",
+                    marginBottom: "7px",
+                  }}
+                >
+                  <span>
+                    {g.icon} {g.name}
+                  </span>
+                  <b>{g.pct}%</b>
+                </div>
+                <div className="track">
+                  <div
+                    className={"bar " + g.bar}
+                    style={{ width: g.pct + "%" }}
+                  ></div>
+                </div>
+                <small style={{ color: "var(--text-dim)", fontSize: ".74rem" }}>
+                  {g.cur} / {g.tot} ₫
+                </small>
               </div>
-              <div className="track">
-                <div className="bar" style={{ width: "61%" }}></div>
-              </div>
-              <small style={{ color: "var(--text-dim)", fontSize: ".74rem" }}>
-                9.200.000 / 15.000.000 ₫
-              </small>
-            </div>
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: ".84rem",
-                  marginBottom: "7px",
-                }}
-              >
-                <span>✈️ Du lịch Đà Lạt</span>
-                <b>62%</b>
-              </div>
-              <div className="track">
-                <div className="bar ok" style={{ width: "62%" }}></div>
-              </div>
-              <small style={{ color: "var(--text-dim)", fontSize: ".74rem" }}>
-                3.100.000 / 5.000.000 ₫
-              </small>
-            </div>
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: ".84rem",
-                  marginBottom: "7px",
-                }}
-              >
-                <span>💻 Mua laptop</span>
-                <b>16%</b>
-              </div>
-              <div className="track">
-                <div className="bar" style={{ width: "16%" }}></div>
-              </div>
-              <small style={{ color: "var(--text-dim)", fontSize: ".74rem" }}>
-                4.000.000 / 25.000.000 ₫
-              </small>
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
       <div className="card glass" style={{ marginTop: "18px" }}>
         <div className="card-h">
-          <h3>Giao dịch gần đây</h3>
+          <h3>{d.recentTx}</h3>
           <span className="muted" style={{ cursor: "pointer" }}>
-            Xem tất cả →
+            {d.viewAll}
           </span>
         </div>
-        <div className="tx">
-          <div className="cat c-coffee">☕</div>
-          <div className="meta">
-            <b>Trà sữa Phúc Long</b>
-            <small>Hôm nay · 14:20 · Ví điện tử</small>
+        {recent.map((r, i) => (
+          <div className="tx" key={i}>
+            <div className={"cat " + r.cls}>{r.icon}</div>
+            <div className="meta">
+              <b>{r.name}</b>
+              <small>
+                {r.when} · {t.methods[r.mkey]}
+              </small>
+            </div>
+            <div className={"amt " + r.type}>{r.amt}</div>
           </div>
-          <div className="amt out">-35.000 ₫</div>
-        </div>
-        <div className="tx">
-          <div className="cat c-food">🍜</div>
-          <div className="meta">
-            <b>Cơm trưa</b>
-            <small>Hôm nay · 12:05 · Tiền mặt</small>
-          </div>
-          <div className="amt out">-45.000 ₫</div>
-        </div>
-        <div className="tx">
-          <div className="cat c-move">🛵</div>
-          <div className="meta">
-            <b>Đổ xăng</b>
-            <small>Hôm nay · 08:30 · Tiền mặt</small>
-          </div>
-          <div className="amt out">-65.000 ₫</div>
-        </div>
-        <div className="tx">
-          <div className="cat c-salary">💰</div>
-          <div className="meta">
-            <b>Lương làm thêm</b>
-            <small>Hôm qua · Chuyển khoản</small>
-          </div>
-          <div className="amt in">+1.500.000 ₫</div>
-        </div>
+        ))}
       </div>
     </>
   );

@@ -1,11 +1,73 @@
-export default function Budgets() {
+export default function Budgets({ t }) {
+  const b = t.budgets;
+  const swatch = {
+    width: "32px",
+    height: "32px",
+    borderRadius: "9px",
+    display: "grid",
+    placeItems: "center",
+  };
+  const dim = { background: "var(--surface-2)", color: "var(--text-dim)" };
+  const rows = [
+    {
+      icon: "☕",
+      cls: "c-coffee",
+      name: t.cats.coffee,
+      cur: "305.000",
+      tot: "350.000",
+      pct: 86,
+      bar: "warn",
+      badge: "b-warn",
+    },
+    {
+      icon: "🍜",
+      cls: "c-food",
+      name: t.cats.food,
+      cur: "741.000",
+      tot: "1.000.000",
+      pct: 74,
+      bar: "",
+      badge: "dim",
+    },
+    {
+      icon: "🎮",
+      cls: "c-fun",
+      name: t.cats.fun,
+      cur: "392.000",
+      tot: "400.000",
+      pct: 98,
+      bar: "danger",
+      badge: "b-out",
+    },
+    {
+      icon: "🛵",
+      cls: "c-move",
+      name: t.cats.move,
+      cur: "480.000",
+      tot: "600.000",
+      pct: 80,
+      bar: "warn",
+      badge: "dim",
+    },
+    {
+      icon: "🛍️",
+      cls: "c-shop",
+      name: t.cats.shop,
+      cur: "120.000",
+      tot: "500.000",
+      pct: 24,
+      bar: "ok",
+      badge: "b-in",
+    },
+  ];
+
   return (
     <>
       <div className="grid g-12">
         <div>
           <div className="card glass" style={{ marginBottom: "18px" }}>
             <div className="card-h">
-              <h3>Hạn mức tổng tháng 6</h3>
+              <h3>{b.totalTitle}</h3>
             </div>
             <div style={{ textAlign: "center", margin: "6px 0 16px" }}>
               <div
@@ -18,7 +80,7 @@ export default function Budgets() {
                 2.180.000 ₫
               </div>
               <small style={{ color: "var(--text-dim)" }}>
-                đã tiêu trên 3.000.000 ₫
+                {b.spentOver("3.000.000 ₫")}
               </small>
             </div>
             <div className="track" style={{ height: "13px" }}>
@@ -32,181 +94,71 @@ export default function Budgets() {
                 fontSize: ".8rem",
               }}
             >
-              <span style={{ color: "var(--warn)" }}>73% đã dùng</span>
+              <span style={{ color: "var(--warn)" }}>{b.usedPct("73%")}</span>
               <span style={{ color: "var(--text-dim)" }}>
-                Còn lại 820.000 ₫
+                {b.left("820.000 ₫")}
               </span>
             </div>
           </div>
           <div className="card glass">
             <div className="card-h">
-              <h3>Đặt hạn mức</h3>
+              <h3>{b.setTitle}</h3>
             </div>
             <div className="field">
-              <label>Loại hạn mức</label>
+              <label>{b.kind}</label>
               <select>
-                <option>Hạn mức tổng tháng</option>
-                <option>Theo danh mục</option>
+                <option>{b.kindTotal}</option>
+                <option>{b.kindByCat}</option>
               </select>
             </div>
             <div className="field">
-              <label>Danh mục</label>
+              <label>{b.category}</label>
               <select>
-                <option>☕ Cà phê/trà sữa</option>
-                <option>🍜 Ăn uống</option>
+                <option>☕ {t.cats.coffee}</option>
+                <option>🍜 {t.cats.food}</option>
               </select>
             </div>
             <div className="field">
-              <label>Số tiền hạn mức</label>
+              <label>{b.limitAmount}</label>
               <input defaultValue="300.000" placeholder="0 ₫" />
             </div>
             <button className="btn btn-primary" style={{ width: "100%" }}>
-              Lưu hạn mức
+              {b.saveLimit}
             </button>
           </div>
         </div>
 
         <div className="card glass">
           <div className="card-h">
-            <h3>Hạn mức theo danh mục</h3>
-            <span className="muted">Cảnh báo ở 80% và 100%</span>
+            <h3>{b.byCatTitle}</h3>
+            <span className="muted">{b.warnNote}</span>
           </div>
-          <div className="budrow">
-            <div className="top">
-              <div
-                className="cat c-coffee"
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "9px",
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                ☕
+          {rows.map((r, i) => (
+            <div className="budrow" key={i}>
+              <div className="top">
+                <div className={"cat " + r.cls} style={swatch}>
+                  {r.icon}
+                </div>
+                <b>{r.name}</b>
+                <span className="nums">
+                  <b>{r.cur}</b> / {r.tot} ₫
+                </span>
+                {r.badge === "dim" ? (
+                  <span className="badge" style={dim}>
+                    {r.pct}%
+                  </span>
+                ) : (
+                  <span className={"badge " + r.badge}>{r.pct}%</span>
+                )}
               </div>
-              <b>Cà phê/trà sữa</b>
-              <span className="nums">
-                <b>305.000</b> / 350.000 ₫
-              </span>
-              <span className="badge b-warn">86%</span>
-            </div>
-            <div className="track">
-              <div className="bar warn" style={{ width: "86%" }}></div>
-            </div>
-          </div>
-          <div className="budrow">
-            <div className="top">
-              <div
-                className="cat c-food"
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "9px",
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                🍜
+              <div className="track">
+                <div
+                  className={"bar " + r.bar}
+                  style={{ width: r.pct + "%" }}
+                ></div>
               </div>
-              <b>Ăn uống</b>
-              <span className="nums">
-                <b>741.000</b> / 1.000.000 ₫
-              </span>
-              <span
-                className="badge"
-                style={{
-                  background: "var(--surface-2)",
-                  color: "var(--text-dim)",
-                }}
-              >
-                74%
-              </span>
             </div>
-            <div className="track">
-              <div className="bar" style={{ width: "74%" }}></div>
-            </div>
-          </div>
-          <div className="budrow">
-            <div className="top">
-              <div
-                className="cat c-fun"
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "9px",
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                🎮
-              </div>
-              <b>Giải trí</b>
-              <span className="nums">
-                <b>392.000</b> / 400.000 ₫
-              </span>
-              <span className="badge b-out">98%</span>
-            </div>
-            <div className="track">
-              <div className="bar danger" style={{ width: "98%" }}></div>
-            </div>
-          </div>
-          <div className="budrow">
-            <div className="top">
-              <div
-                className="cat c-move"
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "9px",
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                🛵
-              </div>
-              <b>Đi lại</b>
-              <span className="nums">
-                <b>480.000</b> / 600.000 ₫
-              </span>
-              <span
-                className="badge"
-                style={{
-                  background: "var(--surface-2)",
-                  color: "var(--text-dim)",
-                }}
-              >
-                80%
-              </span>
-            </div>
-            <div className="track">
-              <div className="bar warn" style={{ width: "80%" }}></div>
-            </div>
-          </div>
-          <div className="budrow">
-            <div className="top">
-              <div
-                className="cat c-shop"
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "9px",
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                🛍️
-              </div>
-              <b>Mua sắm</b>
-              <span className="nums">
-                <b>120.000</b> / 500.000 ₫
-              </span>
-              <span className="badge b-in">24%</span>
-            </div>
-            <div className="track">
-              <div className="bar ok" style={{ width: "24%" }}></div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </>
