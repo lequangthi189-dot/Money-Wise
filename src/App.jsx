@@ -22,6 +22,7 @@ import Budgets from "./pages/Budgets";
 import Reports from "./pages/Reports";
 import Goals from "./pages/Goals";
 import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
 
 const VIEWS = {
   dashboard: Dashboard,
@@ -30,6 +31,7 @@ const VIEWS = {
   budgets: Budgets,
   reports: Reports,
   goals: Goals,
+  admin: Admin,
 };
 
 export default function App() {
@@ -40,6 +42,7 @@ export default function App() {
   const [chatOpen, setChatOpen] = useState(false);
   const [fontSize, setFontSize] = useState(16);
   const [authed, setAuthed] = useState(false);
+  const [role, setRole] = useState("user");
   const [showLogout, setShowLogout] = useState(false);
 
   useEffect(() => {
@@ -49,7 +52,10 @@ export default function App() {
   if (!authed)
     return (
       <Auth
-        onAuthed={() => setAuthed(true)}
+        onAuthed={(form) => {
+          setAuthed(true);
+          setRole(form?.role === "admin" ? "admin" : "user");
+        }}
         theme={theme}
         setTheme={setTheme}
       />
@@ -88,21 +94,24 @@ export default function App() {
           </div>
 
           <nav className="nav">
-            {NAV.map((item, i) =>
-              item.group ? (
-                <div key={i} className="nav-label">
-                  {t.group[item.group]}
-                </div>
-              ) : (
-                <div
-                  key={i}
-                  className={"nav-link" + (view === item.id ? " active" : "")}
-                  onClick={() => setView(item.id)}
-                >
-                  <Icon n={item.icon} />
-                  <span>{t.nav[item.id]}</span>
-                </div>
-              ),
+            {NAV.filter((item) => !(item.adminOnly && role !== "admin")).map(
+              (item, i) =>
+                item.group ? (
+                  <div key={i} className="nav-label">
+                    {t.group[item.group]}
+                  </div>
+                ) : (
+                  <div
+                    key={i}
+                    className={
+                      "nav-link" + (view === item.id ? " active" : "")
+                    }
+                    onClick={() => setView(item.id)}
+                  >
+                    <Icon n={item.icon} />
+                    <span>{t.nav[item.id]}</span>
+                  </div>
+                ),
             )}
           </nav>
 
@@ -289,6 +298,7 @@ export default function App() {
                   setShowLogout(false);
                   setView("dashboard");
                   setAuthed(false);
+                  setRole("user");
                 }}
               >
                 Đăng xuất

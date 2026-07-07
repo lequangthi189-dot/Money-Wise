@@ -8,6 +8,8 @@ export const NAV = [
   { id: "budgets", icon: "i-gauge" },
   { id: "reports", icon: "i-chart" },
   { id: "goals", icon: "i-flag" },
+  { group: "admin", adminOnly: true },
+  { id: "admin", icon: "i-shield", adminOnly: true },
   { group: "other" },
   { id: "settings", icon: "i-gear" },
 ];

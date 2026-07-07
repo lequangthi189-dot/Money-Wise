@@ -22,6 +22,9 @@ const T = {
     password: "Mật khẩu",
     confirm: "Xác nhận mật khẩu",
     forgot: "Quên mật khẩu?",
+    roleLabel: "Đăng nhập với vai trò",
+    roleUser: "Người dùng",
+    roleAdmin: "Quản trị viên",
     submitLogin: "Đăng nhập",
     submitRegister: "Tạo tài khoản",
     noAcc: "Chưa có tài khoản?",
@@ -56,6 +59,9 @@ const T = {
     password: "Password",
     confirm: "Confirm password",
     forgot: "Forgot password?",
+    roleLabel: "Sign in as",
+    roleUser: "User",
+    roleAdmin: "Admin",
     submitLogin: "Sign in",
     submitRegister: "Create account",
     noAcc: "Don't have an account?",
@@ -297,6 +303,7 @@ export default function Auth({
     phone: "",
     password: "",
     confirm: "",
+    role: "user",
   });
 
   const upd = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -594,20 +601,55 @@ export default function Auth({
               )}
 
               {isLogin && (
-                <div
-                  style={{
-                    textAlign: "right",
-                    marginTop: "-2px",
-                    marginBottom: "14px",
-                  }}
-                >
-                  <a
-                    onClick={() => switchMode("forgot")}
-                    style={{ ...linkStyle, fontSize: ".8rem" }}
+                <>
+                  <div style={{ marginBottom: "14px" }}>
+                    <label
+                      style={{
+                        fontSize: ".78rem",
+                        color: "var(--text-dim)",
+                        display: "block",
+                        marginBottom: "6px",
+                      }}
+                    >
+                      {tr.roleLabel}
+                    </label>
+                    <div className="seg">
+                      <button
+                        type="button"
+                        className={form.role === "user" ? "on" : ""}
+                        onClick={() =>
+                          setForm((f) => ({ ...f, role: "user" }))
+                        }
+                      >
+                        {tr.roleUser}
+                      </button>
+                      <button
+                        type="button"
+                        className={form.role === "admin" ? "on" : ""}
+                        onClick={() =>
+                          setForm((f) => ({ ...f, role: "admin" }))
+                        }
+                      >
+                        {tr.roleAdmin}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      textAlign: "right",
+                      marginTop: "-2px",
+                      marginBottom: "14px",
+                    }}
                   >
-                    {tr.forgot}
-                  </a>
-                </div>
+                    <a
+                      onClick={() => switchMode("forgot")}
+                      style={{ ...linkStyle, fontSize: ".8rem" }}
+                    >
+                      {tr.forgot}
+                    </a>
+                  </div>
+                </>
               )}
 
               {errorBox}
