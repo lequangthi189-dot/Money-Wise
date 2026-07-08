@@ -1,4 +1,4 @@
-import { THEMES } from "../constants";
+import { THEMES } from "../../models/constants";
 import { Icon } from "../components/icons";
 
 export default function Settings({

@@ -1,85 +1,10 @@
 import { useState } from "react";
-import "./Css/base.css";
-import "./App.css";
-import "./Css/components.css";
-import "./Theme-Lg.css";
-import "./Auth.css";
-
-const THEMES = [
-  { id: "glass", dot: "td-glass", name: "Modern Glassmorphism" },
-  { id: "neu", dot: "td-neu", name: "Soft UI / Neumorphism" },
-];
-
-const T = {
-  vi: {
-    tagline: "Quản lý chi tiêu thông minh cho sinh viên",
-    login: "Đăng nhập",
-    register: "Đăng ký",
-    name: "Họ tên đầy đủ",
-    username: "Username",
-    email: "Email",
-    phone: "Số điện thoại",
-    password: "Mật khẩu",
-    confirm: "Xác nhận mật khẩu",
-    forgot: "Quên mật khẩu?",
-    submitLogin: "Đăng nhập",
-    submitRegister: "Tạo tài khoản",
-    noAcc: "Chưa có tài khoản?",
-    hasAcc: "Đã có tài khoản?",
-    goRegister: "Đăng ký ngay",
-    goLogin: "Đăng nhập",
-    streakLogin:
-      "Đăng nhập mỗi ngày để giữ chuỗi ghi chép — chuỗi được ghi nhận trong vòng 30 giây sau khi đăng nhập thành công.",
-    streakRegister:
-      "Sau khi đăng ký, hãy đăng nhập 3 ngày liên tục để kích hoạt chuỗi ghi chép của bạn.",
-    errFill: "Vui lòng điền đầy đủ tất cả thông tin.",
-    errLogin: "Vui lòng nhập email và mật khẩu.",
-    errLen: "Mật khẩu cần ít nhất 6 ký tự.",
-    errMatch: "Mật khẩu xác nhận không khớp.",
-    errEmailOnly: "Vui lòng nhập email.",
-    forgotTitle: "Khôi phục mật khẩu",
-    forgotDesc: "Nhập email đã đăng ký để đặt lại mật khẩu.",
-    emailLabel: "Địa chỉ Email",
-    emailPlaceholder: "Nhập email",
-    sendReset: "Gửi",
-    resetSent:
-      "Đã gửi liên kết đặt lại tới email của bạn. Vui lòng kiểm tra hộp thư (cả mục Spam).",
-  },
-  en: {
-    tagline: "Smart money management for students",
-    login: "Sign in",
-    register: "Sign up",
-    name: "Full name",
-    username: "Username",
-    email: "Email",
-    phone: "Phone number",
-    password: "Password",
-    confirm: "Confirm password",
-    forgot: "Forgot password?",
-    submitLogin: "Sign in",
-    submitRegister: "Create account",
-    noAcc: "Don't have an account?",
-    hasAcc: "Already have an account?",
-    goRegister: "Sign up now",
-    goLogin: "Sign in",
-    streakLogin:
-      "Sign in every day to keep your logging streak — it is recorded within 30 seconds after a successful login.",
-    streakRegister:
-      "After signing up, sign in for 3 consecutive days to activate your logging streak.",
-    errFill: "Please fill in all the fields.",
-    errLogin: "Please enter email and password.",
-    errLen: "Password must be at least 6 characters.",
-    errMatch: "Password confirmation does not match.",
-    errEmailOnly: "Please enter your email.",
-    forgotTitle: "Recover password",
-    forgotDesc: "Enter your registered email to reset your password.",
-    emailLabel: "Email address",
-    emailPlaceholder: "Enter email",
-    sendReset: "Send",
-    resetSent:
-      "A reset link has been sent to your email. Please check your inbox (including Spam).",
-  },
-};
+import "./css/base.css";
+import "./css/App.css";
+import "./css/components.css";
+import "./css/Theme-Lg.css";
+import "./css/Auth.css";
+import { useAuth } from "../controllers/useAuth";
 
 const linkStyle = {
   color: "var(--accent)",
@@ -269,77 +194,26 @@ function EyeOff() {
   );
 }
 
-export default function Auth({
-  onAuthed,
-  theme: themeProp,
-  setTheme: setThemeProp,
-  lang: langProp,
-  setLang: setLangProp,
-}) {
-  const [themeLocal, setThemeLocal] = useState("glass");
-  const [langLocal, setLangLocal] = useState("vi");
-  const theme = themeProp ?? themeLocal;
-  const setTheme = setThemeProp ?? setThemeLocal;
-  const lang = langProp ?? langLocal;
-  const setLang = setLangProp ?? setLangLocal;
-  const tr = T[lang];
-  const currentTheme = THEMES.find((t) => t.id === theme) ?? THEMES[0];
-  const currentThemeIndex = THEMES.findIndex((t) => t.id === currentTheme.id);
-  const nextTheme = THEMES[(currentThemeIndex + 1) % THEMES.length];
-
-  const [mode, setMode] = useState("login"); // 'login' | 'register' | 'forgot'
-  const [error, setError] = useState("");
-  const [info, setInfo] = useState("");
-  const [form, setForm] = useState({
-    name: "",
-    username: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirm: "",
-  });
-
-  const upd = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-  const isLogin = mode === "login";
-  const isForgot = mode === "forgot";
-
-  function switchMode(m) {
-    setMode(m);
-    setError("");
-    setInfo("");
-  }
-
-  function submit() {
-    setError("");
-    if (isLogin) {
-      if (!form.email || !form.password) return setError(tr.errLogin);
-    } else {
-      if (
-        !form.name ||
-        !form.username ||
-        !form.email ||
-        !form.phone ||
-        !form.password
-      )
-        return setError(tr.errFill);
-      if (form.password.length < 6) return setError(tr.errLen);
-      if (form.password !== form.confirm) return setError(tr.errMatch);
-    }
-    // TODO: gọi Supabase auth ở đây (signInWithPassword / signUp), rồi:
-    if (onAuthed) onAuthed(form);
-  }
-
-  function submitForgot() {
-    setError("");
-    setInfo("");
-    if (!form.email) return setError(tr.errEmailOnly);
-    // TODO: nối Supabase để gửi email đặt lại mật khẩu:
-    //   const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
-    //     redirectTo: window.location.origin,
-    //   });
-    //   if (error) return setError(error.message);
-    setInfo(tr.resetSent);
-  }
+export default function Auth(props) {
+  const {
+    tr,
+    theme,
+    setTheme,
+    lang,
+    setLang,
+    currentTheme,
+    nextTheme,
+    mode,
+    isLogin,
+    isForgot,
+    error,
+    info,
+    form,
+    upd,
+    switchMode,
+    submit,
+    submitForgot,
+  } = useAuth(props);
 
   const errorBox = error && (
     <div

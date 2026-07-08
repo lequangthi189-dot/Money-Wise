@@ -1,0 +1,76 @@
+// Model: chữ hiển thị màn hình đăng nhập/đăng ký (VI/EN) + danh sách theme.
+export const AUTH_THEMES = [
+  { id: "glass", dot: "td-glass", name: "Modern Glassmorphism" },
+  { id: "neu", dot: "td-neu", name: "Soft UI / Neumorphism" },
+];
+
+export const AUTH_TEXT = {
+  vi: {
+    tagline: "Quản lý chi tiêu thông minh cho sinh viên",
+    login: "Đăng nhập",
+    register: "Đăng ký",
+    name: "Họ tên đầy đủ",
+    username: "Username",
+    email: "Email",
+    phone: "Số điện thoại",
+    password: "Mật khẩu",
+    confirm: "Xác nhận mật khẩu",
+    forgot: "Quên mật khẩu?",
+    submitLogin: "Đăng nhập",
+    submitRegister: "Tạo tài khoản",
+    noAcc: "Chưa có tài khoản?",
+    hasAcc: "Đã có tài khoản?",
+    goRegister: "Đăng ký ngay",
+    goLogin: "Đăng nhập",
+    streakLogin:
+      "Đăng nhập mỗi ngày để giữ chuỗi ghi chép — chuỗi được ghi nhận trong vòng 30 giây sau khi đăng nhập thành công.",
+    streakRegister:
+      "Sau khi đăng ký, hãy đăng nhập 3 ngày liên tục để kích hoạt chuỗi ghi chép của bạn.",
+    errFill: "Vui lòng điền đầy đủ tất cả thông tin.",
+    errLogin: "Vui lòng nhập email và mật khẩu.",
+    errLen: "Mật khẩu cần ít nhất 6 ký tự.",
+    errMatch: "Mật khẩu xác nhận không khớp.",
+    errEmailOnly: "Vui lòng nhập email.",
+    forgotTitle: "Khôi phục mật khẩu",
+    forgotDesc: "Nhập email đã đăng ký để đặt lại mật khẩu.",
+    emailLabel: "Địa chỉ Email",
+    emailPlaceholder: "Nhập email",
+    sendReset: "Gửi",
+    resetSent:
+      "Đã gửi liên kết đặt lại tới email của bạn. Vui lòng kiểm tra hộp thư (cả mục Spam).",
+  },
+  en: {
+    tagline: "Smart money management for students",
+    login: "Sign in",
+    register: "Sign up",
+    name: "Full name",
+    username: "Username",
+    email: "Email",
+    phone: "Phone number",
+    password: "Password",
+    confirm: "Confirm password",
+    forgot: "Forgot password?",
+    submitLogin: "Sign in",
+    submitRegister: "Create account",
+    noAcc: "Don't have an account?",
+    hasAcc: "Already have an account?",
+    goRegister: "Sign up now",
+    goLogin: "Sign in",
+    streakLogin:
+      "Sign in every day to keep your logging streak — it is recorded within 30 seconds after a successful login.",
+    streakRegister:
+      "After signing up, sign in for 3 consecutive days to activate your logging streak.",
+    errFill: "Please fill in all the fields.",
+    errLogin: "Please enter email and password.",
+    errLen: "Password must be at least 6 characters.",
+    errMatch: "Password confirmation does not match.",
+    errEmailOnly: "Please enter your email.",
+    forgotTitle: "Recover password",
+    forgotDesc: "Enter your registered email to reset your password.",
+    emailLabel: "Email address",
+    emailPlaceholder: "Enter email",
+    sendReset: "Send",
+    resetSent:
+      "A reset link has been sent to your email. Please check your inbox (including Spam).",
+  },
+};

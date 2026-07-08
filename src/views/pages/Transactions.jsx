@@ -1,79 +1,9 @@
-// name = dữ liệu mẫu (sau lấy từ Supabase); mkey = phương thức (dịch qua t.methods)
-const TXNS = [
-  {
-    id: 1,
-    icon: "☕",
-    cls: "c-coffee",
-    name: "Trà sữa Phúc Long",
-    date: "25/06",
-    mkey: "ewallet",
-    type: "out",
-    amount: "-35.000 ₫",
-  },
-  {
-    id: 2,
-    icon: "🍜",
-    cls: "c-food",
-    name: "Cơm trưa căng tin",
-    date: "25/06",
-    mkey: "cash",
-    type: "out",
-    amount: "-45.000 ₫",
-  },
-  {
-    id: 3,
-    icon: "💰",
-    cls: "c-salary",
-    name: "Lương làm thêm",
-    date: "24/06",
-    mkey: "transfer",
-    type: "in",
-    amount: "+1.500.000 ₫",
-  },
-  {
-    id: 4,
-    icon: "🛵",
-    cls: "c-move",
-    name: "Đổ xăng",
-    date: "24/06",
-    mkey: "cash",
-    type: "out",
-    amount: "-65.000 ₫",
-  },
-  {
-    id: 5,
-    icon: "🎮",
-    cls: "c-fun",
-    name: "Vé xem phim CGV",
-    date: "23/06",
-    mkey: "card",
-    type: "out",
-    amount: "-120.000 ₫",
-  },
-  {
-    id: 6,
-    icon: "🎓",
-    cls: "c-salary",
-    name: "Học bổng kỳ 2",
-    date: "22/06",
-    mkey: "transfer",
-    type: "in",
-    amount: "+2.000.000 ₫",
-  },
-];
+import { useTransactions } from "../../controllers/useTransactions";
 
 export default function Transactions({ query = "", t }) {
   const tr = t.transactions;
-  const q = query.trim().toLowerCase();
-  const filtered = q
-    ? TXNS.filter(
-        (tx) =>
-          tx.name.toLowerCase().includes(q) ||
-          t.methods[tx.mkey].toLowerCase().includes(q) ||
-          tx.amount.toLowerCase().includes(q) ||
-          tx.date.includes(q),
-      )
-    : TXNS;
+  const { filtered } = useTransactions(query, t);
+  const q = query.trim();
 
   return (
     <>
