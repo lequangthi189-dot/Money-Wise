@@ -1,43 +1,8 @@
+import { getGoalCards } from "../../models/goalsData";
+
 export default function Goals({ t }) {
   const g = t.goals;
-  const cards = [
-    {
-      icon: "📱",
-      cls: "c-shop",
-      name: g.phone,
-      target: "15.000.000 ₫",
-      saved: "9.200.000 ₫",
-      pct: 61,
-      bar: "",
-      rate: "5,5",
-      unit: "year",
-      when: "11/2026",
-    },
-    {
-      icon: "✈️",
-      cls: "c-fun",
-      name: g.trip,
-      target: "5.000.000 ₫",
-      saved: "3.100.000 ₫",
-      pct: 62,
-      bar: "ok",
-      rate: "0,3",
-      unit: "month",
-      when: "9/2026",
-    },
-    {
-      icon: "💻",
-      cls: "c-edu",
-      name: g.laptop,
-      target: "25.000.000 ₫",
-      saved: "4.000.000 ₫",
-      pct: 16,
-      bar: "",
-      rate: "6",
-      unit: "year",
-      when: "8/2027",
-    },
-  ];
+  const cards = getGoalCards(g);
 
   return (
     <>

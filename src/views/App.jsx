@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import "./Css/base.css";
-import "./App.css";
-import "./Css/components.css";
-import "./Css/chatpanel.css";
-import "./Css/Pages/dashboard.css";
-import "./Css/Pages/transactions.css";
-import "./Css/Pages/categories.css";
-import "./Css/Pages/budgets.css";
-import "./Css/Pages/reports.css";
-import "./Css/Pages/goals.css";
-import "./Theme-Lg.css";
+import "./css/base.css";
+import "./css/App.css";
+import "./css/components.css";
+import "./css/chatpanel.css";
+import "./css/pages/dashboard.css";
+import "./css/pages/transactions.css";
+import "./css/pages/categories.css";
+import "./css/pages/budgets.css";
+import "./css/pages/reports.css";
+import "./css/pages/goals.css";
+import "./css/Theme-Lg.css";
 import Auth from "./Auth";
-import { i18n } from "./i18n";
-import { NAV, THEMES } from "./constants";
+import { i18n } from "../models/i18n";
+import { NAV } from "../models/constants";
+import { useApp } from "../controllers/useApp";
 import { Icon, Sprite, FlagVN, FlagGB } from "./components/icons";
 import ChatPanel from "./components/ChatPanel";
 import Dashboard from "./pages/Dashboard";
@@ -33,18 +33,28 @@ const VIEWS = {
 };
 
 export default function App() {
-  const [view, setView] = useState("dashboard");
-  const [query, setQuery] = useState("");
-  const [theme, setTheme] = useState("glass");
-  const [lang, setLang] = useState("vi");
-  const [chatOpen, setChatOpen] = useState(false);
-  const [fontSize, setFontSize] = useState(16);
-  const [authed, setAuthed] = useState(false);
-  const [showLogout, setShowLogout] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.style.fontSize = fontSize + "px";
-  }, [fontSize]);
+  const {
+    view,
+    setView,
+    query,
+    theme,
+    setTheme,
+    lang,
+    setLang,
+    chatOpen,
+    setChatOpen,
+    fontSize,
+    setFontSize,
+    authed,
+    setAuthed,
+    showLogout,
+    setShowLogout,
+    currentTheme,
+    nextTheme,
+    onSearch,
+    toggleLang,
+    logout,
+  } = useApp();
 
   if (!authed)
     return (
@@ -58,9 +68,6 @@ export default function App() {
   const t = i18n[lang];
   const [title, sub] = t.titles[view];
   const ViewComp = VIEWS[view];
-  const currentTheme = THEMES.find((th) => th.id === theme) ?? THEMES[0];
-  const currentThemeIndex = THEMES.findIndex((th) => th.id === currentTheme.id);
-  const nextTheme = THEMES[(currentThemeIndex + 1) % THEMES.length];
 
   return (
     <div className="root" data-theme={theme}>
@@ -146,11 +153,7 @@ export default function App() {
                 <input
                   placeholder={t.search}
                   value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    if (e.target.value && view !== "transactions")
-                      setView("transactions");
-                  }}
+                  onChange={(e) => onSearch(e.target.value)}
                 />
               </div>
 
@@ -172,7 +175,7 @@ export default function App() {
                       ? "Tiếng Việt — bấm để chuyển English"
                       : "English — click to switch Tiếng Việt"
                   }
-                  onClick={() => setLang((l) => (l === "vi" ? "en" : "vi"))}
+                  onClick={toggleLang}
                 >
                   {lang === "vi" ? <FlagVN /> : <FlagGB />}
                 </div>
@@ -285,11 +288,7 @@ export default function App() {
                   color: "#fff",
                   border: "none",
                 }}
-                onClick={() => {
-                  setShowLogout(false);
-                  setView("dashboard");
-                  setAuthed(false);
-                }}
+                onClick={logout}
               >
                 Đăng xuất
               </button>

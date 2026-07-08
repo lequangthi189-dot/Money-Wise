@@ -1,11 +1,22 @@
-import { useState } from "react";
+import { useBudgets } from "../../controllers/useBudgets";
+import { getBudgetRows } from "../../models/budgetsData";
 
 export default function Budgets({ t }) {
   const b = t.budgets;
-  const [totalLimit, setTotalLimit] = useState(4000000);
-  const [totalSpent, setTotalSpent] = useState(2180000);
-  const [limitInput, setLimitInput] = useState("4000000");
-  const [limitType, setLimitType] = useState("total");
+  const {
+    totalLimit,
+    totalSpent,
+    limitInput,
+    setLimitInput,
+    limitType,
+    setLimitType,
+    selectedCategory,
+    setSelectedCategory,
+    totalPct,
+    totalLeft,
+    handleSaveLimit,
+  } = useBudgets();
+  const rows = getBudgetRows(t);
   const swatch = {
     width: "32px",
     height: "32px",
@@ -14,71 +25,6 @@ export default function Budgets({ t }) {
     placeItems: "center",
   };
   const dim = { background: "var(--surface-2)", color: "var(--text-dim)" };
-  const rows = [
-    {
-      icon: "☕",
-      cls: "c-coffee",
-      name: t.cats.coffee,
-      cur: "305.000",
-      tot: "350.000",
-      pct: 86,
-      bar: "warn",
-      badge: "b-warn",
-    },
-    {
-      icon: "🍜",
-      cls: "c-food",
-      name: t.cats.food,
-      cur: "741.000",
-      tot: "1.000.000",
-      pct: 74,
-      bar: "",
-      badge: "dim",
-    },
-    {
-      icon: "🎮",
-      cls: "c-fun",
-      name: t.cats.fun,
-      cur: "392.000",
-      tot: "400.000",
-      pct: 98,
-      bar: "danger",
-      badge: "b-out",
-    },
-    {
-      icon: "🛵",
-      cls: "c-move",
-      name: t.cats.move,
-      cur: "480.000",
-      tot: "600.000",
-      pct: 80,
-      bar: "warn",
-      badge: "dim",
-    },
-    {
-      icon: "🛍️",
-      cls: "c-shop",
-      name: t.cats.shop,
-      cur: "120.000",
-      tot: "500.000",
-      pct: 24,
-      bar: "ok",
-      badge: "b-in",
-    },
-  ];
-  const totalPct = Math.round((totalSpent / totalLimit) * 100);
-  const totalLeft = totalLimit - totalSpent;
-  function handleSaveLimit() {
-    const value = Number(limitInput.replaceAll(".", "").replaceAll(",", ""));
-
-    if (value <= 0 || Number.isNaN(value)) {
-      alert("Hạn mức phải lớn hơn 0");
-      return;
-    }
-
-    setTotalLimit(value);
-  }
-  const [selectedCategory, setSelectedCategory] = useState("coffee");
 
   return (
     <>
