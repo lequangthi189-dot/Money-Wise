@@ -1,5 +1,4 @@
 import { THEMES } from "../../models/constants";
-import { Icon } from "../components/icons";
 
 export default function Settings({
   theme,
@@ -35,7 +34,7 @@ export default function Settings({
         </div>
       </div>
 
-      <div className="grid g-2">
+      <div className="grid">
         <div className="card glass">
           <div className="card-h">
             <h3>{s.display}</h3>
@@ -61,31 +60,6 @@ export default function Settings({
           </div>
         </div>
 
-        <div className="card glass">
-          <div className="card-h">
-            <h3>{s.account}</h3>
-          </div>
-          <div className="field">
-            <label>{s.name}</label>
-            <input defaultValue="Thi Nguyễn" />
-          </div>
-          <div className="field">
-            <label>{s.email}</label>
-            <input defaultValue="thi@huflit.edu.vn" />
-          </div>
-          <div className="field">
-            <label>{s.phone}</label>
-            <input defaultValue="0909 xxx xxx" />
-          </div>
-          <div className="btn-row">
-            <button className="btn" style={{ flex: "1" }}>
-              {s.changePw}
-            </button>
-            <button className="btn" style={{ color: "var(--danger)" }}>
-              <Icon n="i-logout" size={15} /> {s.logout}
-            </button>
-          </div>
-        </div>
       </div>
     </>
   );

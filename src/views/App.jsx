@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./css/base.css";
 import "./css/App.css";
 import "./css/components.css";
@@ -15,6 +16,7 @@ import { NAV } from "../models/constants";
 import { useApp } from "../controllers/useApp";
 import { Icon, Sprite, FlagVN, FlagGB } from "./components/icons";
 import ChatPanel from "./components/ChatPanel";
+import SearchBar from "./components/SearchBar";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Categories from "./pages/Categories";
@@ -22,6 +24,7 @@ import Budgets from "./pages/Budgets";
 import Reports from "./pages/Reports";
 import Goals from "./pages/Goals";
 import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 
 const VIEWS = {
   dashboard: Dashboard,
@@ -56,27 +59,35 @@ export default function App() {
     logout,
   } = useApp();
 
+  const [showProfile, setShowProfile] = useState(false);
+  const t = i18n[lang];
+
   if (!authed)
     return (
-      <Auth
-        onAuthed={() => setAuthed(true)}
-        theme={theme}
-        setTheme={setTheme}
-      />
+      <>
+        <Sprite />
+        <Auth
+          onAuthed={() => setAuthed(true)}
+          theme={theme}
+          setTheme={setTheme}
+          lang={lang}
+          setLang={setLang}
+        />
+      </>
     );
 
-  const t = i18n[lang];
-  const [title, sub] = t.titles[view];
   const ViewComp = VIEWS[view];
+  const [title, sub] = t.titles[view] ?? [view, ""];
 
   return (
     <div className="root" data-theme={theme}>
       <Sprite />
+
       <div className="app">
         <aside className="sidebar">
           <div className="brand">
             <div className="logo">
-              <Icon n="i-wallet" />
+              <Icon n="i-wallet" size={20} />
             </div>
             <div>
               <b>MoneyWise</b>
@@ -85,9 +96,7 @@ export default function App() {
           </div>
 
           <div className="streak">
-            <span className="fire" style={{ fontSize: "1.2rem" }}>
-              🔥
-            </span>
+            <span className="fire">🔥</span>
             <div>
               <b>{t.streakDays(12)}</b>
               <span>{t.streak}</span>
@@ -97,7 +106,7 @@ export default function App() {
           <nav className="nav">
             {NAV.map((item, i) =>
               item.group ? (
-                <div key={i} className="nav-label">
+                <div className="nav-label" key={i}>
                   {t.group[item.group]}
                 </div>
               ) : (
@@ -115,16 +124,24 @@ export default function App() {
 
           <div className="nav-spacer"></div>
           <div className="nav-foot">
-            <div className="userchip">
+            <div
+              className="userchip"
+              onClick={() => setShowProfile(true)}
+              style={{ cursor: "pointer" }}
+              title={t.nav.profile}
+            >
               <div className="ava">TH</div>
               <div style={{ flex: "1" }}>
                 <b>Thi Nguyễn</b>
                 <small>thi@huflit.edu.vn</small>
               </div>
               <button
-                onClick={() => setShowLogout(true)}
-                aria-label="Đăng xuất"
-                title="Đăng xuất"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowLogout(true);
+                }}
+                aria-label={t.settings.logout}
+                title={t.settings.logout}
                 style={{
                   background: "none",
                   border: "none",
@@ -148,43 +165,31 @@ export default function App() {
               <p>{sub}</p>
             </div>
             <div className="top-actions">
-              <div className="search">
-                <Icon n="i-search" size={16} />
-                <input
-                  placeholder={t.search}
-                  value={query}
-                  onChange={(e) => onSearch(e.target.value)}
-                />
-              </div>
+              <SearchBar query={query} onSearch={onSearch} setView={setView} t={t} />
 
               <div className="themeswitch">
                 <div
                   className={"theme-dot " + currentTheme.dot + " sel"}
-                  title={`${currentTheme.name} - click to switch ${nextTheme.name}`}
+                  title={`${currentTheme.name} → ${nextTheme.name}`}
                   onClick={() => setTheme(nextTheme.id)}
                 ></div>
               </div>
 
-              {/* Dot đổi ngôn ngữ: bấm để chuyển Việt <-> Anh */}
               <div className="themeswitch">
                 <div
                   className="theme-dot"
                   style={{ overflow: "hidden", padding: 0, border: "none" }}
-                  title={
-                    lang === "vi"
-                      ? "Tiếng Việt — bấm để chuyển English"
-                      : "English — click to switch Tiếng Việt"
-                  }
+                  title={lang === "vi" ? "Tiếng Việt" : "English"}
                   onClick={toggleLang}
                 >
                   {lang === "vi" ? <FlagVN /> : <FlagGB />}
                 </div>
               </div>
 
-              <div className="icon-btn">
-                <Icon n="i-bell" size={19} />
+              <button className="icon-btn">
+                <Icon n="i-bell" />
                 <span className="dot"></span>
-              </div>
+              </button>
             </div>
           </header>
 
@@ -212,6 +217,67 @@ export default function App() {
         <Icon n="i-msg" size={26} />
       </button>
       {chatOpen && <ChatPanel onClose={() => setChatOpen(false)} />}
+
+      {showProfile && (
+        <div
+          onClick={() => setShowProfile(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 100,
+            background: "rgba(0,0,0,0.5)",
+            backdropFilter: "blur(3px)",
+            WebkitBackdropFilter: "blur(3px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="scroll-hide"
+            style={{
+              width: "min(94vw, 520px)",
+              maxHeight: "88vh",
+              overflowY: "auto",
+              position: "relative",
+              animation: "fade 0.2s ease",
+            }}
+          >
+            <button
+              onClick={() => setShowProfile(false)}
+              aria-label="Đóng"
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                zIndex: 2,
+                width: "34px",
+                height: "34px",
+                borderRadius: "50%",
+                border: "1px solid var(--border)",
+                background: "var(--surface)",
+                color: "var(--text-dim)",
+                cursor: "pointer",
+                fontSize: "1.1rem",
+                lineHeight: 1,
+              }}
+            >
+              ✕
+            </button>
+            <Profile
+              t={t}
+              fontSize={fontSize}
+              setFontSize={setFontSize}
+              onLogout={() => {
+                setShowProfile(false);
+                setShowLogout(true);
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {showLogout && (
         <div
@@ -260,7 +326,7 @@ export default function App() {
                 marginBottom: "8px",
               }}
             >
-              Đăng xuất?
+              {t.settings.logout}?
             </h3>
             <p
               style={{
@@ -270,7 +336,9 @@ export default function App() {
                 marginBottom: "22px",
               }}
             >
-              Bạn có chắc muốn đăng xuất khỏi tài khoản này?
+              {lang === "vi"
+                ? "Bạn có chắc muốn đăng xuất khỏi tài khoản này?"
+                : "Are you sure you want to log out of this account?"}
             </p>
             <div style={{ display: "flex", gap: "10px" }}>
               <button
@@ -278,7 +346,7 @@ export default function App() {
                 style={{ flex: 1 }}
                 onClick={() => setShowLogout(false)}
               >
-                Hủy
+                {t.transactions.cancel}
               </button>
               <button
                 className="btn"
@@ -290,7 +358,7 @@ export default function App() {
                 }}
                 onClick={logout}
               >
-                Đăng xuất
+                {t.settings.logout}
               </button>
             </div>
           </div>

@@ -1,9 +1,18 @@
-import { useTransactions } from "../../controllers/useTransactions";
+import { TXNS } from "../../models/data";
 
 export default function Transactions({ query = "", t }) {
   const tr = t.transactions;
-  const { filtered } = useTransactions(query, t);
-  const q = query.trim();
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? TXNS.filter(
+        (tx) =>
+          tx.name.toLowerCase().includes(q) ||
+          t.cats[tx.catKey].toLowerCase().includes(q) ||
+          t.methods[tx.mkey].toLowerCase().includes(q) ||
+          tx.amount.toLowerCase().includes(q) ||
+          tx.date.includes(q),
+      )
+    : TXNS;
 
   return (
     <>
@@ -109,9 +118,7 @@ export default function Transactions({ query = "", t }) {
                   {tx.date} · {t.methods[tx.mkey]}
                 </small>
               </div>
-              <span
-                className={"badge " + (tx.type === "in" ? "b-in" : "b-out")}
-              >
+              <span className={"badge " + (tx.type === "in" ? "b-in" : "b-out")}>
                 {tx.type === "in" ? t.thu : t.chi}
               </span>
               <div
