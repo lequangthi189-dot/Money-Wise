@@ -49,6 +49,7 @@
   grid-template-columns: 1fr 1.6fr;
 }
 
+
 /* progress */
 .track {
   height: 9px;
@@ -70,6 +71,7 @@
 .bar.danger {
   background: var(--danger);
 }
+
 
 /* badges / pills */
 .badge {
@@ -238,6 +240,7 @@ select {
   color: #6ee7b7;
 }
 
+
 /* --- tiện ích chung --- */
 .empty-note {
   font-size: 0.78rem;
@@ -269,4 +272,15 @@ select {
 }
 .alert b {
   color: var(--text);
+}
+
+/* --- ẩn thanh cuộn (popup Hồ sơ) --- */
+.scroll-hide {
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/Edge cũ */
+}
+.scroll-hide::-webkit-scrollbar {
+  display: none;                  /* Chrome/Safari */
+  width: 0;
+  height: 0;
 }
