@@ -1,11 +1,14 @@
 // Model: dữ liệu Hạn mức. Giá trị khởi tạo + danh sách hạn mức theo danh mục.
+// catKey = danh mục (dịch qua t.cats) — dùng cho tìm kiếm & đổi ngôn ngữ.
 export const INITIAL_TOTAL_LIMIT = 4000000;
 export const INITIAL_TOTAL_SPENT = 2180000;
 
 export const getBudgetRows = (t) => [
   {
+    id: 1,
     icon: "☕",
     cls: "c-coffee",
+    catKey: "coffee",
     name: t.cats.coffee,
     cur: "305.000",
     tot: "350.000",
@@ -14,8 +17,10 @@ export const getBudgetRows = (t) => [
     badge: "b-warn",
   },
   {
+    id: 2,
     icon: "🍜",
     cls: "c-food",
+    catKey: "food",
     name: t.cats.food,
     cur: "741.000",
     tot: "1.000.000",
@@ -24,8 +29,10 @@ export const getBudgetRows = (t) => [
     badge: "dim",
   },
   {
+    id: 3,
     icon: "🎮",
     cls: "c-fun",
+    catKey: "fun",
     name: t.cats.fun,
     cur: "392.000",
     tot: "400.000",
@@ -34,8 +41,10 @@ export const getBudgetRows = (t) => [
     badge: "b-out",
   },
   {
+    id: 4,
     icon: "🛵",
     cls: "c-move",
+    catKey: "move",
     name: t.cats.move,
     cur: "480.000",
     tot: "600.000",
@@ -44,8 +53,10 @@ export const getBudgetRows = (t) => [
     badge: "dim",
   },
   {
+    id: 5,
     icon: "🛍️",
     cls: "c-shop",
+    catKey: "shop",
     name: t.cats.shop,
     cur: "120.000",
     tot: "500.000",

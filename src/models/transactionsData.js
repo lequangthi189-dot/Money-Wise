@@ -1,10 +1,12 @@
 // Model: dữ liệu giao dịch mẫu (sau này lấy từ Supabase).
 // mkey = phương thức thanh toán (dịch qua t.methods).
+// catKey = danh mục (dịch qua t.cats) — dùng cho tìm kiếm & đổi ngôn ngữ.
 export const TXNS = [
   {
     id: 1,
     icon: "☕",
     cls: "c-coffee",
+    catKey: "coffee",
     name: "Trà sữa Phúc Long",
     date: "25/06",
     mkey: "ewallet",
@@ -15,6 +17,7 @@ export const TXNS = [
     id: 2,
     icon: "🍜",
     cls: "c-food",
+    catKey: "food",
     name: "Cơm trưa căng tin",
     date: "25/06",
     mkey: "cash",
@@ -25,6 +28,7 @@ export const TXNS = [
     id: 3,
     icon: "💰",
     cls: "c-salary",
+    catKey: "salary",
     name: "Lương làm thêm",
     date: "24/06",
     mkey: "transfer",
@@ -35,6 +39,7 @@ export const TXNS = [
     id: 4,
     icon: "🛵",
     cls: "c-move",
+    catKey: "move",
     name: "Đổ xăng",
     date: "24/06",
     mkey: "cash",
@@ -45,6 +50,7 @@ export const TXNS = [
     id: 5,
     icon: "🎮",
     cls: "c-fun",
+    catKey: "fun",
     name: "Vé xem phim CGV",
     date: "23/06",
     mkey: "card",
@@ -55,6 +61,7 @@ export const TXNS = [
     id: 6,
     icon: "🎓",
     cls: "c-salary",
+    catKey: "scholar",
     name: "Học bổng kỳ 2",
     date: "22/06",
     mkey: "transfer",

@@ -1,8 +1,17 @@
-import { BUDGETS } from "../../models/data";
+import {
+  getBudgetRows,
+  INITIAL_TOTAL_LIMIT,
+  INITIAL_TOTAL_SPENT,
+} from "../../models/budgetsData";
 
 export default function Budgets({ query = "", t }) {
   const b = t.budgets;
   const q = query.trim().toLowerCase();
+  const BUDGETS = getBudgetRows(t);
+
+  const fmt = (n) => n.toLocaleString("vi-VN") + " ₫";
+  const totalPct = Math.round((INITIAL_TOTAL_SPENT / INITIAL_TOTAL_LIMIT) * 100);
+  const totalLeft = INITIAL_TOTAL_LIMIT - INITIAL_TOTAL_SPENT;
 
   // Gõ đúng "hạn mức" -> hiện tất cả; ngược lại lọc theo tên danh mục.
   const wantAll = q && t.nav.budgets.toLowerCase().includes(q);
@@ -37,14 +46,19 @@ export default function Budgets({ query = "", t }) {
                   letterSpacing: "-.5px",
                 }}
               >
-                2.180.000 ₫
+                {fmt(INITIAL_TOTAL_SPENT)}
               </div>
               <small style={{ color: "var(--text-dim)" }}>
-                {b.spentOver("3.000.000 ₫")}
+                {b.spentOver(fmt(INITIAL_TOTAL_LIMIT))}
               </small>
             </div>
             <div className="track" style={{ height: "13px" }}>
-              <div className="bar warn" style={{ width: "73%" }}></div>
+              <div
+                className={
+                  "bar " + (totalPct >= 100 ? "danger" : totalPct >= 80 ? "warn" : "")
+                }
+                style={{ width: Math.min(totalPct, 100) + "%" }}
+              ></div>
             </div>
             <div
               style={{
@@ -54,9 +68,11 @@ export default function Budgets({ query = "", t }) {
                 fontSize: ".8rem",
               }}
             >
-              <span style={{ color: "var(--warn)" }}>{b.usedPct("73%")}</span>
+              <span style={{ color: "var(--warn)" }}>
+                {b.usedPct(totalPct + "%")}
+              </span>
               <span style={{ color: "var(--text-dim)" }}>
-                {b.left("820.000 ₫")}
+                {b.left(fmt(totalLeft))}
               </span>
             </div>
           </div>
@@ -113,9 +129,9 @@ export default function Budgets({ query = "", t }) {
                 <div className={"cat " + r.cls} style={swatch}>
                   {r.icon}
                 </div>
-                <b>{t.cats[r.catKey]}</b>
+                <b>{r.name}</b>
                 <span className="nums">
-                  <b>{r.spent}</b> / {r.limit} ₫
+                  <b>{r.cur}</b> / {r.tot} ₫
                 </span>
                 {r.badge === "dim" ? (
                   <span className="badge" style={dim}>
@@ -150,4 +166,4 @@ export default function Budgets({ query = "", t }) {
       </div>
     </>
   );
-}
+} 

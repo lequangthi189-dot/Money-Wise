@@ -1,11 +1,69 @@
 import { useState, useRef, useEffect } from "react";
 import { Icon } from "./icons";
-import { TXNS, BUDGETS } from "../../models/data";
+import { TXNS } from "../../models/transactionsData";
+import { getBudgetRows } from "../../models/budgetsData";
 
-// Tìm kiếm cả GIAO DỊCH và HẠN MỨC. Chọn kết quả -> nhảy tới đúng trang.
-// Màu lấy từ biến theme, không hardcode.
+// Tìm kiếm cả GIAO DỊCH và HẠN MỨC, hiện kết quả ngay trong dropdown.
+// KHÔNG chuyển trang khi chọn — chỉ điền vào ô tìm kiếm.
+// Style nhúng sẵn để không phụ thuộc file CSS ngoài.
 
-export default function SearchBar({ query, onSearch, setView, t }) {
+const POP_CSS = `
+.search-pop {
+  background: var(--pop-bg, #191a2e);
+  border: 1px solid var(--border-strong, var(--border));
+  border-radius: var(--r-lg);
+  box-shadow: 0 20px 55px rgba(0,0,0,.5);
+}
+[data-theme="glass"] .search-pop { --pop-bg: #191a2e; }
+[data-theme="neu"] .search-pop {
+  --pop-bg: #eef0f6;
+  box-shadow: 9px 9px 24px #c6cad6, -9px -9px 24px #ffffff;
+  border-color: rgba(0,0,0,.06);
+}
+.sp-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: var(--r-sm);
+  font-size: .86rem;
+  cursor: pointer;
+  position: relative;
+  transition: background .12s ease;
+}
+.sp-row:hover, .sp-row.on {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.sp-row.on::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 6px; bottom: 6px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--accent);
+}
+.sp-row.on b { color: var(--text); }
+.sp-group {
+  font-size: .64rem;
+  letter-spacing: .12em;
+  color: var(--text-faint);
+  padding: 9px 10px 6px;
+}
+.scroll-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scroll-hide::-webkit-scrollbar { display: none; width: 0; height: 0; }
+`;
+
+const swatch = {
+  width: "30px",
+  height: "30px",
+  flex: "0 0 auto",
+  borderRadius: "9px",
+  display: "grid",
+  placeItems: "center",
+  fontSize: ".9rem",
+};
+
+export default function SearchBar({ query, onSearch, t }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const inputRef = useRef(null);
@@ -13,8 +71,8 @@ export default function SearchBar({ query, onSearch, setView, t }) {
 
   const s = t.searchbar;
   const q = query.trim().toLowerCase();
+  const BUDGETS = getBudgetRows(t);
 
-  // --- Kết quả giao dịch ---
   const txHits = q
     ? TXNS.filter(
         (x) =>
@@ -26,12 +84,10 @@ export default function SearchBar({ query, onSearch, setView, t }) {
       ).slice(0, 4)
     : [];
 
-  // --- Kết quả hạn mức ---
-  // Gõ đúng chữ "hạn mức" thì hiện tất cả; ngược lại lọc theo tên danh mục.
   const wantAllBudgets = q && t.nav.budgets.toLowerCase().includes(q);
   const budgetHits = q
     ? BUDGETS.filter(
-        (b) => wantAllBudgets || t.cats[b.catKey].toLowerCase().includes(q),
+        (b) => wantAllBudgets || b.name.toLowerCase().includes(q),
       ).slice(0, 4)
     : [];
 
@@ -40,7 +96,6 @@ export default function SearchBar({ query, onSearch, setView, t }) {
     ...budgetHits.map((x) => ({ kind: "budget", data: x })),
   ];
 
-  // Ctrl+K focus, Esc đóng
   useEffect(() => {
     function onKey(e) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
@@ -57,7 +112,6 @@ export default function SearchBar({ query, onSearch, setView, t }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Bấm ra ngoài thì đóng
   useEffect(() => {
     function onOutside(e) {
       if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false);
@@ -80,16 +134,11 @@ export default function SearchBar({ query, onSearch, setView, t }) {
     }
   }
 
+  // Chọn kết quả: chỉ điền vào ô tìm kiếm, KHÔNG chuyển trang.
   function pick(item) {
+    onSearch(item.kind === "budget" ? item.data.name : item.data.name);
     setOpen(false);
     setActive(-1);
-    if (item.kind === "budget") {
-      onSearch(t.cats[item.data.catKey]);
-      setView("budgets");
-    } else {
-      onSearch(item.data.name);
-      setView("transactions");
-    }
   }
 
   function clear() {
@@ -98,26 +147,10 @@ export default function SearchBar({ query, onSearch, setView, t }) {
     inputRef.current?.focus();
   }
 
-  const rowStyle = (i) => ({
-    display: "flex",
-    alignItems: "center",
-    gap: "11px",
-    padding: "9px 10px",
-    borderRadius: "var(--r-sm)",
-    fontSize: ".86rem",
-    cursor: "pointer",
-    background: active === i ? "var(--surface-2)" : "transparent",
-  });
-
-  const groupLabel = {
-    fontSize: ".64rem",
-    letterSpacing: ".12em",
-    color: "var(--text-faint)",
-    padding: "8px 10px 6px",
-  };
-
   return (
     <div ref={boxRef} style={{ position: "relative" }}>
+      <style>{POP_CSS}</style>
+
       <div className="search">
         <Icon n="i-search" size={16} />
         <input
@@ -176,14 +209,14 @@ export default function SearchBar({ query, onSearch, setView, t }) {
 
       {open && q && (
         <div
-          className="card glass scroll-hide"
+          className="search-pop scroll-hide"
           style={{
             position: "absolute",
             top: "calc(100% + 8px)",
             left: 0,
             right: 0,
-            zIndex: 40,
-            padding: "6px 8px 8px",
+            zIndex: 90,
+            padding: "4px 8px 8px",
             maxHeight: "340px",
             overflowY: "auto",
             animation: "fade .16s ease",
@@ -192,7 +225,7 @@ export default function SearchBar({ query, onSearch, setView, t }) {
           {flat.length === 0 && (
             <div
               style={{
-                padding: "18px 10px",
+                padding: "20px 10px",
                 textAlign: "center",
                 fontSize: ".82rem",
                 color: "var(--text-dim)",
@@ -204,13 +237,13 @@ export default function SearchBar({ query, onSearch, setView, t }) {
 
           {txHits.length > 0 && (
             <>
-              <div style={groupLabel}>{s.gTransactions}</div>
+              <div className="sp-group">{s.gTransactions}</div>
               {txHits.map((x, i) => (
                 <div
                   key={"tx" + x.id}
+                  className={"sp-row" + (active === i ? " on" : "")}
                   onMouseEnter={() => setActive(i)}
                   onClick={() => pick({ kind: "tx", data: x })}
-                  style={rowStyle(i)}
                 >
                   <span className={"cat " + x.cls} style={swatch}>
                     {x.icon}
@@ -236,33 +269,31 @@ export default function SearchBar({ query, onSearch, setView, t }) {
 
           {budgetHits.length > 0 && (
             <>
-              <div style={groupLabel}>{s.gBudgets}</div>
+              <div className="sp-group">{s.gBudgets}</div>
               {budgetHits.map((b, j) => {
                 const i = txHits.length + j;
                 return (
                   <div
                     key={"bg" + b.id}
+                    className={"sp-row" + (active === i ? " on" : "")}
                     onMouseEnter={() => setActive(i)}
                     onClick={() => pick({ kind: "budget", data: b })}
-                    style={rowStyle(i)}
                   >
                     <span className={"cat " + b.cls} style={swatch}>
                       {b.icon}
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <b style={{ display: "block", fontWeight: 500 }}>
-                        {t.cats[b.catKey]}
+                        {b.name}
                       </b>
                       <small
                         style={{ fontSize: ".72rem", color: "var(--text-dim)" }}
                       >
-                        {b.spent} / {b.limit} ₫
+                        {b.cur} / {b.tot} ₫
                       </small>
                     </div>
                     <span
-                      className={
-                        "badge " + (b.badge === "dim" ? "" : b.badge)
-                      }
+                      className={"badge " + (b.badge === "dim" ? "" : b.badge)}
                       style={
                         b.badge === "dim"
                           ? {
@@ -284,13 +315,3 @@ export default function SearchBar({ query, onSearch, setView, t }) {
     </div>
   );
 }
-
-const swatch = {
-  width: "30px",
-  height: "30px",
-  flex: "0 0 auto",
-  borderRadius: "9px",
-  display: "grid",
-  placeItems: "center",
-  fontSize: ".9rem",
-};

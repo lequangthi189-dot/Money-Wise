@@ -165,7 +165,7 @@ export default function App() {
               <p>{sub}</p>
             </div>
             <div className="top-actions">
-              <SearchBar query={query} onSearch={onSearch} setView={setView} t={t} />
+              <SearchBar query={query} onSearch={onSearch} t={t} />
 
               <div className="themeswitch">
                 <div
