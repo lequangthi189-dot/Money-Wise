@@ -1,4 +1,4 @@
-import { TXNS } from "../../models/data";
+import { TXNS } from "../../models/transactionsData";
 
 export default function Transactions({ query = "", t }) {
   const tr = t.transactions;

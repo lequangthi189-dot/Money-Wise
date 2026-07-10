@@ -21,10 +21,10 @@ export function useApp() {
   const currentThemeIndex = THEMES.findIndex((th) => th.id === currentTheme.id);
   const nextTheme = THEMES[(currentThemeIndex + 1) % THEMES.length];
 
-  // Chuyển sang trang tìm kiếm khi người dùng gõ ở ô search.
+  // Chỉ cập nhật từ khóa. Kết quả hiện ngay trong dropdown của thanh tìm kiếm,
+  // KHÔNG tự chuyển trang.
   function onSearch(value) {
     setQuery(value);
-    if (value && view !== "transactions") setView("transactions");
   }
 
   function toggleLang() {
