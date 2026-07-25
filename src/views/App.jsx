@@ -12,7 +12,8 @@ import "./css/pages/goals.css";
 import "./css/Theme-Lg.css";
 import Auth from "./Auth";
 import { i18n } from "../models/i18n";
-import { NAV } from "../models/constants";
+import { NAV, ADMIN_NAV, ROLES } from "../models/constants";
+import { ADMIN_TEXT } from "../models/adminData";
 import { useApp } from "../controllers/useApp";
 import { Icon, Sprite, FlagVN, FlagGB } from "./components/icons";
 import ChatPanel from "./components/ChatPanel";
@@ -25,6 +26,9 @@ import Reports from "./pages/Reports";
 import Goals from "./pages/Goals";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import UsersManager from "./pages/admin/UsersManager";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminStats from "./pages/admin/AdminStats";
 
 const VIEWS = {
   dashboard: Dashboard,
@@ -33,6 +37,14 @@ const VIEWS = {
   budgets: Budgets,
   reports: Reports,
   goals: Goals,
+};
+
+// Trang riêng cho khu vực admin, tách khỏi VIEWS của user thường vì nhận
+// props khác (at = chữ hiển thị admin thay vì t).
+const ADMIN_VIEWS = {
+  "admin-users": UsersManager,
+  "admin-categories": AdminCategories,
+  "admin-stats": AdminStats,
 };
 
 export default function App() {
@@ -49,7 +61,8 @@ export default function App() {
     fontSize,
     setFontSize,
     authed,
-    setAuthed,
+    role,
+    completeAuth,
     showLogout,
     setShowLogout,
     currentTheme,
@@ -61,13 +74,15 @@ export default function App() {
 
   const [showProfile, setShowProfile] = useState(false);
   const t = i18n[lang];
+  const at = ADMIN_TEXT[lang];
+  const isAdmin = role === ROLES.ADMIN;
 
   if (!authed)
     return (
       <>
         <Sprite />
         <Auth
-          onAuthed={() => setAuthed(true)}
+          onAuthed={(_form, userRole) => completeAuth(userRole)}
           theme={theme}
           setTheme={setTheme}
           lang={lang}
@@ -76,8 +91,11 @@ export default function App() {
       </>
     );
 
-  const ViewComp = VIEWS[view];
-  const [title, sub] = t.titles[view] ?? [view, ""];
+  const navItems = isAdmin ? ADMIN_NAV : NAV;
+  const ViewComp = isAdmin ? ADMIN_VIEWS[view] : VIEWS[view];
+  const [title, sub] = isAdmin
+    ? (at.titles[view] ?? [view, ""])
+    : (t.titles[view] ?? [view, ""]);
 
   return (
     <div className="root" data-theme={theme}>
@@ -104,10 +122,10 @@ export default function App() {
           </div>
 
           <nav className="nav">
-            {NAV.map((item, i) =>
+            {navItems.map((item, i) =>
               item.group ? (
                 <div className="nav-label" key={i}>
-                  {t.group[item.group]}
+                  {isAdmin ? at.group[item.group] : t.group[item.group]}
                 </div>
               ) : (
                 <div
@@ -116,7 +134,7 @@ export default function App() {
                   onClick={() => setView(item.id)}
                 >
                   <Icon n={item.icon} />
-                  <span>{t.nav[item.id]}</span>
+                  <span>{isAdmin ? (at.nav[item.id] ?? t.nav[item.id]) : t.nav[item.id]}</span>
                 </div>
               ),
             )}
@@ -205,6 +223,8 @@ export default function App() {
                   setLang={setLang}
                   s={t.settings}
                 />
+              ) : isAdmin ? (
+                <ViewComp query={query} t={t} at={at} />
               ) : (
                 <ViewComp query={query} t={t} />
               )}
