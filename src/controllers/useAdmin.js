@@ -34,7 +34,7 @@ async function apiSetUserRole(id, role) {
   return u;
 }
 
-export function useAdmin() {
+export function useAdmin(currentEmail) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,21 +51,34 @@ export function useAdmin() {
     };
   }, []);
 
+  // Không cho admin tự khóa hoặc tự thu hồi quyền admin của chính mình
+  // (tránh trường hợp tự khóa hết đường vào lại trang quản trị).
+  function isSelf(user) {
+    return (
+      !!currentEmail &&
+      user.email.toLowerCase() === currentEmail.toLowerCase()
+    );
+  }
+
   async function toggleBan(user) {
+    if (isSelf(user)) return false;
     const nextStatus = user.status === "banned" ? "active" : "banned";
     await apiSetUserStatus(user.id, nextStatus);
     setUsers((list) =>
       list.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u)),
     );
+    return true;
   }
 
   async function toggleAdmin(user) {
+    if (isSelf(user)) return false;
     const nextRole = user.role === ROLES.ADMIN ? ROLES.USER : ROLES.ADMIN;
     await apiSetUserRole(user.id, nextRole);
     setUsers((list) =>
       list.map((u) => (u.id === user.id ? { ...u, role: nextRole } : u)),
     );
+    return true;
   }
 
-  return { users, loading, toggleBan, toggleAdmin };
+  return { users, loading, toggleBan, toggleAdmin, isSelf };
 }

@@ -62,6 +62,7 @@ export default function App() {
     setFontSize,
     authed,
     role,
+    currentEmail,
     completeAuth,
     showLogout,
     setShowLogout,
@@ -82,7 +83,7 @@ export default function App() {
       <>
         <Sprite />
         <Auth
-          onAuthed={(_form, userRole) => completeAuth(userRole)}
+          onAuthed={(form, userRole) => completeAuth(form.email, userRole)}
           theme={theme}
           setTheme={setTheme}
           lang={lang}
@@ -224,7 +225,7 @@ export default function App() {
                   s={t.settings}
                 />
               ) : isAdmin ? (
-                <ViewComp query={query} t={t} at={at} />
+                <ViewComp query={query} t={t} at={at} currentEmail={currentEmail} />
               ) : (
                 <ViewComp query={query} t={t} />
               )}

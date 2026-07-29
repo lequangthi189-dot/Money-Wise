@@ -12,6 +12,7 @@ export function useApp() {
   const [fontSize, setFontSize] = useState(16);
   const [authed, setAuthed] = useState(false);
   const [role, setRole] = useState(ROLES.USER);
+  const [currentEmail, setCurrentEmail] = useState("");
   const [showLogout, setShowLogout] = useState(false);
 
   useEffect(() => {
@@ -37,12 +38,14 @@ export function useApp() {
     setView("dashboard");
     setAuthed(false);
     setRole(ROLES.USER);
+    setCurrentEmail("");
   }
 
-  // Gọi sau khi Auth xác thực xong; nhận thêm role rồi chọn view mặc định
-  // tương ứng (admin vào thẳng trang quản lý user, user vào dashboard).
-  function completeAuth(userRole) {
+  // Gọi sau khi Auth xác thực xong; nhận thêm role + email rồi chọn view mặc
+  // định tương ứng (admin vào thẳng trang quản lý user, user vào dashboard).
+  function completeAuth(email, userRole) {
     setRole(userRole);
+    setCurrentEmail(email);
     setAuthed(true);
     setView(userRole === ROLES.ADMIN ? "admin-users" : "dashboard");
   }
@@ -64,6 +67,7 @@ export function useApp() {
     setAuthed,
     role,
     setRole,
+    currentEmail,
     completeAuth,
     showLogout,
     setShowLogout,

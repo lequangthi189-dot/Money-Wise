@@ -49,7 +49,7 @@ export const ADMIN_TEXT = {
       "admin-categories": "Danh mục hệ thống",
       "admin-stats": "Thống kê",
     },
-    group: { admin: "Quản trị" },
+    group: { admin: "Quản trị", other: "Khác" },
     titles: {
       "admin-users": ["Quản lý người dùng", "Xem, khóa/mở khóa tài khoản"],
       "admin-categories": [
@@ -79,6 +79,14 @@ export const ADMIN_TEXT = {
       empty: "Chưa có người dùng nào.",
       confirmBan: (name) => `Khóa tài khoản của ${name}?`,
       confirmUnban: (name) => `Mở khóa tài khoản của ${name}?`,
+      confirmMakeAdmin: (name) => `Cấp quyền admin cho ${name}?`,
+      confirmRevokeAdmin: (name) => `Thu hồi quyền admin của ${name}?`,
+      selfActionBlocked: "Bạn không thể tự khóa hoặc thu hồi quyền admin của chính mình.",
+    },
+    stats: {
+      totalUsers: "Tổng người dùng",
+      bannedUsers: "Tài khoản bị khóa",
+      admins: "Admin",
     },
   },
   en: {
@@ -87,7 +95,7 @@ export const ADMIN_TEXT = {
       "admin-categories": "System categories",
       "admin-stats": "Statistics",
     },
-    group: { admin: "Admin" },
+    group: { admin: "Admin", other: "Other" },
     titles: {
       "admin-users": ["User management", "View, ban/unban accounts"],
       "admin-categories": [
@@ -117,6 +125,14 @@ export const ADMIN_TEXT = {
       empty: "No users yet.",
       confirmBan: (name) => `Ban ${name}'s account?`,
       confirmUnban: (name) => `Unban ${name}'s account?`,
+      confirmMakeAdmin: (name) => `Grant admin to ${name}?`,
+      confirmRevokeAdmin: (name) => `Revoke admin from ${name}?`,
+      selfActionBlocked: "You cannot ban or revoke your own admin rights.",
+    },
+    stats: {
+      totalUsers: "Total users",
+      bannedUsers: "Banned accounts",
+      admins: "Admins",
     },
   },
 };

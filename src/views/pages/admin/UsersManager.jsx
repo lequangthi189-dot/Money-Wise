@@ -2,9 +2,9 @@ import { useAdmin } from "../../../controllers/useAdmin";
 import { ROLES } from "../../../models/constants";
 import { Icon } from "../../components/icons";
 
-export default function UsersManager({ at }) {
+export default function UsersManager({ at, currentEmail }) {
   const u = at.users;
-  const { users, loading, toggleBan, toggleAdmin } = useAdmin();
+  const { users, loading, toggleBan, toggleAdmin, isSelf } = useAdmin(currentEmail);
 
   return (
     <div className="card glass">
@@ -40,6 +40,7 @@ export default function UsersManager({ at }) {
               {users.map((usr) => {
                 const isAdmin = usr.role === ROLES.ADMIN;
                 const isBanned = usr.status === "banned";
+                const self = isSelf(usr);
                 return (
                   <tr key={usr.id} style={{ borderTop: "1px solid var(--border)" }}>
                     <td style={tdStyle}>
@@ -61,7 +62,10 @@ export default function UsersManager({ at }) {
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button
                           className="btn"
+                          disabled={self}
+                          title={self ? u.selfActionBlocked : undefined}
                           onClick={() => {
+                            if (self) return window.alert(u.selfActionBlocked);
                             const msg = isBanned
                               ? u.confirmUnban(usr.name)
                               : u.confirmBan(usr.name);
@@ -73,7 +77,15 @@ export default function UsersManager({ at }) {
                         </button>
                         <button
                           className="btn"
-                          onClick={() => toggleAdmin(usr)}
+                          disabled={self}
+                          title={self ? u.selfActionBlocked : undefined}
+                          onClick={() => {
+                            if (self) return window.alert(u.selfActionBlocked);
+                            const msg = isAdmin
+                              ? u.confirmRevokeAdmin(usr.name)
+                              : u.confirmMakeAdmin(usr.name);
+                            if (window.confirm(msg)) toggleAdmin(usr);
+                          }}
                         >
                           <Icon n="i-gear" size={14} />
                           {isAdmin ? u.revokeAdmin : u.makeAdmin}
