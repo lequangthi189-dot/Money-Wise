@@ -45,6 +45,7 @@ export default function Categories({ t }) {
     handleDeleteCategory,
     handleEditCategory,
     handleCloseForm,
+    isEditing,
   } = useCategories();
 
   return (
@@ -55,25 +56,15 @@ export default function Categories({ t }) {
           <span className="muted">{c.sub}</span>
         </div>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-          <svg
-            width="16"
-            height="16"
-            style={{ marginRight: "6px", verticalAlign: "-2px" }}
-          >
+          <svg width="16" height="16" style={{ marginRight: "6px", verticalAlign: "-2px" }}>
             <use href="#i-plus" />
           </svg>
           {c.add}
         </button>
       </div>
       {showForm && (
-        <div className="card glass" style={{ margin: "12px 0" }}>
-          <button className="btn btn-primary" onClick={handleAddCategory}>
-            Lưu
-          </button>
-          <button className="btn" onClick={handleCloseForm}>
-            Đóng
-          </button>
-          <div>
+        <div className="card glass cat-form" style={{ margin: "12px 0" }}>
+          <div className="cat-form-icons">
             {CATEGORY_ICONS.map((icon) => (
               <button
                 key={icon}
@@ -85,52 +76,43 @@ export default function Categories({ t }) {
               </button>
             ))}
           </div>
+
           <input
             type="text"
-            placeholder="Tên danh mục"
+            placeholder={c.namePlaceholder}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
           />
+
           <select value={newType} onChange={(e) => setNewType(e.target.value)}>
-            <option value="out">Chi tiêu</option>
-            <option value="in">Thu nhập</option>
+            <option value="out">{c.typeExpense}</option>
+            <option value="in">{c.typeIncome}</option>
           </select>
+
+          <div className="cat-form-actions">
+            <button className="btn" onClick={handleCloseForm}>
+              {c.close}
+            </button>
+            <button className="btn btn-primary" onClick={handleAddCategory}>
+              {isEditing ? c.update : c.save}
+            </button>
           </div>
+        </div>
       )}
 
-      <div className="category-group-title">
-        {c.expenseGroup}
-      </div>
+      <div className="category-group-title">{c.expenseGroup}</div>
       <div className="catgrid">
         {expenseCats.map((x) => (
-          <CatCard
-            key={x.id}
-            c={x}
-            type="out"
-            t={t}
-            onDelete={handleDeleteCategory}
-            onEdit={handleEditCategory}
-          />
+          <CatCard key={x.id} c={x} type="out" t={t} onDelete={handleDeleteCategory} onEdit={handleEditCategory} />
         ))}
       </div>
 
-      <div className="category-group-title income-title">
-        {c.incomeGroup}
-      </div>
+      <div className="category-group-title income-title">{c.incomeGroup}</div>
       <div className="catgrid">
         {incomeCats.map((x) => (
-          <CatCard
-            key={x.id}
-            c={x}
-            type="in"
-            t={t}
-            onDelete={handleDeleteCategory}
-            onEdit={handleEditCategory}
-          />
+          <CatCard key={x.id} c={x} type="in" t={t} onDelete={handleDeleteCategory} onEdit={handleEditCategory} />
         ))}
       </div>
-     
     </div>
   );
 }
-

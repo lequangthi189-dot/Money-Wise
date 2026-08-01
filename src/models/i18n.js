@@ -145,6 +145,12 @@ export const i18n = {
       add: "Thêm danh mục",
       expenseGroup: "Danh mục chi",
       incomeGroup: "Danh mục thu",
+      namePlaceholder: "Tên danh mục",
+      typeExpense: "Chi tiêu",
+      typeIncome: "Thu nhập",
+      save: "Lưu",
+      update: "Cập nhật",
+      close: "Đóng",
     },
 
     // ----- Hạn mức -----
@@ -351,6 +357,12 @@ export const i18n = {
       add: "Add category",
       expenseGroup: "Expense categories",
       incomeGroup: "Income categories",
+      namePlaceholder: "Category name",
+      typeExpense: "Expense",
+      typeIncome: "Income",
+      save: "Save",
+      update: "Update",
+      close: "Close",
     },
 
     budgets: {

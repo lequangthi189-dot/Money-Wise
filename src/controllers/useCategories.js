@@ -1,97 +1,57 @@
 import { useState } from "react";
-import { EXPENSE, INCOME } from "../models/categoriesData";
+import { useAppData } from "../context/AppDataContext";
 
-// Controller: quản lý danh mục thu/chi — thêm, sửa, xoá; điều khiển form nhập.
-// Danh mục mặc định (có `key`) không được sửa/xoá.
 export function useCategories() {
-  const [expenseCats, setExpenseCats] = useState(EXPENSE);
-  const [incomeCats, setIncomeCats] = useState(INCOME);
+  const { categories, addCategory, updateCategory, deleteCategory } =
+    useAppData();
+
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("out");
-  const [selectedIcon, setSelectedIcon] = useState("📌");
-  const [editingId, setEditingId] = useState(null);
-  const [editingType, setEditingType] = useState(null);
+  const [selectedIcon, setSelectedIcon] = useState("🍜");
 
-  function resetForm() {
+  const expenseCats = categories.filter((c) => c.type === "out");
+  const incomeCats = categories.filter((c) => c.type === "in");
+
+  const resetForm = () => {
+    setEditingId(null);
     setNewName("");
     setNewType("out");
-    setSelectedIcon("📌");
-    setEditingId(null);
-    setEditingType(null);
-    setShowForm(false);
-  }
+    setSelectedIcon("🍜");
+  };
 
-  function handleAddCategory() {
-    if (newName.trim() === "") return;
-
-    if (editingId !== null) {
-      const updatedCat = {
-        id: editingId,
-        icon: selectedIcon,
-        cls: "c-shop",
+  const handleAddCategory = () => {
+    if (!newName.trim()) return;
+    if (editingId) {
+      updateCategory(editingId, {
         name: newName,
-      };
-
-      if (editingType === "out") {
-        setExpenseCats(
-          expenseCats.map((x) => (x.id === editingId ? updatedCat : x)),
-        );
-      } else {
-        setIncomeCats(
-          incomeCats.map((x) => (x.id === editingId ? updatedCat : x)),
-        );
-      }
-
-      resetForm();
-      return;
-    }
-
-    const newCat = {
-      id: Date.now(),
-      icon: selectedIcon,
-      cls: "c-shop",
-      name: newName,
-    };
-
-    if (newType === "out") {
-      setExpenseCats([...expenseCats, newCat]);
+        type: newType,
+        icon: selectedIcon,
+      });
     } else {
-      setIncomeCats([...incomeCats, newCat]);
+      addCategory({ name: newName, type: newType, icon: selectedIcon });
     }
-
     resetForm();
-  }
+    setShowForm(false);
+  };
 
-  function handleDeleteCategory(id, type) {
-    const list = type === "out" ? expenseCats : incomeCats;
-    const cat = list.find((x) => x.id === id);
+  const handleDeleteCategory = (id) => {
+    deleteCategory(id);
+  };
 
-    if (cat.key) {
-      alert("Không thể xóa danh mục mặc định");
-      return;
-    }
-
-    if (type === "out") {
-      setExpenseCats(expenseCats.filter((x) => x.id !== id));
-    } else {
-      setIncomeCats(incomeCats.filter((x) => x.id !== id));
-    }
-  }
-
-  function handleEditCategory(cat, type) {
-    if (cat.key) {
-      alert("Không thể sửa danh mục mặc định");
-      return;
-    }
-
-    setEditingId(cat.id);
-    setEditingType(type);
-    setNewName(cat.name);
-    setNewType(type);
-    setSelectedIcon(cat.icon);
+  const handleEditCategory = (c) => {
+    setEditingId(c.id);
+    setNewName(c.name || "");
+    setNewType(c.type);
+    setSelectedIcon(c.icon);
     setShowForm(true);
-  }
+  };
+
+  const handleCloseForm = () => {
+    resetForm();
+    setShowForm(false);
+  };
 
   return {
     expenseCats,
@@ -107,6 +67,7 @@ export function useCategories() {
     handleAddCategory,
     handleDeleteCategory,
     handleEditCategory,
-    handleCloseForm: resetForm,
+    handleCloseForm,
+    isEditing: editingId !== null,
   };
 }
