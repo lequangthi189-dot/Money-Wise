@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import "../css/pages/categories-form.css";
 import { CATEGORY_ICONS } from "../../models/categoriesData";
 import { useCategories } from "../../controllers/useCategories";
@@ -25,6 +26,40 @@ function CatCard({ c, type, t, onDelete, onEdit }) {
         </button>
       </div>
     </div>
+  );
+}
+
+function CategoryTypeSelect({ value, onChange }) {
+  const menuRef = useRef(null);
+  const options = [
+    { value: "out", label: "Chi tiêu" },
+    { value: "in", label: "Thu nhập" },
+  ];
+  const selected = options.find((option) => option.value === value) ?? options[0];
+
+  const selectType = (nextValue) => {
+    onChange(nextValue);
+    menuRef.current?.removeAttribute("open");
+  };
+
+  return (
+    <details className="category-type-select" ref={menuRef}>
+      <summary aria-label="Loại danh mục">{selected.label}</summary>
+      <div className="category-type-menu" role="listbox" aria-label="Loại danh mục">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            role="option"
+            aria-selected={value === option.value}
+            className={value === option.value ? "selected" : ""}
+            onClick={() => selectType(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </details>
   );
 }
 
@@ -91,10 +126,7 @@ export default function Categories({ t }) {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
           />
-          <select value={newType} onChange={(e) => setNewType(e.target.value)}>
-            <option value="out">Chi tiêu</option>
-            <option value="in">Thu nhập</option>
-          </select>
+          <CategoryTypeSelect value={newType} onChange={setNewType} />
           </div>
       )}
 

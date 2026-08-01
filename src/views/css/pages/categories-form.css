@@ -21,6 +21,81 @@
   border-color: var(--accent);
 }
 
+/* Custom dropdown keeps the category menu rounded across browsers. */
+.category-type-select {
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
+  color: var(--text);
+}
+.category-type-select summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 0.88rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.category-type-select summary::-webkit-details-marker { display: none; }
+.category-type-select summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform var(--t-fast);
+}
+.category-type-select[open] summary { border-color: var(--accent); }
+.category-type-select[open] summary::after {
+  transform: rotate(225deg) translate(-2px, -2px);
+}
+.category-type-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  padding: 5px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--category-menu-bg);
+  box-shadow: var(--category-menu-shadow);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+}
+.category-type-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: calc(var(--r-md) - 4px);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.category-type-menu button:hover { background: var(--surface-hover); }
+.category-type-menu button.selected {
+  background: var(--category-menu-selected);
+  color: var(--category-menu-selected-text);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+[data-theme="neu"] .category-type-select summary {
+  border: 0;
+  background: var(--input-bg);
+  box-shadow: inset 3px 3px 6px #c6cad6, inset -3px -3px 6px #ffffff;
+}
+
 .category-group-title {
   margin: 14px 0 8px;
   font-size: 0.75rem;

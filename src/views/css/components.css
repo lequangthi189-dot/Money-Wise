@@ -147,6 +147,19 @@ textarea {
 select {
   cursor: pointer;
 }
+/* Menu xổ ra của <select>: <option> KHÔNG kế thừa màu/nền của <select>,
+   nên phải set riêng theo biến theme. Nền bắt buộc đục — nếu để trong suốt
+   trình duyệt vẽ nền trắng, gặp --text sáng của glass sẽ thành trắng-trên-trắng. */
+select option,
+select optgroup {
+  background-color: var(--option-bg, #1b1733);
+  color: var(--option-text, #f3f3fb);
+}
+select option:checked,
+select option:hover {
+  background-color: var(--option-bg-hover, #2a2350);
+  color: var(--option-text, #f3f3fb);
+}
 .seg {
   display: inline-flex;
   background: var(--surface);
