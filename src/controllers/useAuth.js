@@ -1,5 +1,17 @@
 import { useState } from "react";
 import { AUTH_TEXT, AUTH_THEMES } from "../models/authData";
+import { ROLES } from "../models/constants";
+import { MOCK_USERS } from "../models/adminData";
+
+// MOCK: chưa có backend nên xác định role bằng cách tra email trong danh
+// sách user mẫu (adminData.js). Khi nối backend thật, thay hàm này bằng
+// role trả về từ response đăng nhập (vd. supabase.auth.signInWithPassword).
+function mockResolveRole(email) {
+  const found = MOCK_USERS.find(
+    (u) => u.email.toLowerCase() === (email || "").toLowerCase(),
+  );
+  return found ? found.role : ROLES.USER;
+}
 
 // Controller: màn hình đăng nhập/đăng ký/quên mật khẩu.
 // Quản lý form, chế độ (login|register|forgot), kiểm tra hợp lệ và theme/ngôn ngữ.
@@ -62,8 +74,10 @@ export function useAuth({
       if (form.password.length < 6) return setError(tr.errLen);
       if (form.password !== form.confirm) return setError(tr.errMatch);
     }
-    // TODO: gọi Supabase auth ở đây (signInWithPassword / signUp), rồi:
-    if (onAuthed) onAuthed(form);
+    // TODO: gọi Supabase auth ở đây (signInWithPassword / signUp), rồi lấy
+    // role thật từ response thay vì mockResolveRole().
+    const role = mockResolveRole(form.email);
+    if (onAuthed) onAuthed(form, role);
   }
 
   function submitForgot() {

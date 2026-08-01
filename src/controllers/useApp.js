@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { THEMES } from "../models/constants";
+import { THEMES, ROLES } from "../models/constants";
 
 // Controller: trạng thái cấp ứng dụng (view hiện tại, tìm kiếm, theme, ngôn ngữ,
 // cỡ chữ, đăng nhập...) và các giá trị suy ra từ theme.
@@ -11,6 +11,8 @@ export function useApp() {
   const [chatOpen, setChatOpen] = useState(false);
   const [fontSize, setFontSize] = useState(16);
   const [authed, setAuthed] = useState(false);
+  const [role, setRole] = useState(ROLES.USER);
+  const [currentEmail, setCurrentEmail] = useState("");
   const [showLogout, setShowLogout] = useState(false);
 
   useEffect(() => {
@@ -35,6 +37,17 @@ export function useApp() {
     setShowLogout(false);
     setView("dashboard");
     setAuthed(false);
+    setRole(ROLES.USER);
+    setCurrentEmail("");
+  }
+
+  // Gọi sau khi Auth xác thực xong; nhận thêm role + email rồi chọn view mặc
+  // định tương ứng (admin vào thẳng trang quản lý user, user vào dashboard).
+  function completeAuth(email, userRole) {
+    setRole(userRole);
+    setCurrentEmail(email);
+    setAuthed(true);
+    setView(userRole === ROLES.ADMIN ? "admin-users" : "dashboard");
   }
 
   return {
@@ -52,6 +65,10 @@ export function useApp() {
     setFontSize,
     authed,
     setAuthed,
+    role,
+    setRole,
+    currentEmail,
+    completeAuth,
     showLogout,
     setShowLogout,
     currentTheme,
