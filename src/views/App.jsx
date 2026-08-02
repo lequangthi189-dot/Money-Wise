@@ -39,8 +39,6 @@ const VIEWS = {
   goals: Goals,
 };
 
-// Trang riêng cho khu vực admin, tách khỏi VIEWS của user thường vì nhận
-// props khác (at = chữ hiển thị admin thay vì t).
 const ADMIN_VIEWS = {
   "admin-users": UsersManager,
   "admin-categories": AdminCategories,
@@ -114,13 +112,15 @@ export default function App() {
             </div>
           </div>
 
-          <div className="streak">
-            <span className="fire">🔥</span>
-            <div>
-              <b>{t.streakDays(12)}</b>
-              <span>{t.streak}</span>
+          {!isAdmin && (
+            <div className="streak">
+              <span className="fire">🔥</span>
+              <div>
+                <b>{t.streakDays(12)}</b>
+                <span>{t.streak}</span>
+              </div>
             </div>
-          </div>
+          )}
 
           <nav className="nav">
             {navItems.map((item, i) =>
@@ -227,7 +227,11 @@ export default function App() {
               ) : isAdmin ? (
                 <ViewComp query={query} t={t} at={at} currentEmail={currentEmail} />
               ) : (
-                <ViewComp query={query} t={t} />
+                <ViewComp
+                  query={query}
+                  t={t}
+                  onOpenChat={() => setChatOpen(true)}
+                />
               )}
             </section>
           </div>

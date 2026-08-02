@@ -21,7 +21,6 @@
   border-color: var(--accent);
 }
 
-/* Custom dropdown keeps the category menu rounded across browsers. */
 .category-type-select {
   position: relative;
   width: 100%;

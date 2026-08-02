@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { THEMES, ROLES } from "../models/constants";
 
-// Controller: trạng thái cấp ứng dụng (view hiện tại, tìm kiếm, theme, ngôn ngữ,
-// cỡ chữ, đăng nhập...) và các giá trị suy ra từ theme.
 export function useApp() {
   const [view, setView] = useState("dashboard");
   const [query, setQuery] = useState("");
@@ -23,8 +21,6 @@ export function useApp() {
   const currentThemeIndex = THEMES.findIndex((th) => th.id === currentTheme.id);
   const nextTheme = THEMES[(currentThemeIndex + 1) % THEMES.length];
 
-  // Chỉ cập nhật từ khóa. Kết quả hiện ngay trong dropdown của thanh tìm kiếm,
-  // KHÔNG tự chuyển trang.
   function onSearch(value) {
     setQuery(value);
   }
@@ -41,8 +37,6 @@ export function useApp() {
     setCurrentEmail("");
   }
 
-  // Gọi sau khi Auth xác thực xong; nhận thêm role + email rồi chọn view mặc
-  // định tương ứng (admin vào thẳng trang quản lý user, user vào dashboard).
   function completeAuth(email, userRole) {
     setRole(userRole);
     setCurrentEmail(email);

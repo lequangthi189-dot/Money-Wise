@@ -122,3 +122,80 @@
     -5px -5px 11px #ffffff,
     0 0 0 2px rgba(139, 124, 246, 0.4);
 }
+
+.pw-strength {
+  margin: -7px 2px 16px;
+}
+.pw-strength-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  color: var(--text-dim);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+.pw-strength-head strong {
+  color: var(--danger, #f87171);
+}
+.pw-strength-bar {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+.pw-strength-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--danger, #f87171);
+  transition: width 0.25s ease, background-color 0.25s ease;
+}
+.pw-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 13px;
+  margin-top: 10px;
+}
+.pw-rules span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-faint, var(--text-dim));
+  font-size: 0.7rem;
+  transition: color 0.2s ease;
+}
+.pw-rules i {
+  display: grid;
+  width: 14px;
+  height: 14px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  font-size: 0.58rem;
+  font-style: normal;
+}
+.pw-rules span.valid {
+  color: var(--ok, #34d399);
+}
+.pw-rules span.valid i {
+  border-color: currentColor;
+  background: rgba(52, 211, 153, 0.13);
+}
+.pw-score-2 .pw-strength-head strong,
+.pw-score-2 .pw-strength-bar span {
+  color: #f59e0b;
+  background-color: #f59e0b;
+}
+.pw-score-3 .pw-strength-head strong,
+.pw-score-3 .pw-strength-bar span {
+  color: #eab308;
+  background-color: #eab308;
+}
+.pw-score-4 .pw-strength-head strong,
+.pw-score-4 .pw-strength-bar span,
+.pw-score-5 .pw-strength-head strong,
+.pw-score-5 .pw-strength-bar span {
+  color: var(--ok, #34d399);
+  background-color: var(--ok, #34d399);
+}

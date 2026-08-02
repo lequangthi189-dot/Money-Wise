@@ -71,7 +71,13 @@ export function useAuth({
         !form.password
       )
         return setError(tr.errFill);
-      if (form.password.length < 6) return setError(tr.errLen);
+      const passwordIsStrong =
+        form.password.length >= 8 &&
+        /[A-Z]/.test(form.password) &&
+        /[a-z]/.test(form.password) &&
+        /\d/.test(form.password) &&
+        /[^A-Za-z0-9]/.test(form.password);
+      if (!passwordIsStrong) return setError(tr.errLen);
       if (form.password !== form.confirm) return setError(tr.errMatch);
     }
     // TODO: gọi Supabase auth ở đây (signInWithPassword / signUp), rồi lấy

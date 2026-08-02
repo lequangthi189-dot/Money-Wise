@@ -2,14 +2,10 @@ import { useEffect, useState } from "react";
 import { MOCK_USERS } from "../models/adminData";
 import { ROLES } from "../models/constants";
 
-// Controller: quản lý user cho khu vực admin.
-//
 // TODO (khi có backend thật, vd. Supabase):
 //   - getUsers()        -> supabase.from("users").select("*")
 //   - setUserStatus()   -> supabase.from("users").update({ status }).eq("id", id)
 //   - setUserRole()     -> supabase.from("users").update({ role }).eq("id", id)
-// Component gọi hook này (UsersManager.jsx) sẽ KHÔNG cần sửa gì khi đổi
-// phần thân các hàm mock dưới đây, miễn shape user giữ nguyên.
 
 function fakeDelay(ms = 400) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -51,8 +47,7 @@ export function useAdmin(currentEmail) {
     };
   }, []);
 
-  // Không cho admin tự khóa hoặc tự thu hồi quyền admin của chính mình
-  // (tránh trường hợp tự khóa hết đường vào lại trang quản trị).
+  // Không cho admin tự khóa hoặc tự thu hồi quyền.
   function isSelf(user) {
     return (
       !!currentEmail &&
