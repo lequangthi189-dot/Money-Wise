@@ -5,7 +5,7 @@ import { MOCK_USERS } from "../models/adminData";
 
 // MOCK: chưa có backend nên xác định role bằng cách tra email trong danh
 // sách user mẫu (adminData.js). Khi nối backend thật, thay hàm này bằng
-// role trả về từ response đăng nhập (vd. supabase.auth.signInWithPassword).
+// role trả về từ response đăng nhập của backend.
 function mockResolveRole(email) {
   const found = MOCK_USERS.find(
     (u) => u.email.toLowerCase() === (email || "").toLowerCase(),
@@ -80,8 +80,8 @@ export function useAuth({
       if (!passwordIsStrong) return setError(tr.errLen);
       if (form.password !== form.confirm) return setError(tr.errMatch);
     }
-    // TODO: gọi Supabase auth ở đây (signInWithPassword / signUp), rồi lấy
-    // role thật từ response thay vì mockResolveRole().
+    // TODO: gọi API xác thực ở đây, rồi lấy role thật từ response
+    // thay vì mockResolveRole().
     const role = mockResolveRole(form.email);
     if (onAuthed) onAuthed(form, role);
   }
@@ -90,11 +90,7 @@ export function useAuth({
     setError("");
     setInfo("");
     if (!form.email) return setError(tr.errEmailOnly);
-    // TODO: nối Supabase để gửi email đặt lại mật khẩu:
-    //   const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
-    //     redirectTo: window.location.origin,
-    //   });
-    //   if (error) return setError(error.message);
+    // TODO: gọi API gửi email đặt lại mật khẩu.
     setInfo(tr.resetSent);
   }
 
