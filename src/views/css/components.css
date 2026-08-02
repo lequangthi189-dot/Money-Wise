@@ -1,4 +1,3 @@
-/* components.css — linh kiện dùng chung: card, lưới, tiến độ, badge/pill, form, nút, màu danh mục, tiện ích */
 /* generic cards */
 .card {
   background: var(--surface);
@@ -147,9 +146,7 @@ textarea {
 select {
   cursor: pointer;
 }
-/* Menu xổ ra của <select>: <option> KHÔNG kế thừa màu/nền của <select>,
-   nên phải set riêng theo biến theme. Nền bắt buộc đục — nếu để trong suốt
-   trình duyệt vẽ nền trắng, gặp --text sáng của glass sẽ thành trắng-trên-trắng. */
+/* Native select popup needs an opaque theme color. */
 select option,
 select optgroup {
   background-color: var(--option-bg, #1b1733);

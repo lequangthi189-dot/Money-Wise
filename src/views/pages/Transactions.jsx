@@ -1,6 +1,6 @@
 import { TXNS } from "../../models/transactionsData";
 
-export default function Transactions({ query = "", t }) {
+export default function Transactions({ query = "", t, onOpenChat }) {
   const tr = t.transactions;
   const q = query.trim().toLowerCase();
   const filtered = q
@@ -69,21 +69,17 @@ export default function Transactions({ query = "", t }) {
             <button className="btn">{tr.cancel}</button>
           </div>
           <div className="hr"></div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "9px",
-              fontSize: ".78rem",
-              color: "var(--text-dim)",
-              cursor: "pointer",
-            }}
+          <button
+            type="button"
+            className="quick-chat-link"
+            onClick={onOpenChat}
+            aria-label={tr.quickChat}
           >
             <svg width="18" height="18" style={{ color: "var(--accent)" }}>
               <use href="#i-msg" />
             </svg>
             {tr.quickChat}
-          </div>
+          </button>
         </div>
 
         <div className="card glass">

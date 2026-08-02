@@ -194,6 +194,38 @@ function EyeOff() {
   );
 }
 
+function PasswordStrength({ password, tr }) {
+  const rules = [
+    { label: tr.pwEight, valid: password.length >= 8 },
+    { label: tr.pwUpper, valid: /[A-Z]/.test(password) },
+    { label: tr.pwLower, valid: /[a-z]/.test(password) },
+    { label: tr.pwNumber, valid: /\d/.test(password) },
+    { label: tr.pwSpecial, valid: /[^A-Za-z0-9]/.test(password) },
+  ];
+  const score = rules.filter((rule) => rule.valid).length;
+  const levels = [tr.pwWeak, tr.pwWeak, tr.pwFair, tr.pwGood, tr.pwStrong, tr.pwStrong];
+
+  return (
+    <div className={`pw-strength pw-score-${score}`} aria-live="polite">
+      <div className="pw-strength-head">
+        <span>{tr.pwStrength}</span>
+        <strong>{levels[score]}</strong>
+      </div>
+      <div className="pw-strength-bar" aria-hidden="true">
+        <span style={{ width: `${score * 20}%` }} />
+      </div>
+      <div className="pw-rules">
+        {rules.map((rule) => (
+          <span className={rule.valid ? "valid" : ""} key={rule.label}>
+            <i>{rule.valid ? "✓" : ""}</i>
+            {rule.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Auth(props) {
   const {
     tr,
@@ -455,6 +487,10 @@ export default function Auth(props) {
                 name="password"
                 autoComplete={isLogin ? "current-password" : "new-password"}
               />
+
+              {!isLogin && (
+                <PasswordStrength password={form.password} tr={tr} />
+              )}
 
               {!isLogin && (
                 <FloatingInput

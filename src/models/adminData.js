@@ -1,11 +1,5 @@
-// Model: dữ liệu MOCK cho khu vực Admin (chưa có backend).
-// Khi nối backend thật (vd. Supabase), chỉ cần thay nội dung các hàm
-// trong `src/controllers/useAdmin.js` — KHÔNG cần sửa các component đang
-// gọi hook đó, miễn shape dữ liệu (object user) được giữ nguyên như dưới đây.
-
 import { ROLES } from "./constants";
 
-// Shape chuẩn của 1 user, nên khớp với cột/table user thật sau này:
 // { id, name, email, role, status, createdAt }
 export const MOCK_USERS = [
   {
