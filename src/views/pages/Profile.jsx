@@ -7,7 +7,7 @@ const AVA = 88; // đường kính avatar
 const RING = 5; // độ dày vòng tiến trình
 const BOX = AVA + RING * 2 + 8; // vùng chứa cả vòng
 
-const DEMO_PW = "123456"; // TODO: bỏ khi nối Supabase
+const DEMO_PW = "123456"; // TODO: bỏ khi nối backend xác thực
 
 /* ============ Hàng thông tin ============ */
 function Row({ label, value, onEdit, editable = true, t }) {
@@ -206,7 +206,7 @@ function ChangePassword({ t, onClose }) {
   function submit() {
     if (!validate()) return;
     setBusy(true);
-    // TODO: await supabase.auth.updateUser({ password: next })
+    // TODO: gọi API backend để cập nhật mật khẩu.
     setTimeout(() => {
       setBusy(false);
       setDone(true);
@@ -374,7 +374,7 @@ export default function Profile({ t, onLogout, fontSize, setFontSize }) {
     const url = URL.createObjectURL(f);
     setProgress(0);
 
-    // Giả lập tiến trình upload. Khi nối Supabase Storage thì thay bằng
+    // Giả lập tiến trình upload. Khi nối dịch vụ lưu trữ thì thay bằng
     // tiến trình thật (XHR upload.onprogress hoặc TUS resumable upload).
     let pct = 0;
     const timer = setInterval(() => {
@@ -388,7 +388,7 @@ export default function Profile({ t, onLogout, fontSize, setFontSize }) {
         setProgress(Math.round(pct));
       }
     }, 180);
-    // TODO: supabase.storage.from("avatars").upload(path, f)
+    // TODO: gọi API upload avatar thật.
   }
 
   const uploading = progress !== null;

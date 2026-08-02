@@ -2,10 +2,7 @@ import { useEffect, useState } from "react";
 import { MOCK_USERS } from "../models/adminData";
 import { ROLES } from "../models/constants";
 
-// TODO (khi có backend thật, vd. Supabase):
-//   - getUsers()        -> supabase.from("users").select("*")
-//   - setUserStatus()   -> supabase.from("users").update({ status }).eq("id", id)
-//   - setUserRole()     -> supabase.from("users").update({ role }).eq("id", id)
+// TODO: thay các hàm giả lập bên dưới bằng API backend thật.
 
 function fakeDelay(ms = 400) {
   return new Promise((resolve) => setTimeout(resolve, ms));

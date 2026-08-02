@@ -1,4 +1,4 @@
-// Model: dữ liệu giao dịch mẫu (sau này lấy từ Supabase).
+// Model: dữ liệu giao dịch mẫu (sau này lấy từ backend).
 // mkey = phương thức thanh toán (dịch qua t.methods).
 // catKey = danh mục (dịch qua t.cats) — dùng cho tìm kiếm & đổi ngôn ngữ.
 export const TXNS = [
