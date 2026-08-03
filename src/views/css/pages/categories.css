@@ -49,3 +49,23 @@
   width: 15px;
   height: 15px;
 }
+.cat-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cat-form-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cat-form input,
+.cat-form select {
+  width: 100%;
+}
+.cat-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
