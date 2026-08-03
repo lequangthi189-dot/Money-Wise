@@ -175,6 +175,12 @@ export const i18n = {
       add: "Thêm danh mục",
       expenseGroup: "Danh mục chi",
       incomeGroup: "Danh mục thu",
+      namePlaceholder: "Tên danh mục",
+      typeExpense: "Chi tiêu",
+      typeIncome: "Thu nhập",
+      save: "Lưu",
+      update: "Cập nhật",
+      close: "Đóng",
     },
 
     // ----- Hạn mức -----
@@ -192,6 +198,7 @@ export const i18n = {
       saveLimit: "Lưu hạn mức",
       byCatTitle: "Hạn mức theo danh mục",
       warnNote: "Cảnh báo ở 80% và 100%",
+      noBudgetYet: "Chưa có hạn mức nào được đặt theo danh mục.",
       result: (q, n) => `Kết quả cho “${q}”: ${n} hạn mức`,
       noResult: (q) => `Không tìm thấy hạn mức nào khớp “${q}”.`,
     },
@@ -411,6 +418,12 @@ export const i18n = {
       add: "Add category",
       expenseGroup: "Expense categories",
       incomeGroup: "Income categories",
+      namePlaceholder: "Category name",
+      typeExpense: "Expense",
+      typeIncome: "Income",
+      save: "Save",
+      update: "Update",
+      close: "Close",
     },
 
     budgets: {
@@ -427,6 +440,7 @@ export const i18n = {
       saveLimit: "Save budget",
       byCatTitle: "Budget by category",
       warnNote: "Warns at 80% and 100%",
+      noBudgetYet: "No category budgets set yet.",
       result: (q, n) => `Results for “${q}”: ${n} budgets`,
       noResult: (q) => `No budgets match “${q}”.`,
     },
