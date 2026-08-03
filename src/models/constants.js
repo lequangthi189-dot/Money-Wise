@@ -12,6 +12,23 @@ export const NAV = [
   { id: "settings", icon: "i-gear" },
 ];
 
+// Role hệ thống. Dùng chung 1 nguồn để tránh gõ tay chuỗi "admin" rải rác.
+export const ROLES = {
+  ADMIN: "admin",
+  USER: "user",
+};
+
+// Menu riêng cho khu vực quản trị (admin). Tách khỏi NAV vì admin không
+// dùng các trang cá nhân (transactions, budgets, goals... của user thường).
+export const ADMIN_NAV = [
+  { group: "admin" },
+  { id: "admin-users", icon: "i-users" },
+  { id: "admin-categories", icon: "i-tag" },
+  { id: "admin-stats", icon: "i-chart" },
+  { group: "other" },
+  { id: "settings", icon: "i-gear" },
+];
+
 export const THEMES = [
   {
     id: "glass",

@@ -1,6 +1,6 @@
 import { useBudgets } from "../../controllers/useBudgets";
 
-export default function Budgets({ t }) {
+export default function Budgets({ query = "", t }) {
   const b = t.budgets;
   const swatch = {
     width: "32px",
@@ -25,6 +25,14 @@ export default function Budgets({ t }) {
     expenseCategories,
   } = useBudgets(t);
   const dim = { background: "var(--surface-2)", color: "var(--text-dim)" };
+
+  // Lọc theo ô tìm kiếm: gõ đúng "hạn mức" -> hiện tất cả; ngược lại lọc theo
+  // tên danh mục.
+  const q = query.trim().toLowerCase();
+  const wantAll = q && t.nav.budgets.toLowerCase().includes(q);
+  const rows = q
+    ? budgetRows.filter((r) => wantAll || r.name.toLowerCase().includes(q))
+    : budgetRows;
 
   return (
     <>
@@ -61,11 +69,11 @@ export default function Budgets({ t }) {
             <div className="field">
               <label>{b.kind}</label>
               <select value={limitType} onChange={(e) => setLimitType(e.target.value)}>
-                <option value={b.kindTotal}>{b.kindTotal}</option>
-                <option value={b.kindByCat}>{b.kindByCat}</option>
+                <option value="total">{b.kindTotal}</option>
+                <option value="category">{b.kindByCat}</option>
               </select>
             </div>
-            {limitType === b.kindByCat && (
+            {limitType === "category" && (
               <div className="field">
                 <label>{b.category}</label>
                 <select
@@ -96,13 +104,19 @@ export default function Budgets({ t }) {
             <span className="muted">{b.warnNote}</span>
           </div>
 
-          {budgetRows.length === 0 && (
-            <div style={{ padding: "20px 8px", color: "var(--text-dim)", fontSize: ".85rem" }}>
-              {b.noBudgetYet || "Chưa có hạn mức nào được đặt theo danh mục."}
+          {q && (
+            <div style={{ fontSize: ".78rem", color: "var(--text-dim)", marginBottom: "10px" }}>
+              {b.result(query, rows.length)}
             </div>
           )}
 
-          {budgetRows.map((r) => (
+          {budgetRows.length === 0 && (
+            <div style={{ padding: "20px 8px", color: "var(--text-dim)", fontSize: ".85rem" }}>
+              {b.noBudgetYet}
+            </div>
+          )}
+
+          {rows.map((r) => (
             <div className="budrow" key={r.id}>
               <div className="top">
                 <div className={"cat " + r.cls} style={swatch}>
@@ -125,6 +139,12 @@ export default function Budgets({ t }) {
               </div>
             </div>
           ))}
+
+          {budgetRows.length > 0 && rows.length === 0 && (
+            <div style={{ padding: "26px 10px", textAlign: "center", color: "var(--text-dim)", fontSize: ".85rem" }}>
+              {b.noResult(query)}
+            </div>
+          )}
         </div>
       </div>
     </>

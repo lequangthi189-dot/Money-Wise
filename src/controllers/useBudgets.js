@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAppData } from "../context/AppDataContext";
 
 function classify(pct) {
@@ -21,7 +21,9 @@ export function useBudgets(t) {
   } = useAppData();
 
   const [limitInput, setLimitInput] = useState("");
-  const [limitType, setLimitType] = useState(t.budgets.kindTotal);
+  // Key ổn định ("total" | "category") độc lập với ngôn ngữ hiển thị,
+  // tránh vỡ logic khi người dùng đổi ngôn ngữ giữa chừng.
+  const [limitType, setLimitType] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoryLimit, setCategoryLimit] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -31,11 +33,10 @@ export function useBudgets(t) {
     [categories]
   );
 
-  useEffect(() => {
-    if (selectedCategory === null && expenseCategories.length > 0) {
-      setSelectedCategory(expenseCategories[0].id);
-    }
-  }, [expenseCategories, selectedCategory]);
+  // Mặc định chọn danh mục chi đầu tiên cho tới khi người dùng tự chọn.
+  // Derive tại chỗ thay vì setState trong effect (tránh cascading render).
+  const effectiveCategory =
+    selectedCategory ?? expenseCategories[0]?.id ?? null;
 
   const spentByCategory = useMemo(() => {
     const map = {};
@@ -87,10 +88,10 @@ export function useBudgets(t) {
   const handleSaveLimit = () => {
     const amount = parseAmount(limitInput);
     if (!amount) return;
-    if (limitType === t.budgets.kindTotal) {
+    if (limitType === "total") {
       setTotalLimit(amount);
-    } else if (selectedCategory != null) {
-      setCategoryBudget(selectedCategory, amount);
+    } else if (effectiveCategory != null) {
+      setCategoryBudget(effectiveCategory, amount);
     }
     setLimitInput("");
   };
@@ -116,7 +117,7 @@ export function useBudgets(t) {
     budgetRows,
     showForm,
     setShowForm,
-    selectedCategory,
+    selectedCategory: effectiveCategory,
     setSelectedCategory,
     categoryLimit,
     setCategoryLimit,

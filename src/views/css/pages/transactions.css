@@ -1,5 +1,36 @@
 /* transactions.css — Giao dịch: dòng giao dịch */
 /* list rows */
+.quick-chat-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.quick-chat-link:hover,
+.quick-chat-link:focus-visible {
+  color: var(--text);
+}
+
+.quick-chat-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.quick-chat-link svg {
+  flex: 0 0 auto;
+}
+
 .tx {
   display: flex;
   align-items: center;

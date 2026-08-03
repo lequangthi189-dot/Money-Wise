@@ -1,18 +1,30 @@
-import { TXNS } from "../../models/transactionsData";
+import { useTransactions } from "../../controllers/useTransactions";
 
-export default function Transactions({ query = "", t }) {
+export default function Transactions({
+  query = "",
+  t,
+  userId,
+  onDataChanged,
+  onOpenChat,
+}) {
   const tr = t.transactions;
   const q = query.trim().toLowerCase();
-  const filtered = q
-    ? TXNS.filter(
-        (tx) =>
-          tx.name.toLowerCase().includes(q) ||
-          t.cats[tx.catKey].toLowerCase().includes(q) ||
-          t.methods[tx.mkey].toLowerCase().includes(q) ||
-          tx.amount.toLowerCase().includes(q) ||
-          tx.date.includes(q),
-      )
-    : TXNS;
+  const {
+    filtered,
+    cats,
+    methods,
+    loading,
+    saving,
+    error,
+    form,
+    upd,
+    setType,
+    isEditing,
+    submit,
+    edit,
+    remove,
+    resetForm,
+  } = useTransactions(query, t, userId, onDataChanged);
 
   return (
     <>
@@ -24,34 +36,54 @@ export default function Transactions({ query = "", t }) {
           <div className="field">
             <label>{tr.type}</label>
             <div className="seg">
-              <button className="on out">{tr.expense}</button>
-              <button>{tr.income}</button>
+              <button
+                className={form.type === "out" ? "on out" : ""}
+                onClick={() => setType("out")}
+              >
+                {tr.expense}
+              </button>
+              <button
+                className={form.type === "in" ? "on" : ""}
+                onClick={() => setType("in")}
+              >
+                {tr.income}
+              </button>
             </div>
           </div>
           <div className="field">
             <label>{tr.amount}</label>
-            <input defaultValue="35.000" placeholder="0 ₫" />
+            <input
+              value={form.amount}
+              onChange={upd("amount")}
+              placeholder="0 ₫"
+              inputMode="numeric"
+            />
           </div>
           <div className="field">
             <label>{tr.category}</label>
-            <select>
-              <option>☕ {t.cats.coffee}</option>
-              <option>🍜 {t.cats.food}</option>
-              <option>🛵 {t.cats.move}</option>
-              <option>🎮 {t.cats.fun}</option>
+            <select value={form.categoryId} onChange={upd("categoryId")}>
+              <option value="">—</option>
+              {cats.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.icon} {c.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="grid g-2" style={{ gap: "12px" }}>
             <div className="field">
               <label>{tr.date}</label>
-              <input type="date" defaultValue="2026-06-25" />
+              <input type="date" value={form.date} onChange={upd("date")} />
             </div>
             <div className="field">
               <label>{tr.method}</label>
-              <select>
-                <option>{t.methods.ewallet}</option>
-                <option>{t.methods.cash}</option>
-                <option>{t.methods.card}</option>
+              <select value={form.methodId} onChange={upd("methodId")}>
+                <option value="">—</option>
+                {methods.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {t.methods[m.mkey] ?? m.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -59,31 +91,60 @@ export default function Transactions({ query = "", t }) {
             <label>{tr.note}</label>
             <textarea
               placeholder={tr.notePh}
-              defaultValue="Trà sữa Phúc Long"
+              value={form.note}
+              onChange={upd("note")}
             ></textarea>
           </div>
+
+          {error && (
+            <div
+              style={{
+                fontSize: ".8rem",
+                color: "var(--danger)",
+                background: "rgba(248,113,113,.12)",
+                border: "1px solid rgba(248,113,113,.3)",
+                borderRadius: "10px",
+                padding: "10px 12px",
+                marginBottom: "12px",
+              }}
+            >
+              {error}
+            </div>
+          )}
+
           <div className="btn-row">
-            <button className="btn btn-primary" style={{ flex: "1" }}>
-              {tr.save}
+            <button
+              className="btn btn-primary"
+              style={{ flex: "1" }}
+              onClick={submit}
+              disabled={saving}
+            >
+              {saving ? t.loadingSession : tr.save}
             </button>
-            <button className="btn">{tr.cancel}</button>
+            <button className="btn" onClick={resetForm} disabled={saving}>
+              {tr.cancel}
+            </button>
           </div>
+          {isEditing && (
+            <div
+              className="muted"
+              style={{ fontSize: ".76rem", marginTop: "8px" }}
+            >
+              Đang sửa giao dịch — bấm {tr.cancel} để thêm mới.
+            </div>
+          )}
           <div className="hr"></div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "9px",
-              fontSize: ".78rem",
-              color: "var(--text-dim)",
-              cursor: "pointer",
-            }}
+          <button
+            type="button"
+            className="quick-chat-link"
+            onClick={onOpenChat}
+            aria-label={tr.quickChat}
           >
             <svg width="18" height="18" style={{ color: "var(--accent)" }}>
               <use href="#i-msg" />
             </svg>
             {tr.quickChat}
-          </div>
+          </button>
         </div>
 
         <div className="card glass">
@@ -128,12 +189,12 @@ export default function Transactions({ query = "", t }) {
                 {tx.amount}
               </div>
               <div className="act">
-                <button>
+                <button onClick={() => edit(tx)} disabled={saving}>
                   <svg width="15" height="15">
                     <use href="#i-edit" />
                   </svg>
                 </button>
-                <button>
+                <button onClick={() => remove(tx.id)} disabled={saving}>
                   <svg width="15" height="15">
                     <use href="#i-trash" />
                   </svg>
@@ -142,7 +203,20 @@ export default function Transactions({ query = "", t }) {
             </div>
           ))}
 
-          {filtered.length === 0 && (
+          {loading && (
+            <div
+              style={{
+                padding: "26px 10px",
+                textAlign: "center",
+                color: "var(--text-dim)",
+                fontSize: ".85rem",
+              }}
+            >
+              {t.loadingSession}
+            </div>
+          )}
+
+          {!loading && filtered.length === 0 && (
             <div
               style={{
                 padding: "26px 10px",
