@@ -5,6 +5,7 @@ import {
   fetchTransactions,
 } from "../../models/giaoDichData";
 import { getBudgetRows } from "../../models/budgetsData";
+import { fetchCategories } from "../../models/danhMucData";
 
 // Tìm kiếm cả GIAO DỊCH và HẠN MỨC, hiện kết quả ngay trong dropdown.
 // KHÔNG chuyển trang khi chọn — chỉ điền vào ô tìm kiếm.
@@ -74,7 +75,8 @@ export default function SearchBar({ query, onSearch, t }) {
 
   const s = t.searchbar;
   const q = query.trim().toLowerCase();
-  const BUDGETS = getBudgetRows(t);
+  const [categories, setCategories] = useState([]);
+  const BUDGETS = getBudgetRows(t, categories);
 
   // Gợi ý tìm kiếm lấy từ giao dịch thật; tải một lần khi mở app.
   const [txns, setTxns] = useState([]);
@@ -86,6 +88,15 @@ export default function SearchBar({ query, onSearch, t }) {
         (list) => alive && setTxns(list),
         () => {}, // lỗi ở thanh tìm kiếm thì im lặng, không chặn app
       );
+
+    fetchCategories()
+      .then((data) => {
+        if (alive) setCategories(data);
+      })
+      .catch(() => {
+        if (alive) setCategories([]);
+      });
+
     return () => {
       alive = false;
     };

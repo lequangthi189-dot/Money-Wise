@@ -13,6 +13,24 @@
   padding: 0;
 }
 
+.category-form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.category-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.category-form-actions .btn {
+  min-width: 90px;
+}
+
 .icon-choice:hover {
   background: var(--surface-hover);
 }
@@ -93,6 +111,42 @@
   border: 0;
   background: var(--input-bg);
   box-shadow: inset 3px 3px 6px #c6cad6, inset -3px -3px 6px #ffffff;
+}
+
+.category-type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+.category-type-pill-label {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.category-type-pill-value {
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.category-type-pill-value.income {
+  background: rgba(52, 211, 153, 0.16);
+  color: #34d399;
+}
+
+.category-type-pill-value.expense {
+  background: rgba(248, 113, 113, 0.16);
+  color: #f87171;
 }
 
 .category-group-title {
