@@ -1,61 +1,52 @@
 import { useEffect, useState } from "react";
-import { MOCK_USERS } from "../models/adminData";
+import { adminUpdateAccount, fetchUsers } from "../models/quanTriData";
 import { ROLES } from "../models/constants";
 
-// TODO: thay các hàm giả lập bên dưới bằng API backend thật.
-
-function fakeDelay(ms = 400) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function apiGetUsers() {
-  await fakeDelay();
-  return MOCK_USERS;
-}
-
-async function apiSetUserStatus(id, status) {
-  await fakeDelay(200);
-  const u = MOCK_USERS.find((u) => u.id === id);
-  if (u) u.status = status;
-  return u;
-}
-
-async function apiSetUserRole(id, role) {
-  await fakeDelay(200);
-  const u = MOCK_USERS.find((u) => u.id === id);
-  if (u) u.role = role;
-  return u;
-}
-
+// Controller: danh sách tài khoản cho khu vực quản trị.
+// Mọi thay đổi đi qua RPC quan_tri_cap_nhat_tai_khoan; DB tự chặn admin
+// thao tác lên chính mình, ở đây chặn thêm để nút bị disable từ trước.
 export function useAdmin(currentEmail) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let active = true;
-    apiGetUsers().then((data) => {
-      if (active) {
+    fetchUsers().then(
+      (data) => {
+        if (!active) return;
         setUsers(data);
         setLoading(false);
-      }
-    });
+      },
+      (e) => {
+        if (!active) return;
+        setError(e.message);
+        setLoading(false);
+      },
+    );
     return () => {
       active = false;
     };
   }, []);
 
-  // Không cho admin tự khóa hoặc tự thu hồi quyền.
   function isSelf(user) {
     return (
-      !!currentEmail &&
-      user.email.toLowerCase() === currentEmail.toLowerCase()
+      !!currentEmail && user.email.toLowerCase() === currentEmail.toLowerCase()
     );
   }
 
   async function toggleBan(user) {
     if (isSelf(user)) return false;
     const nextStatus = user.status === "banned" ? "active" : "banned";
-    await apiSetUserStatus(user.id, nextStatus);
+    try {
+      await adminUpdateAccount(
+        user.id,
+        nextStatus === "banned" ? "KHOA" : "MO_KHOA",
+      );
+    } catch (e) {
+      setError(e.message);
+      return false;
+    }
     setUsers((list) =>
       list.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u)),
     );
@@ -65,12 +56,20 @@ export function useAdmin(currentEmail) {
   async function toggleAdmin(user) {
     if (isSelf(user)) return false;
     const nextRole = user.role === ROLES.ADMIN ? ROLES.USER : ROLES.ADMIN;
-    await apiSetUserRole(user.id, nextRole);
+    try {
+      await adminUpdateAccount(
+        user.id,
+        nextRole === ROLES.ADMIN ? "CAP_QUYEN" : "THU_HOI_QUYEN",
+      );
+    } catch (e) {
+      setError(e.message);
+      return false;
+    }
     setUsers((list) =>
       list.map((u) => (u.id === user.id ? { ...u, role: nextRole } : u)),
     );
     return true;
   }
 
-  return { users, loading, toggleBan, toggleAdmin, isSelf };
+  return { users, loading, error, toggleBan, toggleAdmin, isSelf };
 }

@@ -1,13 +1,30 @@
 import { useState, useRef } from "react";
 import { Icon } from "../components/icons";
+import { supabase, xacMinhMatKhau } from "../../models/supabase";
+import { CHUOI_RONG } from "../../models/chuoiData";
 
 // Màu HOÀN TOÀN lấy từ biến theme (--surface, --text, --accent...), không hardcode.
+
+// Đổi thông báo lỗi tiếng Anh của Supabase sang chuỗi đã dịch trong t.pw.
+// Lỗi không nhận ra thì dùng câu chung, kèm log nguyên văn để còn debug.
+function dichLoiDoiMatKhau(err, p) {
+  const msg = (err?.message || "").toLowerCase();
+  if (msg.includes("reauthentication")) return p.eReauth;
+  if (msg.includes("same as the old") || msg.includes("same_password"))
+    return p.eSamePw;
+  if (msg.includes("rate limit") || msg.includes("too many")) return p.eTooMany;
+  if (msg.includes("session") || msg.includes("jwt")) return p.eSession;
+  if (msg.includes("failed to fetch") || msg.includes("network"))
+    return p.eNetwork;
+  if (msg.includes("at least") || msg.includes("password should be"))
+    return p.eShort;
+  console.warn("Lỗi đổi mật khẩu:", err?.message);
+  return p.eUnknown;
+}
 
 const AVA = 88; // đường kính avatar
 const RING = 5; // độ dày vòng tiến trình
 const BOX = AVA + RING * 2 + 8; // vùng chứa cả vòng
-
-const DEMO_PW = "123456"; // TODO: bỏ khi nối backend xác thực
 
 /* ============ Hàng thông tin ============ */
 function Row({ label, value, onEdit, editable = true, t }) {
@@ -188,10 +205,10 @@ function ChangePassword({ t, onClose }) {
     Math.max(sc - 1, 0)
   ];
 
+  // Mật khẩu hiện tại chỉ kiểm rỗng ở đây; đúng/sai do Supabase trả lời.
   function validate() {
     const e = {};
     if (!cur) e.cur = p.eCurrent;
-    else if (cur !== DEMO_PW) e.cur = p.eWrong;
 
     if (next.length < 8) e.next = p.eShort;
     else if (!(/[a-zA-Z]/.test(next) && /\d/.test(next))) e.next = p.eWeak;
@@ -203,15 +220,46 @@ function ChangePassword({ t, onClose }) {
     return Object.keys(e).length === 0;
   }
 
-  function submit() {
-    if (!validate()) return;
+  async function submit() {
+    if (busy || !validate()) return;
     setBusy(true);
-    // TODO: gọi API backend để cập nhật mật khẩu.
-    setTimeout(() => {
-      setBusy(false);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user?.email) {
+        setErrs({ cur: p.eSession });
+        return;
+      }
+
+      // Kiểm mật khẩu cũ trên client phụ (không lưu session) nên phiên đang
+      // chạy không bị thay token, dù đúng hay sai.
+      const { error: errDangNhap } = await xacMinhMatKhau(user.email, cur);
+      if (errDangNhap) {
+        // Sai mật khẩu là trường hợp thường gặp nhất, nhưng lỗi mạng hay
+        // rate limit cũng rơi vào đây — không gộp hết thành "sai mật khẩu".
+        const msg = (errDangNhap.message || "").toLowerCase();
+        setErrs({
+          cur: msg.includes("invalid login credentials")
+            ? p.eWrong
+            : dichLoiDoiMatKhau(errDangNhap, p),
+        });
+        return;
+      }
+
+      const { error: errCapNhat } = await supabase.auth.updateUser({
+        password: next,
+      });
+      if (errCapNhat) {
+        setErrs({ next: dichLoiDoiMatKhau(errCapNhat, p) });
+        return;
+      }
+
       setDone(true);
       setTimeout(onClose, 1200);
-    }, 700);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -359,7 +407,14 @@ function ChangePassword({ t, onClose }) {
 }
 
 /* ============ Trang Hồ sơ ============ */
-export default function Profile({ t, onLogout, fontSize, setFontSize }) {
+export default function Profile({
+  t,
+  onLogout,
+  fontSize,
+  setFontSize,
+  streak = CHUOI_RONG,
+  profile,
+}) {
   const p = t.profile;
   const fileRef = useRef(null);
   const [avatar, setAvatar] = useState(null);
@@ -392,6 +447,17 @@ export default function Profile({ t, onLogout, fontSize, setFontSize }) {
   }
 
   const uploading = progress !== null;
+  const displayName = profile?.name || profile?.email || "—";
+  const initials = displayName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+  const joinedAt = profile?.joinedAt
+    ? new Intl.DateTimeFormat(undefined, { month: "2-digit", year: "numeric" }).format(
+        new Date(profile.joinedAt),
+      )
+    : "—";
 
   return (
     <div className="card glass" style={{ padding: "22px 20px" }}>
@@ -430,14 +496,14 @@ export default function Profile({ t, onLogout, fontSize, setFontSize }) {
                 transition: "opacity .2s",
               }}
             >
-              {avatar ? (
+              {avatar || profile?.avatarUrl ? (
                 <img
-                  src={avatar}
+                  src={avatar || profile.avatarUrl}
                   alt=""
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               ) : (
-                "TH"
+                initials
               )}
             </div>
 
@@ -512,7 +578,9 @@ export default function Profile({ t, onLogout, fontSize, setFontSize }) {
           <div style={{ display: "flex", alignItems: "center", gap: "11px" }}>
             <span style={{ fontSize: "1.6rem" }}>🔥</span>
             <div>
-              <b style={{ fontSize: "1rem" }}>{p.streakDays(12)}</b>
+              <b style={{ fontSize: "1rem" }}>
+                {p.streakDays(streak.ghiChep.current)}
+              </b>
               <small
                 style={{
                   display: "block",
@@ -520,7 +588,7 @@ export default function Profile({ t, onLogout, fontSize, setFontSize }) {
                   color: "var(--text-dim)",
                 }}
               >
-                {p.record(18)}
+                {p.record(streak.ghiChep.record)}
               </small>
             </div>
           </div>
@@ -532,16 +600,16 @@ export default function Profile({ t, onLogout, fontSize, setFontSize }) {
               marginTop: "10px",
             }}
           >
-            {p.joined("06/2026")}
+            {p.joined(joinedAt)}
           </small>
         </div>
       </div>
 
       {/* ---- Thông tin ---- */}
-      <Row label={p.name} value="Thi Nguyễn" t={p} />
-      <Row label={p.username} value="lequangthi" t={p} />
-      <Row label={p.email} value="thi@huflit.edu.vn" editable={false} t={p} />
-      <Row label={p.phone} value="+84 909 xxx xxx" t={p} />
+      <Row label={p.name} value={displayName} editable={false} t={p} />
+      <Row label={p.username} value={profile?.username || "—"} editable={false} t={p} />
+      <Row label={p.email} value={profile?.email || "—"} editable={false} t={p} />
+      <Row label={p.phone} value={profile?.phone || "—"} editable={false} t={p} />
 
       {/* ---- Giao diện: cỡ chữ (thanh kéo) ---- */}
       <div

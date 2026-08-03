@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import "../css/pages/categories-form.css";
-import { CATEGORY_ICONS } from "../../models/categoriesData";
+import { CATEGORY_ICONS } from "../../models/danhMucData";
 import { useCategories } from "../../controllers/useCategories";
 
 function CatCard({ c, type, t, onDelete, onEdit }) {
@@ -8,23 +8,26 @@ function CatCard({ c, type, t, onDelete, onEdit }) {
     <div className="catcard">
       <div className={"cat " + c.cls}>{c.icon}</div>
       <div className="meta">
-        <b>{c.name || t.cats[c.key]}</b>
+        <b>{c.name}</b>
       </div>
       <span className={"badge " + (type === "in" ? "b-in" : "b-out")}>
         {type === "in" ? t.thu : t.chi}
       </span>
-      <div className="act">
-        <button aria-label="edit" onClick={() => onEdit(c, type)}>
-          <svg width="15" height="15">
-            <use href="#i-edit" />
-          </svg>
-        </button>
-        <button aria-label="delete" onClick={() => onDelete(c.id, type)}>
-          <svg width="15" height="15">
-            <use href="#i-trash" />
-          </svg>
-        </button>
-      </div>
+      {/* Danh mục mặc định dùng chung cho mọi người nên không cho sửa/xoá. */}
+      {!c.isDefault && (
+        <div className="act">
+          <button aria-label="edit" onClick={() => onEdit(c)}>
+            <svg width="15" height="15">
+              <use href="#i-edit" />
+            </svg>
+          </button>
+          <button aria-label="delete" onClick={() => onDelete(c.id)}>
+            <svg width="15" height="15">
+              <use href="#i-trash" />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -63,11 +66,15 @@ function CategoryTypeSelect({ value, onChange }) {
   );
 }
 
-export default function Categories({ t }) {
+export default function Categories({ t, userId }) {
   const c = t.categories;
   const {
     expenseCats,
     incomeCats,
+    loading,
+    error,
+    saving,
+    isEditing,
     showForm,
     setShowForm,
     newName,
@@ -80,7 +87,7 @@ export default function Categories({ t }) {
     handleDeleteCategory,
     handleEditCategory,
     handleCloseForm,
-  } = useCategories();
+  } = useCategories(userId);
 
   return (
     <div className="card glass">
@@ -100,10 +107,30 @@ export default function Categories({ t }) {
           {c.add}
         </button>
       </div>
+      {error && (
+        <div
+          style={{
+            fontSize: ".8rem",
+            color: "var(--danger)",
+            background: "rgba(248,113,113,.12)",
+            border: "1px solid rgba(248,113,113,.3)",
+            borderRadius: "10px",
+            padding: "10px 12px",
+            margin: "10px 0",
+          }}
+        >
+          {error}
+        </div>
+      )}
+
       {showForm && (
         <div className="card glass" style={{ margin: "12px 0" }}>
-          <button className="btn btn-primary" onClick={handleAddCategory}>
-            Lưu
+          <button
+            className="btn btn-primary"
+            onClick={handleAddCategory}
+            disabled={saving}
+          >
+            {saving ? "Đang lưu…" : "Lưu"}
           </button>
           <button className="btn" onClick={handleCloseForm}>
             Đóng
@@ -126,8 +153,28 @@ export default function Categories({ t }) {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
           />
-          <CategoryTypeSelect value={newType} onChange={setNewType} />
+          {/* DB không cho đổi loại sau khi tạo, nên khi sửa chỉ hiển thị. */}
+          {isEditing ? (
+            <div className="muted" style={{ padding: "8px 0", fontSize: ".8rem" }}>
+              {newType === "in" ? t.thu : t.chi}
+            </div>
+          ) : (
+            <CategoryTypeSelect value={newType} onChange={setNewType} />
+          )}
           </div>
+      )}
+
+      {loading && (
+        <div
+          style={{
+            padding: "26px 10px",
+            textAlign: "center",
+            color: "var(--text-dim)",
+            fontSize: ".85rem",
+          }}
+        >
+          {t.loadingSession}
+        </div>
       )}
 
       <div className="category-group-title">

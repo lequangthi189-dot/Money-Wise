@@ -182,20 +182,48 @@
   border-color: currentColor;
   background: rgba(52, 211, 153, 0.13);
 }
-.pw-score-2 .pw-strength-head strong,
-.pw-score-2 .pw-strength-bar span {
+.pw-score-2 .pw-strength-head strong {
   color: #f59e0b;
+}
+.pw-score-2 .pw-strength-bar span {
   background-color: #f59e0b;
 }
-.pw-score-3 .pw-strength-head strong,
-.pw-score-3 .pw-strength-bar span {
+.pw-score-3 .pw-strength-head strong {
   color: #eab308;
+}
+.pw-score-3 .pw-strength-bar span {
   background-color: #eab308;
 }
 .pw-score-4 .pw-strength-head strong,
-.pw-score-4 .pw-strength-bar span,
-.pw-score-5 .pw-strength-head strong,
-.pw-score-5 .pw-strength-bar span {
+.pw-score-5 .pw-strength-head strong {
   color: var(--ok, #34d399);
+}
+.pw-score-4 .pw-strength-bar span,
+.pw-score-5 .pw-strength-bar span {
   background-color: var(--ok, #34d399);
+}
+
+.reset-icon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+  border-radius: 16px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.reset-title {
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+.reset-desc {
+  margin: 0 auto 22px;
+  max-width: 330px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  line-height: 1.6;
 }

@@ -1,94 +1,139 @@
-import { useState } from "react";
-import { EXPENSE, INCOME } from "../models/categoriesData";
+import { useCallback, useEffect, useState } from "react";
+import {
+  canDeleteCategory,
+  createCategory,
+  deleteCategory,
+  fetchCategories,
+  hideCategory,
+  updateCategory,
+} from "../models/danhMucData";
 
-// Controller: quản lý danh mục thu/chi — thêm, sửa, xoá; điều khiển form nhập.
-// Danh mục mặc định (có `key`) không được sửa/xoá.
-export function useCategories() {
-  const [expenseCats, setExpenseCats] = useState(EXPENSE);
-  const [incomeCats, setIncomeCats] = useState(INCOME);
+// Controller: quản lý danh mục thu/chi lấy từ Supabase — thêm, sửa, xoá.
+// Danh mục mặc định (la_mac_dinh) dùng chung cho mọi người nên không sửa/xoá.
+export function useCategories(userId) {
+  const [cats, setCats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("out");
   const [selectedIcon, setSelectedIcon] = useState("📌");
   const [editingId, setEditingId] = useState(null);
-  const [editingType, setEditingType] = useState(null);
+
+  // Không setState đồng bộ ở đây: hàm được gọi thẳng trong useEffect, mọi
+  // cập nhật state phải nằm sau await để tránh cascading render.
+  const reload = useCallback(async () => {
+    try {
+      const data = await fetchCategories();
+      setCats(data);
+      setError("");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Tải lần đầu. State được đặt trong callback của promise (không đồng bộ
+  // trong thân effect) và bỏ qua nếu component đã unmount.
+  useEffect(() => {
+    let alive = true;
+    fetchCategories().then(
+      (data) => {
+        if (!alive) return;
+        setCats(data);
+        setLoading(false);
+      },
+      (e) => {
+        if (!alive) return;
+        setError(e.message);
+        setLoading(false);
+      },
+    );
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const expenseCats = cats.filter((c) => c.type === "out");
+  const incomeCats = cats.filter((c) => c.type === "in");
 
   function resetForm() {
     setNewName("");
     setNewType("out");
     setSelectedIcon("📌");
     setEditingId(null);
-    setEditingType(null);
     setShowForm(false);
   }
 
-  function handleAddCategory() {
-    if (newName.trim() === "") return;
-
-    if (editingId !== null) {
-      const updatedCat = {
-        id: editingId,
-        icon: selectedIcon,
-        cls: "c-shop",
-        name: newName,
-      };
-
-      if (editingType === "out") {
-        setExpenseCats(
-          expenseCats.map((x) => (x.id === editingId ? updatedCat : x)),
+  async function handleAddCategory() {
+    if (newName.trim() === "" || saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      if (editingId !== null) {
+        // Không gửi loai_danh_muc: trigger kiem_tra_danh_muc chặn đổi loại.
+        const updated = await updateCategory(editingId, {
+          name: newName,
+          icon: selectedIcon,
+        });
+        setCats((list) =>
+          list.map((c) => (c.id === editingId ? updated : c)),
         );
       } else {
-        setIncomeCats(
-          incomeCats.map((x) => (x.id === editingId ? updatedCat : x)),
-        );
+        const created = await createCategory({
+          userId,
+          name: newName,
+          type: newType,
+          icon: selectedIcon,
+        });
+        setCats((list) => [...list, created]);
       }
-
       resetForm();
-      return;
-    }
-
-    const newCat = {
-      id: Date.now(),
-      icon: selectedIcon,
-      cls: "c-shop",
-      name: newName,
-    };
-
-    if (newType === "out") {
-      setExpenseCats([...expenseCats, newCat]);
-    } else {
-      setIncomeCats([...incomeCats, newCat]);
-    }
-
-    resetForm();
-  }
-
-  function handleDeleteCategory(id, type) {
-    const list = type === "out" ? expenseCats : incomeCats;
-    const cat = list.find((x) => x.id === id);
-
-    if (cat.key) {
-      alert("Không thể xóa danh mục mặc định");
-      return;
-    }
-
-    if (type === "out") {
-      setExpenseCats(expenseCats.filter((x) => x.id !== id));
-    } else {
-      setIncomeCats(incomeCats.filter((x) => x.id !== id));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
     }
   }
 
-  function handleEditCategory(cat, type) {
-    if (cat.key) {
-      alert("Không thể sửa danh mục mặc định");
+  async function handleDeleteCategory(id) {
+    const cat = cats.find((c) => c.id === id);
+    if (!cat || saving) return;
+    if (cat.isDefault) {
+      setError("Không thể xoá danh mục mặc định.");
       return;
     }
 
+    setSaving(true);
+    setError("");
+    try {
+      // Đã phát sinh giao dịch/hạn mức/báo cáo thì DB chặn xoá — chuyển sang
+      // ẩn để giữ nguyên lịch sử.
+      if (await canDeleteCategory(id)) {
+        await deleteCategory(id);
+      } else {
+        await hideCategory(id);
+        setError("Danh mục đã có dữ liệu nên chỉ được ẩn, không xoá hẳn.");
+      }
+      setCats((list) => list.filter((c) => c.id !== id));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleEditCategory(cat) {
+    if (cat.isDefault) {
+      setError("Không thể sửa danh mục mặc định.");
+      return;
+    }
     setEditingId(cat.id);
-    setEditingType(type);
     setNewName(cat.name);
-    setNewType(type);
+    setNewType(cat.type);
     setSelectedIcon(cat.icon);
     setShowForm(true);
   }
@@ -96,6 +141,10 @@ export function useCategories() {
   return {
     expenseCats,
     incomeCats,
+    loading,
+    error,
+    saving,
+    isEditing: editingId !== null,
     showForm,
     setShowForm,
     newName,
@@ -108,5 +157,6 @@ export function useCategories() {
     handleDeleteCategory,
     handleEditCategory,
     handleCloseForm: resetForm,
+    reload,
   };
 }

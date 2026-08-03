@@ -4,7 +4,8 @@ import { Icon } from "../../components/icons";
 
 export default function UsersManager({ at, currentEmail }) {
   const u = at.users;
-  const { users, loading, toggleBan, toggleAdmin, isSelf } = useAdmin(currentEmail);
+  const { users, loading, error, toggleBan, toggleAdmin, isSelf } =
+    useAdmin(currentEmail);
 
   return (
     <div className="card glass">
@@ -14,6 +15,22 @@ export default function UsersManager({ at, currentEmail }) {
           <span className="muted">{u.sub}</span>
         </div>
       </div>
+
+      {error && (
+        <div
+          style={{
+            fontSize: ".8rem",
+            color: "var(--danger)",
+            background: "rgba(248,113,113,.12)",
+            border: "1px solid rgba(248,113,113,.3)",
+            borderRadius: "10px",
+            padding: "10px 12px",
+            margin: "10px 0",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
       {loading ? (
         <p className="muted" style={{ padding: "16px 4px" }}>
@@ -59,9 +76,17 @@ export default function UsersManager({ at, currentEmail }) {
                     </td>
                     <td style={tdStyle}>{usr.createdAt}</td>
                     <td style={tdStyle}>
-                      <div style={{ display: "flex", gap: "8px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                          gap: "12px",
+                        }}
+                      >
                         <button
                           className="btn"
+                          style={actionButtonStyle}
                           disabled={self}
                           title={self ? u.selfActionBlocked : undefined}
                           onClick={() => {
@@ -77,6 +102,7 @@ export default function UsersManager({ at, currentEmail }) {
                         </button>
                         <button
                           className="btn"
+                          style={actionButtonStyle}
                           disabled={self}
                           title={self ? u.selfActionBlocked : undefined}
                           onClick={() => {
@@ -105,3 +131,10 @@ export default function UsersManager({ at, currentEmail }) {
 
 const thStyle = { padding: "10px 8px", fontSize: "0.8rem", fontWeight: 600 };
 const tdStyle = { padding: "10px 8px", fontSize: "0.88rem" };
+const actionButtonStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+  whiteSpace: "nowrap",
+};
