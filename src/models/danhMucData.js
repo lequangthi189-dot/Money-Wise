@@ -17,6 +17,22 @@ const CLS_PALETTE = [
   "c-fun", "c-shop", "c-coffee", "c-health", "c-salary",
 ];
 
+// Các bản ghi mặc định cũ trong DB chưa có bieu_tuong. Giữ icon gốc theo
+// ma_danh_muc thay vì hiển thị tất cả thành icon fallback 📌.
+const DEFAULT_ICONS = {
+  1: "🍜",
+  2: "🛵",
+  3: "📚",
+  4: "🏠",
+  5: "🎮",
+  6: "🛍️",
+  7: "☕",
+  8: "❤️",
+  9: "💰",
+  10: "👨‍👩‍👧",
+  11: "🎓",
+};
+
 export function clsFor(id) {
   return CLS_PALETTE[Number(id) % CLS_PALETTE.length];
 }
@@ -25,7 +41,7 @@ function toUI(row) {
   return {
     id: row.ma_danh_muc,
     name: row.ten_danh_muc,
-    icon: row.bieu_tuong || "📌",
+    icon: row.bieu_tuong || DEFAULT_ICONS[row.ma_danh_muc] || "📌",
     cls: clsFor(row.ma_danh_muc),
     type: TYPE_FROM_LOAI[row.loai_danh_muc],
     isDefault: row.la_mac_dinh,

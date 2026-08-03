@@ -333,6 +333,7 @@ export default function App() {
             </button>
             <Profile
               t={t}
+              isAdmin={isAdmin}
               fontSize={fontSize}
               setFontSize={setFontSize}
               streak={streak}

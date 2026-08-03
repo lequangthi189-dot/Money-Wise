@@ -409,6 +409,7 @@ function ChangePassword({ t, onClose }) {
 /* ============ Trang Hồ sơ ============ */
 export default function Profile({
   t,
+  isAdmin = false,
   onLogout,
   fontSize,
   setFontSize,
@@ -470,13 +471,22 @@ export default function Profile({
           marginBottom: "18px",
         }}
       >
-        <div style={{ textAlign: "center", flex: "0 0 auto" }}>
+        <div
+          style={{
+            display: isAdmin ? "flex" : "block",
+            alignItems: isAdmin ? "center" : undefined,
+            gap: isAdmin ? "16px" : undefined,
+            margin: isAdmin ? "0 auto" : undefined,
+            textAlign: "center",
+            flex: "0 0 auto",
+          }}
+        >
           <div
             style={{
               position: "relative",
               width: BOX,
               height: BOX,
-              margin: "0 auto 10px",
+              margin: isAdmin ? 0 : "0 auto 10px",
             }}
           >
             {uploading && <ProgressRing percent={progress} />}
@@ -535,29 +545,32 @@ export default function Profile({
             onChange={pickFile}
             style={{ display: "none" }}
           />
-          <button
-            className="btn btn-primary"
-            style={{ padding: "9px 20px", opacity: uploading ? 0.6 : 1 }}
-            disabled={uploading}
-            onClick={() => fileRef.current?.click()}
-          >
-            {p.pickPhoto}
-          </button>
-          <p
-            style={{
-              fontSize: ".7rem",
-              color: "var(--text-dim)",
-              marginTop: "6px",
-              maxWidth: "150px",
-            }}
-          >
-            {p.photoHint}
-          </p>
+          <div>
+            <button
+              className="btn btn-primary"
+              style={{ padding: "9px 20px", opacity: uploading ? 0.6 : 1 }}
+              disabled={uploading}
+              onClick={() => fileRef.current?.click()}
+            >
+              {p.pickPhoto}
+            </button>
+            <p
+              style={{
+                fontSize: ".7rem",
+                color: "var(--text-dim)",
+                marginTop: "6px",
+                maxWidth: "150px",
+              }}
+            >
+              {p.photoHint}
+            </p>
+          </div>
         </div>
 
         {/* ---- Chuỗi ghi chép (kế avatar) ---- */}
         <div
           style={{
+            display: isAdmin ? "none" : undefined,
             flex: 1,
             padding: "14px 16px",
             borderRadius: "var(--r-md)",
