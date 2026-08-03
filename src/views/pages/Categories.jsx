@@ -13,21 +13,18 @@ function CatCard({ c, type, t, onDelete, onEdit }) {
       <span className={"badge " + (type === "in" ? "b-in" : "b-out")}>
         {type === "in" ? t.thu : t.chi}
       </span>
-      {/* Danh mục mặc định dùng chung cho mọi người nên không cho sửa/xoá. */}
-      {!c.isDefault && (
-        <div className="act">
-          <button aria-label="edit" onClick={() => onEdit(c)}>
-            <svg width="15" height="15">
-              <use href="#i-edit" />
-            </svg>
-          </button>
-          <button aria-label="delete" onClick={() => onDelete(c.id)}>
-            <svg width="15" height="15">
-              <use href="#i-trash" />
-            </svg>
-          </button>
-        </div>
-      )}
+      <div className="act">
+        <button aria-label="edit" onClick={() => onEdit(c)}>
+          <svg width="15" height="15">
+            <use href="#i-edit" />
+          </svg>
+        </button>
+        <button aria-label="delete" onClick={() => onDelete(c.id)}>
+          <svg width="15" height="15">
+            <use href="#i-trash" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
@@ -124,17 +121,7 @@ export default function Categories({ t, userId }) {
       )}
 
       {showForm && (
-        <div className="card glass" style={{ margin: "12px 0" }}>
-          <button
-            className="btn btn-primary"
-            onClick={handleAddCategory}
-            disabled={saving}
-          >
-            {saving ? "Đang lưu…" : "Lưu"}
-          </button>
-          <button className="btn" onClick={handleCloseForm}>
-            Đóng
-          </button>
+        <div className="card glass category-form-card" style={{ margin: "12px 0" }}>
           <div>
             {CATEGORY_ICONS.map((icon) => (
               <button
@@ -155,13 +142,28 @@ export default function Categories({ t, userId }) {
           />
           {/* DB không cho đổi loại sau khi tạo, nên khi sửa chỉ hiển thị. */}
           {isEditing ? (
-            <div className="muted" style={{ padding: "8px 0", fontSize: ".8rem" }}>
-              {newType === "in" ? t.thu : t.chi}
+            <div className="category-type-pill">
+              <span className="category-type-pill-label">Loại</span>
+              <span className={newType === "in" ? "category-type-pill-value income" : "category-type-pill-value expense"}>
+                {newType === "in" ? t.thu : t.chi}
+              </span>
             </div>
           ) : (
             <CategoryTypeSelect value={newType} onChange={setNewType} />
           )}
+          <div className="category-form-actions">
+            <button
+              className="btn btn-primary"
+              onClick={handleAddCategory}
+              disabled={saving}
+            >
+              {saving ? "Đang lưu…" : "Lưu"}
+            </button>
+            <button className="btn" onClick={handleCloseForm}>
+              Đóng
+            </button>
           </div>
+        </div>
       )}
 
       {loading && (

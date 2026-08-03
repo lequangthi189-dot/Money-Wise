@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  canDeleteCategory,
   createCategory,
   deleteCategory,
   fetchCategories,
@@ -102,35 +101,28 @@ export function useCategories(userId) {
   async function handleDeleteCategory(id) {
     const cat = cats.find((c) => c.id === id);
     if (!cat || saving) return;
-    if (cat.isDefault) {
-      setError("Không thể xoá danh mục mặc định.");
-      return;
-    }
 
     setSaving(true);
     setError("");
     try {
-      // Đã phát sinh giao dịch/hạn mức/báo cáo thì DB chặn xoá — chuyển sang
-      // ẩn để giữ nguyên lịch sử.
-      if (await canDeleteCategory(id)) {
-        await deleteCategory(id);
-      } else {
-        await hideCategory(id);
-        setError("Danh mục đã có dữ liệu nên chỉ được ẩn, không xoá hẳn.");
-      }
+      await deleteCategory(id);
       setCats((list) => list.filter((c) => c.id !== id));
     } catch (e) {
-      setError(e.message);
+      const message = String(e?.message || "");
+      const isForeignKeyIssue = message.includes("foreign") || message.includes("constraint") || message.includes("violat");
+      if (isForeignKeyIssue) {
+        await hideCategory(id);
+        setError("Danh mục đã có dữ liệu nên chỉ được ẩn, không xoá hẳn.");
+        setCats((list) => list.filter((c) => c.id !== id));
+      } else {
+        setError(message || "Không thể xoá danh mục.");
+      }
     } finally {
       setSaving(false);
     }
   }
 
   function handleEditCategory(cat) {
-    if (cat.isDefault) {
-      setError("Không thể sửa danh mục mặc định.");
-      return;
-    }
     setEditingId(cat.id);
     setNewName(cat.name);
     setNewType(cat.type);
