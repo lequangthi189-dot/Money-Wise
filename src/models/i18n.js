@@ -2,6 +2,7 @@
 export const i18n = {
   vi: {
     brandSub: "Quản lý tài chính",
+    loadingSession: "Đang tải…",
     streak: "Chuỗi ghi chép",
     streakDays: (n) => `${n} ngày`,
     search: "Tìm giao dịch, danh mục…",
@@ -72,6 +73,13 @@ export const i18n = {
       eWeak: "Mật khẩu mới cần có cả chữ và số",
       eSame: "Mật khẩu mới phải khác mật khẩu hiện tại",
       eConfirm: "Xác nhận mật khẩu không khớp",
+      eReauth:
+        "Vì lý do bảo mật, cần xác thực lại. Hãy đăng xuất rồi đăng nhập lại trước khi đổi mật khẩu.",
+      eSamePw: "Mật khẩu mới phải khác mật khẩu hiện tại.",
+      eTooMany: "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút.",
+      eSession: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+      eNetwork: "Không kết nối được máy chủ. Kiểm tra lại mạng.",
+      eUnknown: "Không đổi được mật khẩu. Vui lòng thử lại.",
       strength: ["Yếu", "Trung bình", "Mạnh"],
     },
     settings: {
@@ -234,6 +242,7 @@ export const i18n = {
 
   en: {
     brandSub: "Money management",
+    loadingSession: "Loading…",
     streak: "Logging streak",
     streakDays: (n) => `${n} days`,
     search: "Search transactions, categories…",
@@ -304,6 +313,13 @@ export const i18n = {
       eWeak: "New password needs both letters and numbers",
       eSame: "New password must differ from the current one",
       eConfirm: "Passwords do not match",
+      eReauth:
+        "For security reasons you need to re-authenticate. Please sign out and sign in again before changing your password.",
+      eSamePw: "New password must differ from the current one.",
+      eTooMany: "Too many attempts, please try again in a few minutes.",
+      eSession: "Your session has expired. Please sign in again.",
+      eNetwork: "Cannot reach the server. Check your connection.",
+      eUnknown: "Could not change the password. Please try again.",
       strength: ["Weak", "Medium", "Strong"],
     },
     settings: {

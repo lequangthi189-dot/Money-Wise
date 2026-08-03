@@ -238,13 +238,16 @@ export default function Auth(props) {
     mode,
     isLogin,
     isForgot,
+    isReset,
     error,
     info,
+    loading,
     form,
     upd,
     switchMode,
     submit,
     submitForgot,
+    submitReset,
   } = useAuth(props);
 
   const errorBox = error && (
@@ -260,6 +263,22 @@ export default function Auth(props) {
       }}
     >
       {error}
+    </div>
+  );
+
+  const infoBox = info && (
+    <div
+      style={{
+        fontSize: ".8rem",
+        color: "var(--ok, #34d399)",
+        background: "rgba(52,211,153,.12)",
+        border: "1px solid rgba(52,211,153,.3)",
+        borderRadius: "10px",
+        padding: "10px 12px",
+        marginBottom: "14px",
+      }}
+    >
+      {info}
     </div>
   );
 
@@ -345,7 +364,26 @@ export default function Auth(props) {
         </div>
 
         <div className="card glass" style={{ padding: "24px" }}>
-          {isForgot ? (
+          {isReset ? (
+            <>
+              <div className="reset-icon" aria-hidden="true">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="4" y="10" width="16" height="11" rx="2" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                </svg>
+              </div>
+              <h2 className="reset-title">{tr.resetTitle}</h2>
+              <p className="reset-desc">{tr.resetDesc}</p>
+              <FloatingInput label={tr.newPassword} type="password" value={form.password} onChange={upd("password")} name="new-password" autoComplete="new-password" />
+              <PasswordStrength password={form.password} tr={tr} />
+              <FloatingInput label={tr.confirmNewPassword} type="password" value={form.confirm} onChange={upd("confirm")} name="confirm-password" autoComplete="new-password" />
+              {infoBox}
+              {errorBox}
+              <button className="btn btn-primary" style={{ width: "100%", opacity: loading ? 0.6 : 1 }} onClick={submitReset} disabled={loading}>
+                {loading ? tr.loading : tr.updatePassword}
+              </button>
+            </>
+          ) : isForgot ? (
             <>
               <h2
                 style={{
@@ -380,29 +418,16 @@ export default function Auth(props) {
                 />
               </div>
 
-              {info && (
-                <div
-                  style={{
-                    fontSize: ".8rem",
-                    color: "var(--ok, #34d399)",
-                    background: "rgba(52,211,153,.12)",
-                    border: "1px solid rgba(52,211,153,.3)",
-                    borderRadius: "10px",
-                    padding: "10px 12px",
-                    marginBottom: "14px",
-                  }}
-                >
-                  {info}
-                </div>
-              )}
+              {infoBox}
               {errorBox}
 
               <button
                 className="btn btn-primary"
-                style={{ width: "100%" }}
+                style={{ width: "100%", opacity: loading ? 0.6 : 1 }}
                 onClick={submitForgot}
+                disabled={loading}
               >
-                {tr.sendReset}
+                {loading ? tr.loading : tr.sendReset}
               </button>
 
               <div
@@ -520,14 +545,20 @@ export default function Auth(props) {
                 </div>
               )}
 
+              {infoBox}
               {errorBox}
 
               <button
                 className="btn btn-primary"
-                style={{ width: "100%" }}
+                style={{ width: "100%", opacity: loading ? 0.6 : 1 }}
                 onClick={submit}
+                disabled={loading}
               >
-                {isLogin ? tr.submitLogin : tr.submitRegister}
+                {loading
+                  ? tr.loading
+                  : isLogin
+                    ? tr.submitLogin
+                    : tr.submitRegister}
               </button>
 
               <div
@@ -551,7 +582,7 @@ export default function Auth(props) {
           )}
         </div>
 
-        {!isForgot && (
+        {!isForgot && !isReset && (
           <p
             style={{
               textAlign: "center",

@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Icon } from "./icons";
-import { TXNS } from "../../models/transactionsData";
+import {
+  fetchPaymentMethods,
+  fetchTransactions,
+} from "../../models/giaoDichData";
 import { getBudgetRows } from "../../models/budgetsData";
 
 // Tìm kiếm cả GIAO DỊCH và HẠN MỨC, hiện kết quả ngay trong dropdown.
@@ -73,15 +76,32 @@ export default function SearchBar({ query, onSearch, t }) {
   const q = query.trim().toLowerCase();
   const BUDGETS = getBudgetRows(t);
 
+  // Gợi ý tìm kiếm lấy từ giao dịch thật; tải một lần khi mở app.
+  const [txns, setTxns] = useState([]);
+  useEffect(() => {
+    let alive = true;
+    fetchPaymentMethods()
+      .then((ms) => fetchTransactions(ms))
+      .then(
+        (list) => alive && setTxns(list),
+        () => {}, // lỗi ở thanh tìm kiếm thì im lặng, không chặn app
+      );
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const txHits = q
-    ? TXNS.filter(
-        (x) =>
-          x.name.toLowerCase().includes(q) ||
-          t.cats[x.catKey].toLowerCase().includes(q) ||
-          t.methods[x.mkey].toLowerCase().includes(q) ||
-          x.amount.toLowerCase().includes(q) ||
-          x.date.includes(q),
-      ).slice(0, 4)
+    ? txns
+        .filter(
+          (x) =>
+            x.name.toLowerCase().includes(q) ||
+            x.catName.toLowerCase().includes(q) ||
+            (t.methods[x.mkey] ?? "").toLowerCase().includes(q) ||
+            x.amount.toLowerCase().includes(q) ||
+            x.date.includes(q),
+        )
+        .slice(0, 4)
     : [];
 
   const wantAllBudgets = q && t.nav.budgets.toLowerCase().includes(q);
@@ -253,7 +273,7 @@ export default function SearchBar({ query, onSearch, t }) {
                     <small
                       style={{ fontSize: ".72rem", color: "var(--text-dim)" }}
                     >
-                      {x.date} · {t.cats[x.catKey]}
+                      {x.date} · {x.catName}
                     </small>
                   </div>
                   <span

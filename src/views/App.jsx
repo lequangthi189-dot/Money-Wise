@@ -45,6 +45,15 @@ const ADMIN_VIEWS = {
   "admin-stats": AdminStats,
 };
 
+function getInitials(name, email = "") {
+  const source = name?.trim() || email.split("@")[0] || "?";
+  return source
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
 export default function App() {
   const {
     view,
@@ -59,8 +68,15 @@ export default function App() {
     fontSize,
     setFontSize,
     authed,
+    ready,
+    passwordRecovery,
+    finishPasswordRecovery,
     role,
+    userId,
+    streak,
+    reloadStreak,
     currentEmail,
+    currentProfile,
     completeAuth,
     showLogout,
     setShowLogout,
@@ -76,11 +92,33 @@ export default function App() {
   const at = ADMIN_TEXT[lang];
   const isAdmin = role === ROLES.ADMIN;
 
-  if (!authed)
+  // Đang khôi phục session từ localStorage: chưa biết có đăng nhập hay
+  // chưa, hiện màn chờ để không nháy qua màn đăng nhập rồi lại vào app.
+  if (!ready)
+    return (
+      <div
+        className="root"
+        data-theme={theme}
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--text-dim)",
+          fontSize: ".9rem",
+        }}
+      >
+        {t.loadingSession ?? "Đang tải…"}
+      </div>
+    );
+
+  if (!authed || passwordRecovery)
     return (
       <>
         <Sprite />
         <Auth
+          passwordRecovery={passwordRecovery}
+          onPasswordRecoveryDone={finishPasswordRecovery}
           onAuthed={(form, userRole) => completeAuth(form.email, userRole)}
           theme={theme}
           setTheme={setTheme}
@@ -116,7 +154,7 @@ export default function App() {
             <div className="streak">
               <span className="fire">🔥</span>
               <div>
-                <b>{t.streakDays(12)}</b>
+                <b>{t.streakDays(streak.ghiChep.current)}</b>
                 <span>{t.streak}</span>
               </div>
             </div>
@@ -149,10 +187,10 @@ export default function App() {
               style={{ cursor: "pointer" }}
               title={t.nav.profile}
             >
-              <div className="ava">TH</div>
+              <div className="ava">{getInitials(currentProfile?.name, currentEmail)}</div>
               <div style={{ flex: "1" }}>
-                <b>Thi Nguyễn</b>
-                <small>thi@huflit.edu.vn</small>
+                <b>{currentProfile?.name || currentEmail}</b>
+                <small>{currentEmail}</small>
               </div>
               <button
                 onClick={(e) => {
@@ -230,6 +268,8 @@ export default function App() {
                 <ViewComp
                   query={query}
                   t={t}
+                  userId={userId}
+                  onDataChanged={reloadStreak}
                   onOpenChat={() => setChatOpen(true)}
                 />
               )}
@@ -295,6 +335,8 @@ export default function App() {
               t={t}
               fontSize={fontSize}
               setFontSize={setFontSize}
+              streak={streak}
+              profile={currentProfile}
               onLogout={() => {
                 setShowProfile(false);
                 setShowLogout(true);

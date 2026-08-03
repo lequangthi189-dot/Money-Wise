@@ -1,11 +1,28 @@
-import { MOCK_USERS } from "../../../models/adminData";
+import { useEffect, useState } from "react";
+import { fetchUsers } from "../../../models/quanTriData";
+import { ROLES } from "../../../models/constants";
 
-// TODO: thay bằng số liệu thật từ backend (tổng user, giao dịch, tăng trưởng...).
+// Thống kê tài khoản, đếm từ bảng nguoi_dung (policy doc_nguoi_dung cho
+// admin thấy toàn bộ). Số liệu giao dịch toàn hệ thống thì RLS chặn, muốn
+// có phải thêm RPC security definer riêng.
 export default function AdminStats({ at }) {
   const s = at.stats;
-  const total = MOCK_USERS.length;
-  const banned = MOCK_USERS.filter((u) => u.status === "banned").length;
-  const admins = MOCK_USERS.filter((u) => u.role === "admin").length;
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    let alive = true;
+    fetchUsers().then(
+      (data) => alive && setUsers(data),
+      () => {},
+    );
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const total = users.length;
+  const banned = users.filter((u) => u.status === "banned").length;
+  const admins = users.filter((u) => u.role === ROLES.ADMIN).length;
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "16px" }}>
