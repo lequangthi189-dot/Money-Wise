@@ -1,23 +1,104 @@
+import { useEffect, useMemo, useState } from "react";
 import {
   getBudgetRows,
   INITIAL_TOTAL_LIMIT,
   INITIAL_TOTAL_SPENT,
+  readBudgetState,
+  writeBudgetState,
 } from "../../models/budgetsData";
+import { fetchCategories } from "../../models/danhMucData";
 
 export default function Budgets({ query = "", t }) {
   const b = t.budgets;
   const q = query.trim().toLowerCase();
-  const BUDGETS = getBudgetRows(t);
+  const [categories, setCategories] = useState([]);
+  const [budgetState, setBudgetState] = useState(() => readBudgetState());
+  const [limitType, setLimitType] = useState("total");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [limitInput, setLimitInput] = useState("300.000");
+  const BUDGETS = useMemo(() => getBudgetRows(t, categories, budgetState), [t, categories, budgetState]);
 
-  const fmt = (n) => n.toLocaleString("vi-VN") + " ₫";
-  const totalPct = Math.round((INITIAL_TOTAL_SPENT / INITIAL_TOTAL_LIMIT) * 100);
-  const totalLeft = INITIAL_TOTAL_LIMIT - INITIAL_TOTAL_SPENT;
+  useEffect(() => {
+    let alive = true;
+    fetchCategories()
+      .then((data) => {
+        if (alive) {
+          setCategories(data);
+          setSelectedCategory((prev) => prev || String(data[0]?.id ?? ""));
+        }
+      })
+      .catch(() => {
+        if (alive) setCategories([]);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const fmt = (n) => Number(n).toLocaleString("vi-VN") + " ₫";
+  const totalLimit = budgetState.totalLimit;
+  const totalSpent = budgetState.totalSpent;
+  const totalPct = Math.round((totalSpent / totalLimit) * 100);
+  const totalLeft = totalLimit - totalSpent;
+
+  function handleSaveLimit() {
+    const value = Number(limitInput.replaceAll(".", "").replaceAll(",", ""));
+
+    if (Number.isNaN(value) || value < 0) {
+      alert("Hạn mức phải là số không âm");
+      return;
+    }
+
+    const nextState = { ...budgetState };
+
+    if (limitType === "total") {
+      const categoryTotal = Object.values(nextState.categoryLimits || {}).reduce(
+        (sum, item) => sum + Number(item?.tot || 0),
+        0,
+      );
+      if (value < categoryTotal) {
+        alert("Hạn mức tổng tháng không được nhỏ hơn tổng hạn mức các danh mục");
+        return;
+      }
+      nextState.totalLimit = value;
+    } else {
+      if (!selectedCategory) {
+        alert("Vui lòng chọn danh mục");
+        return;
+      }
+
+      const nextCategoryLimits = {
+        ...nextState.categoryLimits,
+        [selectedCategory]: {
+          ...(nextState.categoryLimits[selectedCategory] || {}),
+          tot: value,
+        },
+      };
+
+      const categoryTotal = Object.values(nextCategoryLimits).reduce(
+        (sum, item) => sum + Number(item?.tot || 0),
+        0,
+      );
+
+      if (categoryTotal > nextState.totalLimit) {
+        alert("Tổng hạn mức các danh mục không được vượt quá hạn mức tổng tháng");
+        return;
+      }
+
+      nextState.categoryLimits = nextCategoryLimits;
+    }
+
+    const savedState = writeBudgetState(nextState);
+    setBudgetState(savedState);
+    setLimitInput(value.toLocaleString("vi-VN"));
+  }
 
   // Gõ đúng "hạn mức" -> hiện tất cả; ngược lại lọc theo tên danh mục.
   const wantAll = q && t.nav.budgets.toLowerCase().includes(q);
   const rows = q
     ? BUDGETS.filter(
-        (r) => wantAll || t.cats[r.catKey].toLowerCase().includes(q),
+        (r) => wantAll || String(r.name).toLowerCase().includes(q),
       )
     : BUDGETS;
 
@@ -46,10 +127,10 @@ export default function Budgets({ query = "", t }) {
                   letterSpacing: "-.5px",
                 }}
               >
-                {fmt(INITIAL_TOTAL_SPENT)}
+                {fmt(totalSpent)}
               </div>
               <small style={{ color: "var(--text-dim)" }}>
-                {b.spentOver(fmt(INITIAL_TOTAL_LIMIT))}
+                {b.spentOver(fmt(totalLimit))}
               </small>
             </div>
             <div className="track" style={{ height: "13px" }}>
@@ -83,23 +164,32 @@ export default function Budgets({ query = "", t }) {
             </div>
             <div className="field">
               <label>{b.kind}</label>
-              <select>
-                <option>{b.kindTotal}</option>
-                <option>{b.kindByCat}</option>
+              <select value={limitType} onChange={(e) => setLimitType(e.target.value)}>
+                <option value="total">{b.kindTotal}</option>
+                <option value="category">{b.kindByCat}</option>
               </select>
             </div>
-            <div className="field">
-              <label>{b.category}</label>
-              <select>
-                <option>☕ {t.cats.coffee}</option>
-                <option>🍜 {t.cats.food}</option>
-              </select>
-            </div>
+            {limitType === "category" && (
+              <div className="field">
+                <label>{b.category}</label>
+                <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+                  {BUDGETS.map((row) => (
+                    <option key={row.id} value={String(row.id)}>
+                      {row.icon} {row.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="field">
               <label>{b.limitAmount}</label>
-              <input defaultValue="300.000" placeholder="0 ₫" />
+              <input
+                value={limitInput}
+                onChange={(e) => setLimitInput(e.target.value)}
+                placeholder="0 ₫"
+              />
             </div>
-            <button className="btn btn-primary" style={{ width: "100%" }}>
+            <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleSaveLimit}>
               {b.saveLimit}
             </button>
           </div>
@@ -131,7 +221,7 @@ export default function Budgets({ query = "", t }) {
                 </div>
                 <b>{r.name}</b>
                 <span className="nums">
-                  <b>{r.cur}</b> / {r.tot} ₫
+                  <b>{fmt(r.cur)}</b> / {fmt(r.tot)}
                 </span>
                 {r.badge === "dim" ? (
                   <span className="badge" style={dim}>
