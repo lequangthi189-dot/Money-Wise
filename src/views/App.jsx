@@ -150,6 +150,8 @@ export default function App() {
         <SharedReportView
           code={sharedCode}
           t={t}
+          lang={lang}
+          theme={theme}
           onClose={() => {
             window.location.hash = "";
             window.location.assign(window.location.pathname);
@@ -302,6 +304,7 @@ export default function App() {
                 <ViewComp
                   query={query}
                   t={t}
+                  lang={lang}
                   userId={userId}
                   streak={streak}
                   onDataChanged={reloadChangedData}

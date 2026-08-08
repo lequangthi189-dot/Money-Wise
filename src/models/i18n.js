@@ -234,6 +234,16 @@ export const i18n = {
       shareDesc:
         "Người nhận mã chỉ xem được báo cáo, không chỉnh sửa được dữ liệu.",
       totalSpent: "tổng chi",
+      sharedInvalid: "Mã chia sẻ không hợp lệ hoặc đã được thu hồi.",
+      sharedTitle: "MoneyWise · Báo cáo được chia sẻ",
+      codeLabel: "Mã",
+      backToApp: "Quay lại ứng dụng",
+      monthReport: (date) => `Báo cáo tháng ${date}`,
+      noExpense: "Chưa có chi tiêu trong tháng này.",
+      noTrend: "Chưa có dữ liệu xu hướng.",
+      copy: "Sao chép",
+      viewCode: "Xem mã",
+      codePlaceholder: "Nhập mã chia sẻ",
     },
 
     // ----- Mục tiêu -----
@@ -488,6 +498,16 @@ export const i18n = {
       shareDesc:
         "The code holder can only view the report, not edit any data.",
       totalSpent: "total spent",
+      sharedInvalid: "The share code is invalid or has been revoked.",
+      sharedTitle: "MoneyWise · Shared report",
+      codeLabel: "Code",
+      backToApp: "Back to application",
+      monthReport: (date) => `Report for ${date}`,
+      noExpense: "No spending was recorded for this month.",
+      noTrend: "No trend data is available.",
+      copy: "Copy",
+      viewCode: "View code",
+      codePlaceholder: "Enter share code",
     },
 
     goals: {
