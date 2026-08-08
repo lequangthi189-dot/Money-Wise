@@ -1,4 +1,132 @@
 /* dashboard.css — Tổng quan: thẻ số liệu */
+.dashboard-page {
+  display: grid;
+  gap: 18px;
+  width: 100%;
+}
+
+.dashboard-page .alert {
+  margin-bottom: 0;
+  min-height: 46px;
+}
+
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.dashboard-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.dashboard-main > .card {
+  min-height: 244px;
+}
+
+.dashboard-category-card .donut-wrap {
+  min-height: 168px;
+  flex-wrap: nowrap;
+}
+
+.dashboard-category-card .legend {
+  min-width: 0;
+}
+
+.dashboard-goals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 190px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+
+.dashboard-recent-card {
+  min-height: 230px;
+}
+
+.dashboard-recent-card .card-h {
+  margin-bottom: 4px;
+}
+
+.dashboard-recent-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-recent-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-recent-row:last-child {
+  border-bottom: 0;
+}
+
+.dashboard-recent-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  background: var(--surface-2);
+}
+
+.dashboard-recent-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dashboard-recent-meta b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.dashboard-recent-meta small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+}
+
+.dashboard-recent-amount {
+  padding-left: 16px;
+  text-align: right;
+  white-space: nowrap;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.dashboard-recent-amount.in {
+  color: var(--ok);
+}
+
+.dashboard-recent-amount.out {
+  color: var(--text);
+}
+
+.dashboard-page .card,
+.dashboard-page .stat {
+  overflow: hidden;
+}
+
 /* stat cards */
 .stat {
   background: var(--surface);
@@ -77,4 +205,53 @@
 .chg.down {
   color: var(--danger);
   background: rgba(248, 113, 113, 0.14);
+}
+
+@media (max-width: 1180px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .dashboard-page {
+    gap: 14px;
+  }
+
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .dashboard-main {
+    gap: 14px;
+  }
+
+  .dashboard-category-card .donut-wrap {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .dashboard-category-card .legend {
+    flex-basis: 100%;
+  }
+
+  .dashboard-recent-row {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    gap: 9px;
+  }
+
+  .dashboard-recent-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .dashboard-recent-amount {
+    padding-left: 4px;
+    font-size: 0.78rem;
+  }
 }

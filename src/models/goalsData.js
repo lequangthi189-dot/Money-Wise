@@ -61,8 +61,6 @@ export async function updateGoal(goalId, form) {
   const { error } = await supabase.from("muc_tieu_tiet_kiem").update({
     ten_muc_tieu: form.name.trim(),
     so_tien_muc_tieu: Number(form.target),
-    so_du_ban_dau: Number(form.initial) || 0,
-    goc_da_tich_luy: Number(form.initial) || 0,
     lai_suat: Number(form.rate) || 0,
     don_vi_lai_suat: form.unit,
     gop_du_kien_moi_ky: Number(form.monthly) || 0,

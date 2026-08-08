@@ -44,7 +44,7 @@ export default function Goals({ t, userId, onDataChanged }) {
 
   function edit(goal) {
     setEditingId(goal.ma_muc_tieu);
-    setForm({ name: goal.ten_muc_tieu, target: goal.so_tien_muc_tieu, rate: goal.lai_suat, unit: goal.don_vi_lai_suat, monthly: goal.gop_du_kien_moi_ky, initial: goal.goc_da_tich_luy });
+    setForm({ name: goal.ten_muc_tieu, target: goal.so_tien_muc_tieu, rate: goal.lai_suat, unit: goal.don_vi_lai_suat, monthly: goal.gop_du_kien_moi_ky, initial: goal.so_du_ban_dau });
     Promise.all([
       fetchInterestSchedule(goal.ma_muc_tieu),
       fetchGoalContributions(goal.ma_muc_tieu),
@@ -105,7 +105,7 @@ export default function Goals({ t, userId, onDataChanged }) {
         <div className="field"><label>{g.gAmount}</label><input type="number" min="1" value={form.target} onChange={change("target")} /></div>
         <div className="field"><label>{g.rate}</label><div style={{ display: "flex", gap: 8 }}><input type="number" min="0" value={form.rate} onChange={change("rate")} /><select value={form.unit} onChange={change("unit")}><option value="NAM">{g.perYear}</option><option value="THANG">{g.perMonth}</option></select></div></div>
         <div className="field"><label>{g.monthlyAdd}</label><input type="number" min="0" value={form.monthly} onChange={change("monthly")} /></div>
-        <div className="field"><label>{g.initBalance}</label><input type="number" min="0" value={form.initial} onChange={change("initial")} /></div>
+        <div className="field"><label>{g.initBalance}</label><input type="number" min="0" value={form.initial} onChange={change("initial")} disabled={Boolean(editingId)} /></div>
         <div className="field" style={{ display: "flex", alignItems: "flex-end" }}><button className="btn btn-primary" style={{ width: "100%" }} disabled={saving} onClick={submit}>{editingId ? "Cập nhật & tính lại" : g.createForecast}</button></div>
       </div>
     </div>

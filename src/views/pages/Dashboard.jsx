@@ -5,17 +5,17 @@ export default function Dashboard({ t, streak }) {
   const {
     legend, donut, goals, recent, totalSpentLabel,
     spentToday, spentWeek, txCountToday,
-    balance, streak: streakDays, streakRecord, budgetAlert, balanceChange, weekChange,
+    balance, streak: streakDays, streakRecord, budgetAlert, balanceChange, weekChange, monthLabel,
   } = useDashboard(t, streak);
 
   return (
-    <>
+    <div className="dashboard-page">
       {budgetAlert && <div className="alert">
         <svg><use href="#i-warn" /></svg>
         <div>{d.alert(budgetAlert.name, `${budgetAlert.pct}%`, `${Math.max(0, budgetAlert.left).toLocaleString("vi-VN")} ₫`)}</div>
       </div>}
 
-      <div className="grid g-4">
+      <div className="dashboard-stats">
         <div className="stat glass">
           <div className="row">
             <label>{d.balance}</label>
@@ -52,11 +52,11 @@ export default function Dashboard({ t, streak }) {
         </div>
       </div>
 
-      <div className="grid g-21" style={{ marginTop: "18px" }}>
-        <div className="card glass">
+      <div className="dashboard-main">
+        <div className="card glass dashboard-category-card">
           <div className="card-h">
             <h3>{d.byCategory}</h3>
-            <span className="muted">{d.month}</span>
+            <span className="muted">{monthLabel}</span>
           </div>
           <div className="donut-wrap">
             <div className="donut">
@@ -86,12 +86,12 @@ export default function Dashboard({ t, streak }) {
           </div>
         </div>
 
-        <div className="card glass">
+        <div className="card glass dashboard-goals-card">
           <div className="card-h">
             <h3>{d.savingsGoals}</h3>
             <span className="muted">{d.running(goals.length)}</span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div className="dashboard-goals-list">
             {goals.map((g, i) => (
               <div key={i}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: ".84rem", marginBottom: "7px" }}>
@@ -108,22 +108,24 @@ export default function Dashboard({ t, streak }) {
         </div>
       </div>
 
-      <div className="card glass" style={{ marginTop: "18px" }}>
+      <div className="card glass dashboard-recent-card">
         <div className="card-h">
           <h3>{d.recentTx}</h3>
           <span className="muted" style={{ cursor: "pointer" }}>{d.viewAll}</span>
         </div>
-        {recent.map((r, i) => (
-          <div className="tx" key={i}>
-            <div className={"cat " + r.cls}>{r.icon}</div>
-            <div className="meta">
-              <b>{r.name}</b>
-              <small>{r.when} · {t.methods[r.mkey]}</small>
+        <div className="dashboard-recent-list">
+          {recent.map((r, i) => (
+            <div className="dashboard-recent-row" key={i}>
+              <div className={"dashboard-recent-icon " + r.cls}>{r.icon}</div>
+              <div className="dashboard-recent-meta">
+                <b>{r.name}</b>
+                <small>{r.when} · {t.methods[r.mkey]}</small>
+              </div>
+              <div className={"dashboard-recent-amount " + r.type}>{r.amt}</div>
             </div>
-            <div className={"amt " + r.type}>{r.amt}</div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </>
+    </div>
   );
 }

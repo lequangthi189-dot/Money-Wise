@@ -46,6 +46,9 @@ function toUI(row, methodsById) {
     cls: clsFor(row.ma_danh_muc),
     methodId: row.ma_phuong_thuc,
     mkey: methodsById.get(row.ma_phuong_thuc)?.mkey ?? "cash",
+    createdTime: row.tao_luc
+      ? new Date(row.tao_luc).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })
+      : "",
   };
 }
 
@@ -55,7 +58,7 @@ export async function fetchTransactions(methods) {
   const { data, error } = await supabase
     .from("giao_dich")
     .select(
-      "ma_giao_dich, ma_danh_muc, ma_phuong_thuc, loai_giao_dich, so_tien, ngay_giao_dich, noi_dung, danh_muc(ten_danh_muc, bieu_tuong)",
+      "ma_giao_dich, ma_danh_muc, ma_phuong_thuc, loai_giao_dich, so_tien, ngay_giao_dich, noi_dung, tao_luc, danh_muc(ten_danh_muc, bieu_tuong)",
     )
     .order("ngay_giao_dich", { ascending: false })
     .order("ma_giao_dich", { ascending: false });

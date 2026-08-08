@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { THEMES, ROLES } from "../models/constants";
 import { supabase } from "../models/supabase";
 import { fetchUserProfile, TRANG_THAI } from "../models/userProfile";
-import { CHUOI_RONG, fetchStreaks, updateLoginStreak } from "../models/chuoiData";
+import { CHUOI_RONG, fetchStreaks, initializeRecordingStreak } from "../models/chuoiData";
 import { fetchSettings, saveSettings } from "../services/settingsService";
 
 export function useApp() {
@@ -114,10 +114,8 @@ export function useApp() {
       }
       setReady(true);
 
-      // RPC Lab 3 tự bảo vệ việc gọi nhiều lần trong cùng ngày, nên có thể gọi lại
-      // khi Supabase khôi phục phiên mà không làm tăng sai chuỗi đăng nhập.
+      // Chỉ đọc trạng thái chuỗi khi khôi phục phiên; đăng nhập không làm tăng chuỗi.
       try {
-        await updateLoginStreak();
         if (!huy) setStreak(await fetchStreaks(session.user.id));
       } catch {
         // Không lấy được chuỗi thì giữ số 0, không chặn việc dùng app.
@@ -137,6 +135,21 @@ export function useApp() {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  // Tài khoản mới được khởi tạo chuỗi sau khi ở trong ứng dụng đủ 30 giây.
+  // RPC chỉ khởi tạo một lần; đăng nhập ở các ngày sau không làm tăng chuỗi.
+  useEffect(() => {
+    if (!userId || role === ROLES.ADMIN) return undefined;
+    const timer = setTimeout(async () => {
+      try {
+        await initializeRecordingStreak();
+        setStreak(await fetchStreaks(userId));
+      } catch {
+        // Không chặn ứng dụng nếu việc cập nhật chuỗi tạm thời thất bại.
+      }
+    }, 30_000);
+    return () => clearTimeout(timer);
+  }, [userId, role]);
 
   const currentTheme = THEMES.find((th) => th.id === theme) ?? THEMES[0];
   const currentThemeIndex = THEMES.findIndex((th) => th.id === currentTheme.id);

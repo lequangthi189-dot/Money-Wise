@@ -23,9 +23,9 @@ export const AUTH_TEXT = {
     goRegister: "Đăng ký ngay",
     goLogin: "Đăng nhập",
     streakLogin:
-      "Đăng nhập mỗi ngày để duy trì chuỗi đăng nhập — chuỗi được ghi nhận sau khi đăng nhập thành công.",
+      "Ghi chép giao dịch mỗi ngày để duy trì chuỗi của bạn.",
     streakRegister:
-      "Sau khi đăng ký, hãy đăng nhập liên tục để duy trì chuỗi đăng nhập của bạn.",
+      "Khám phá MoneyWise trong 30 giây để bắt đầu chuỗi ngày đầu tiên.",
     errFill: "Vui lòng điền đầy đủ tất cả thông tin.",
     errLogin: "Vui lòng nhập email và mật khẩu.",
     errLen: "Mật khẩu cần đủ 8 ký tự, chữ hoa, chữ thường, số và ký tự đặc biệt.",
@@ -88,9 +88,9 @@ export const AUTH_TEXT = {
     goRegister: "Sign up now",
     goLogin: "Sign in",
     streakLogin:
-      "Sign in every day to maintain your login streak; it is recorded after a successful sign-in.",
+      "Record a transaction every day to maintain your streak.",
     streakRegister:
-      "After signing up, sign in consistently to maintain your login streak.",
+      "Explore MoneyWise for 30 seconds to start your first streak day.",
     errFill: "Please fill in all the fields.",
     errLogin: "Please enter email and password.",
     errLen: "Password needs 8 characters, uppercase, lowercase, a number, and a special character.",
