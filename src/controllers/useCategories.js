@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  canDeleteCategory,
   createCategory,
   deleteCategory,
   fetchCategories,
@@ -9,7 +10,7 @@ import {
 
 // Controller: quản lý danh mục thu/chi lấy từ Supabase — thêm, sửa, xoá.
 // Danh mục mặc định (la_mac_dinh) dùng chung cho mọi người nên không sửa/xoá.
-export function useCategories(userId) {
+export function useCategories(userId, onDataChanged) {
   const [cats, setCats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -91,6 +92,7 @@ export function useCategories(userId) {
         setCats((list) => [...list, created]);
       }
       resetForm();
+      await onDataChanged?.();
     } catch (e) {
       setError(e.message);
     } finally {
@@ -100,23 +102,22 @@ export function useCategories(userId) {
 
   async function handleDeleteCategory(id) {
     const cat = cats.find((c) => c.id === id);
-    if (!cat || saving) return;
+    if (!cat || cat.isDefault || saving) return;
 
     setSaving(true);
     setError("");
     try {
-      await deleteCategory(id);
-      setCats((list) => list.filter((c) => c.id !== id));
-    } catch (e) {
-      const message = String(e?.message || "");
-      const isForeignKeyIssue = message.includes("foreign") || message.includes("constraint") || message.includes("violat");
-      if (isForeignKeyIssue) {
-        await hideCategory(id);
-        setError("Danh mục đã có dữ liệu nên chỉ được ẩn, không xoá hẳn.");
-        setCats((list) => list.filter((c) => c.id !== id));
+      const canDelete = await canDeleteCategory(id);
+      if (canDelete) {
+        await deleteCategory(id);
       } else {
-        setError(message || "Không thể xoá danh mục.");
+        await hideCategory(id);
+        setError("Danh mục đã có dữ liệu nên được ẩn để giữ lịch sử giao dịch.");
       }
+      setCats((list) => list.filter((c) => c.id !== id));
+      await onDataChanged?.();
+    } catch (e) {
+      setError(e.message || "Không thể xoá danh mục.");
     } finally {
       setSaving(false);
     }

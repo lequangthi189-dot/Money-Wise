@@ -14,16 +14,20 @@ function CatCard({ c, type, t, onDelete, onEdit }) {
         {type === "in" ? t.thu : t.chi}
       </span>
       <div className="act">
-        <button aria-label="edit" onClick={() => onEdit(c)}>
-          <svg width="15" height="15">
-            <use href="#i-edit" />
-          </svg>
-        </button>
-        <button aria-label="delete" onClick={() => onDelete(c.id)}>
-          <svg width="15" height="15">
-            <use href="#i-trash" />
-          </svg>
-        </button>
+        {!c.isDefault && (
+          <>
+            <button aria-label="edit" onClick={() => onEdit(c)}>
+              <svg width="15" height="15">
+                <use href="#i-edit" />
+              </svg>
+            </button>
+            <button aria-label="delete" onClick={() => onDelete(c.id)}>
+              <svg width="15" height="15">
+                <use href="#i-trash" />
+              </svg>
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -63,7 +67,7 @@ function CategoryTypeSelect({ value, onChange }) {
   );
 }
 
-export default function Categories({ t, userId }) {
+export default function Categories({ t, userId, onDataChanged }) {
   const c = t.categories;
   const {
     expenseCats,
@@ -84,7 +88,7 @@ export default function Categories({ t, userId }) {
     handleDeleteCategory,
     handleEditCategory,
     handleCloseForm,
-  } = useCategories(userId);
+  } = useCategories(userId, onDataChanged);
 
   return (
     <div className="card glass">

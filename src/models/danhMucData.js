@@ -93,9 +93,6 @@ export async function updateCategory(id, { name, icon }) {
   if (error) throw error;
   return toUI(data);
 }
-
-// Danh mục đã phát sinh giao dịch/báo cáo thì DB không cho xoá. Hỏi trước để
-// hiện đúng thông báo thay vì để lỗi FK bắn lên.
 export async function canDeleteCategory(id) {
   const { data, error } = await supabase.rpc("danh_muc_xoa_duoc", {
     p_ma_danh_muc: id,
@@ -105,11 +102,14 @@ export async function canDeleteCategory(id) {
 }
 
 export async function deleteCategory(id) {
-  const { error } = await supabase.from("danh_muc").delete().eq("ma_danh_muc", id);
+  const { error } = await supabase
+    .from("danh_muc")
+    .delete()
+    .eq("ma_danh_muc", id);
   if (error) throw error;
 }
 
-// Ẩn danh mục đã dùng: giữ lịch sử giao dịch, chỉ không cho chọn mới nữa.
+// Danh mục đã có dữ liệu chỉ được ẩn để giữ nguyên lịch sử giao dịch.
 export async function hideCategory(id) {
   const { error } = await supabase
     .from("danh_muc")
@@ -117,3 +117,4 @@ export async function hideCategory(id) {
     .eq("ma_danh_muc", id);
   if (error) throw error;
 }
+
