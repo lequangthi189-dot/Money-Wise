@@ -57,7 +57,37 @@ export async function fetchUserProfile(userId) {
   };
 }
 
-export async function uploadUserAvatar(userId, file) {
+function uploadStorageObject(path, file, accessToken, onProgress) {
+  const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const objectPath = path.split("/").map(encodeURIComponent).join("/");
+
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open("POST", `${baseUrl}/storage/v1/object/avatars/${objectPath}`);
+    request.setRequestHeader("Authorization", `Bearer ${accessToken}`);
+    request.setRequestHeader("apikey", anonKey);
+    request.setRequestHeader("Content-Type", file.type);
+    request.setRequestHeader("cache-control", "3600");
+    request.setRequestHeader("x-upsert", "false");
+    request.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) onProgress?.(Math.round((event.loaded / event.total) * 85));
+    });
+    request.addEventListener("load", () => {
+      if (request.status >= 200 && request.status < 300) resolve();
+      else {
+        let message = request.responseText;
+        try { message = JSON.parse(request.responseText)?.message || message; } catch { /* giữ phản hồi gốc */ }
+        reject(new Error(message || "Không thể tải ảnh lên."));
+      }
+    });
+    request.addEventListener("error", () => reject(new Error("Không thể kết nối máy chủ tải ảnh.")));
+    request.addEventListener("abort", () => reject(new Error("Đã hủy tải ảnh.")));
+    request.send(file);
+  });
+}
+
+export async function uploadUserAvatar(userId, file, onProgress) {
   const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
   if (!allowedTypes.has(file?.type)) {
     throw new Error("Ảnh phải có định dạng JPG, PNG hoặc WEBP.");
@@ -65,16 +95,16 @@ export async function uploadUserAvatar(userId, file) {
   if (file.size > 5 * 1024 * 1024) {
     throw new Error("Ảnh vượt quá dung lượng 5MB.");
   }
-  const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData.user) throw authError ?? new Error("Phiên đăng nhập không hợp lệ.");
-  if (authData.user.id !== userId) throw new Error("Bạn chỉ được đổi ảnh đại diện của chính mình.");
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const session = sessionData?.session;
+  if (sessionError || !session?.user) throw sessionError ?? new Error("Phiên đăng nhập không hợp lệ.");
+  if (session.user.id !== userId) throw new Error("Bạn chỉ được đổi ảnh đại diện của chính mình.");
 
   const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `${userId}/${crypto.randomUUID()}.${extension}`;
-  const { error: uploadError } = await supabase.storage
-    .from("avatars")
-    .upload(path, file, { upsert: false, contentType: file.type, cacheControl: "3600" });
-  if (uploadError) throw uploadError;
+  onProgress?.(0);
+  await uploadStorageObject(path, file, session.access_token, onProgress);
+  onProgress?.(90);
   const { data } = supabase.storage.from("avatars").getPublicUrl(path);
   const url = data.publicUrl;
   const { error } = await supabase
@@ -91,6 +121,7 @@ export async function uploadUserAvatar(userId, file) {
     .map((item) => `${userId}/${item.name}`)
     .filter((itemPath) => itemPath !== path);
   if (obsolete.length) await supabase.storage.from("avatars").remove(obsolete);
+  onProgress?.(100);
   return url;
 }
 

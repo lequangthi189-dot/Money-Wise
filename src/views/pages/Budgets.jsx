@@ -80,7 +80,7 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
     const value = Number(limitInput.replaceAll(".", "").replaceAll(",", ""));
 
     if (Number.isNaN(value) || value <= 0) {
-      alert("Hạn mức phải là số lớn hơn 0");
+      alert(b.invalidLimit);
       return;
     }
 
@@ -92,13 +92,13 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
         0,
       );
       if (value < categoryTotal) {
-        alert("Hạn mức tổng tháng không được nhỏ hơn tổng hạn mức các danh mục");
+        alert(b.totalBelowCategories);
         return;
       }
       nextState.totalLimit = value;
     } else {
       if (!selectedCategory) {
-        alert("Vui lòng chọn danh mục");
+        alert(b.selectCategory);
         return;
       }
 
@@ -116,7 +116,7 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
       );
 
       if (categoryTotal > nextState.totalLimit) {
-        alert("Tổng hạn mức các danh mục không được vượt quá hạn mức tổng tháng");
+        alert(b.categoriesOverTotal);
         return;
       }
 
