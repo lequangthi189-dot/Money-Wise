@@ -199,7 +199,7 @@ export const i18n = {
 
     // ----- Hạn mức -----
     budgets: {
-      totalTitle: "Hạn mức tổng tháng 6",
+      totalTitle: (month) => `Hạn mức tổng tháng ${month}`,
       spentOver: (total) => `đã tiêu trên ${total}`,
       usedPct: (pct) => `${pct} đã dùng`,
       left: (v) => `Còn lại ${v}`,
@@ -211,7 +211,7 @@ export const i18n = {
       limitAmount: "Số tiền hạn mức",
       saveLimit: "Lưu hạn mức",
       byCatTitle: "Hạn mức theo danh mục",
-      warnNote: "Cảnh báo ở 80% và 100%",
+      warnNote: "Cảnh báo khi sắp đạt hoặc vượt hạn mức",
       noBudgetYet: "Chưa có hạn mức nào được đặt theo danh mục.",
       result: (q, n) => `Kết quả cho “${q}”: ${n} hạn mức`,
       noResult: (q) => `Không tìm thấy hạn mức nào khớp “${q}”.`,
@@ -455,7 +455,7 @@ export const i18n = {
     },
 
     budgets: {
-      totalTitle: "June total budget",
+      totalTitle: (month) => `Total budget for month ${month}`,
       spentOver: (total) => `spent of ${total}`,
       usedPct: (pct) => `${pct} used`,
       left: (v) => `${v} left`,
@@ -467,7 +467,7 @@ export const i18n = {
       limitAmount: "Budget amount",
       saveLimit: "Save budget",
       byCatTitle: "Budget by category",
-      warnNote: "Warns at 80% and 100%",
+      warnNote: "Warns when nearing or exceeding the limit",
       noBudgetYet: "No category budgets set yet.",
       result: (q, n) => `Results for “${q}”: ${n} budgets`,
       noResult: (q) => `No budgets match “${q}”.`,

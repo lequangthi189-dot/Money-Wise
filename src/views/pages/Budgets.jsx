@@ -45,6 +45,7 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [limitInput, setLimitInput] = useState("300.000");
   const BUDGETS = useMemo(() => getBudgetRows(t, categories, budgetState), [t, categories, budgetState]);
+  const currentMonth = new Date().getMonth() + 1;
 
   useEffect(() => {
     let alive = true;
@@ -152,7 +153,7 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
         <div>
           <div className="card glass" style={{ marginBottom: "18px" }}>
             <div className="card-h">
-              <h3>{b.totalTitle}</h3>
+              <h3>{b.totalTitle(currentMonth)}</h3>
             </div>
             <div style={{ textAlign: "center", margin: "6px 0 16px" }}>
               <div
