@@ -1,4 +1,28 @@
+import { useRef } from "react";
 import { useTransactions } from "../../controllers/useTransactions";
+
+function TransactionSelect({ value, onChange, options, label }) {
+  const menuRef = useRef(null);
+  const selected = options.find((option) => String(option.value) === String(value)) ?? options[0];
+
+  function select(nextValue) {
+    onChange(String(nextValue));
+    menuRef.current?.removeAttribute("open");
+  }
+
+  return (
+    <details className="transaction-select" ref={menuRef}>
+      <summary aria-label={label}>{selected?.label}</summary>
+      <div className="transaction-select-menu" role="listbox" aria-label={label}>
+        {options.map((option) => (
+          <button key={option.value || "all"} type="button" role="option" aria-selected={String(option.value) === String(value)} className={String(option.value) === String(value) ? "selected" : ""} onClick={() => select(option.value)}>
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </details>
+  );
+}
 
 export default function Transactions({
   query = "",
@@ -12,7 +36,11 @@ export default function Transactions({
   const {
     filtered,
     cats,
+    filterCategories,
     methods,
+    filters,
+    setFilter,
+    resetFilters,
     loading,
     saving,
     error,
@@ -25,6 +53,9 @@ export default function Transactions({
     remove,
     resetForm,
   } = useTransactions(query, t, userId, onDataChanged);
+  const hasFilters = Object.values(filters).some(Boolean);
+  const categoryOptions = [{ value: "", label: "—" }, ...cats.map((category) => ({ value: category.id, label: `${category.icon} ${category.name}` }))];
+  const methodOptions = [{ value: "", label: "—" }, ...methods.map((method) => ({ value: method.id, label: t.methods[method.mkey] ?? method.name }))];
 
   return (
     <>
@@ -61,14 +92,7 @@ export default function Transactions({
           </div>
           <div className="field">
             <label>{tr.category}</label>
-            <select value={form.categoryId} onChange={upd("categoryId")}>
-              <option value="">—</option>
-              {cats.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.icon} {c.name}
-                </option>
-              ))}
-            </select>
+            <TransactionSelect value={form.categoryId} onChange={(value) => upd("categoryId")({ target: { value } })} options={categoryOptions} label={tr.category} />
           </div>
           <div className="grid g-2" style={{ gap: "12px" }}>
             <div className="field">
@@ -77,14 +101,7 @@ export default function Transactions({
             </div>
             <div className="field">
               <label>{tr.method}</label>
-              <select value={form.methodId} onChange={upd("methodId")}>
-                <option value="">—</option>
-                {methods.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {t.methods[m.mkey] ?? m.name}
-                  </option>
-                ))}
-              </select>
+              <TransactionSelect value={form.methodId} onChange={(value) => upd("methodId")({ target: { value } })} options={methodOptions} label={tr.method} />
             </div>
           </div>
           <div className="field">
@@ -93,7 +110,9 @@ export default function Transactions({
               placeholder={tr.notePh}
               value={form.note}
               onChange={upd("note")}
+              maxLength={255}
             ></textarea>
+            <small className="field-counter">{form.note.length}/255</small>
           </div>
 
           {error && (
@@ -150,15 +169,15 @@ export default function Transactions({
         <div className="card glass">
           <div className="card-h">
             <h3>{tr.list}</h3>
-            <div style={{ display: "flex", gap: "7px" }}>
-              <span className="pill on">{tr.fMonth}</span>
-              <span className="pill">{tr.fWeek}</span>
-              <span className="pill">{tr.fDay}</span>
-              <span className="pill">{tr.fCat}</span>
-            </div>
           </div>
 
-          {q && (
+          <div className="transaction-filters">
+            <TransactionSelect value={filters.period} onChange={(value) => setFilter("period", value)} label={tr.filterTime} options={[{ value: "", label: tr.allPeriods }, { value: "month", label: tr.fMonth }, { value: "week", label: tr.fWeek }, { value: "day", label: tr.fDay }]} />
+            <TransactionSelect value={filters.categoryId} onChange={(value) => setFilter("categoryId", value)} label={tr.category} options={[{ value: "", label: tr.allCategories }, ...filterCategories.map((category) => ({ value: category.id, label: `${category.icon} ${category.name}` }))]} />
+            {hasFilters && <button type="button" className="btn" onClick={resetFilters}>{tr.clearFilters}</button>}
+          </div>
+
+          {(q || hasFilters) && (
             <div
               style={{
                 fontSize: ".78rem",
@@ -166,42 +185,47 @@ export default function Transactions({
                 marginBottom: "10px",
               }}
             >
-              {tr.result(query, filtered.length)}
+              {tr.filteredCount(filtered.length)}
             </div>
           )}
 
-          {filtered.map((tx) => (
-            <div className="tx" key={tx.id}>
-              <div className={"cat " + tx.cls}>{tx.icon}</div>
-              <div className="meta">
-                <b>{tx.name}</b>
-                <small>
-                  {tx.date} · {t.methods[tx.mkey]}
-                </small>
-              </div>
-              <span className={"badge " + (tx.type === "in" ? "b-in" : "b-out")}>
-                {tx.type === "in" ? t.thu : t.chi}
-              </span>
-              <div
-                className={"amt " + tx.type}
-                style={{ minWidth: "90px", textAlign: "right" }}
-              >
-                {tx.amount}
-              </div>
-              <div className="act">
-                <button onClick={() => edit(tx)} disabled={saving}>
-                  <svg width="15" height="15">
-                    <use href="#i-edit" />
-                  </svg>
-                </button>
-                <button onClick={() => remove(tx.id)} disabled={saving}>
-                  <svg width="15" height="15">
-                    <use href="#i-trash" />
-                  </svg>
-                </button>
-              </div>
+          {filtered.length > 0 && (
+            <div className="transaction-table-wrap">
+              <table className="transaction-table">
+                <thead>
+                  <tr>
+                    <th>{tr.date}</th>
+                    <th>{tr.transactionColumn}</th>
+                    <th>{tr.category}</th>
+                    <th>{tr.method}</th>
+                    <th>{tr.type}</th>
+                    <th className="amount-column">{tr.amount}</th>
+                    <th className="actions-column">{tr.actions}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((tx) => (
+                    <tr key={tx.id}>
+                      <td data-label={tr.date}>{tx.date}</td>
+                      <td data-label={tr.transactionColumn} className="transaction-name">{tx.name}</td>
+                      <td data-label={tr.category}>
+                        <span className="transaction-category"><span className={"cat " + tx.cls}>{tx.icon}</span>{tx.catName}</span>
+                      </td>
+                      <td data-label={tr.method}>{t.methods[tx.mkey]}</td>
+                      <td data-label={tr.type}><span className={"badge " + (tx.type === "in" ? "b-in" : "b-out")}>{tx.type === "in" ? t.thu : t.chi}</span></td>
+                      <td data-label={tr.amount} className={"amount-column amt " + tx.type}>{tx.amount}</td>
+                      <td data-label={tr.actions} className="actions-column">
+                        <div className="transaction-actions">
+                          <button type="button" onClick={() => edit(tx)} disabled={saving} title={tr.actions}><svg width="15" height="15"><use href="#i-edit" /></svg></button>
+                          <button type="button" onClick={() => remove(tx.id)} disabled={saving} title={tr.actions}><svg width="15" height="15"><use href="#i-trash" /></svg></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
+          )}
 
           {loading && (
             <div
@@ -225,7 +249,7 @@ export default function Transactions({
                 fontSize: ".85rem",
               }}
             >
-              {tr.noResult(query)}
+              {q || hasFilters ? tr.noFiltered : tr.noResult(query)}
             </div>
           )}
         </div>

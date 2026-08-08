@@ -18,6 +18,11 @@ const FORM_RONG = {
   note: "",
 };
 
+const FILTER_RONG = {
+  period: "",
+  categoryId: "",
+};
+
 // Controller: danh sách giao dịch từ Supabase + form thêm/sửa/xoá.
 // Lọc theo từ khoá tìm kiếm (nội dung, danh mục, phương thức, số tiền, ngày).
 export function useTransactions(query, t, userId, onDataChanged) {
@@ -29,6 +34,7 @@ export function useTransactions(query, t, userId, onDataChanged) {
   const [error, setError] = useState("");
   const [form, setForm] = useState(FORM_RONG);
   const [editingId, setEditingId] = useState(null);
+  const [filters, setFilters] = useState(FILTER_RONG);
 
   // Không setState đồng bộ ở đây: hàm được gọi thẳng trong useEffect, mọi
   // cập nhật state phải nằm sau await để tránh cascading render.
@@ -100,6 +106,8 @@ export function useTransactions(query, t, userId, onDataChanged) {
     if (!form.categoryId) return setError("Vui lòng chọn danh mục.");
     if (!form.methodId) return setError("Vui lòng chọn phương thức.");
     if (!form.date) return setError("Vui lòng chọn ngày.");
+    if (form.note.length > 255)
+      return setError("Ghi chú không được vượt quá 255 ký tự.");
     if (form.date > todayISO())
       return setError("Ngày giao dịch không được lớn hơn hôm nay.");
 
@@ -159,21 +167,44 @@ export function useTransactions(query, t, userId, onDataChanged) {
   }
 
   const q = query.trim().toLowerCase();
-  const filtered = q
-    ? txns.filter(
-        (tx) =>
-          tx.name.toLowerCase().includes(q) ||
-          tx.catName.toLowerCase().includes(q) ||
-          (t.methods[tx.mkey] ?? "").toLowerCase().includes(q) ||
-          tx.amount.toLowerCase().includes(q) ||
-          tx.date.includes(q),
-      )
-    : txns;
+  const today = todayISO();
+  const currentMonth = today.slice(0, 7);
+  const currentDate = new Date(`${today}T00:00:00`);
+  const monday = new Date(currentDate);
+  const dayFromMonday = (currentDate.getDay() + 6) % 7;
+  monday.setDate(currentDate.getDate() - dayFromMonday);
+  const currentWeekStart = monday.toISOString().slice(0, 10);
+  const filtered = txns.filter((tx) => {
+    const matchesQuery = !q ||
+      tx.name.toLowerCase().includes(q) ||
+      tx.catName.toLowerCase().includes(q) ||
+      (t.methods[tx.mkey] ?? "").toLowerCase().includes(q) ||
+      tx.amount.toLowerCase().includes(q) ||
+      tx.date.includes(q);
+    return matchesQuery &&
+      (!filters.categoryId || String(tx.categoryId) === filters.categoryId) &&
+      (!filters.period ||
+        (filters.period === "day" && tx.dateISO === today) ||
+        (filters.period === "week" && tx.dateISO >= currentWeekStart && tx.dateISO <= today) ||
+        (filters.period === "month" && tx.dateISO.slice(0, 7) === currentMonth));
+  });
+
+  function setFilter(key, value) {
+    setFilters((current) => ({
+      ...current,
+      [key]: value,
+      ...(key === "type" ? { categoryId: "" } : {}),
+    }));
+  }
 
   return {
     filtered,
     cats: catsForType,
+    filterCategories: filters.type ? cats.filter((c) => c.type === filters.type) : cats,
     methods,
+    filters,
+    setFilter,
+    resetFilters: () => setFilters(FILTER_RONG),
     loading,
     saving,
     error,
