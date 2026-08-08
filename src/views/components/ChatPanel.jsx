@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Icon } from "./icons";
-import { createCategory, fetchCategories } from "../../models/danhMucData";
-import { createTransaction, fetchPaymentMethods, fetchTransactions } from "../../models/giaoDichData";
-import { supabase } from "../../models/supabase";
+import { createTransaction, fetchPaymentMethods } from "../../models/giaoDichData";
+import { useAppData } from "../../context/AppDataContext";
 
 const QUICK_ENTRY_CONFIG = {
   ignoredWords: ["hom", "nay", "qua", "vao", "luc", "ngay", "thang", "nam", "tien", "mat", "vi", "dien", "tu", "the", "ngan", "hang", "chuyen", "khoan", "mua", "tra", "chi", "thu", "nhan", "duoc", "bang", "cho", "mot", "trieu", "nghin"],
@@ -83,12 +82,13 @@ function parseMessage(text, categories, methods, history, config) {
   ) ?? null;
 
   const today = new Date();
-  let date = "";
-  if ((config.todayWords ?? []).some((word) => words.includes(word))) date = today.toISOString().slice(0, 10);
+  const localDateISO = (value) => new Date(value.getTime() - value.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  let date = localDateISO(today);
+  if ((config.todayWords ?? []).some((word) => words.includes(word))) date = localDateISO(today);
   else if ((config.yesterdayWords ?? []).some((word) => words.includes(word))) {
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    date = yesterday.toISOString().slice(0, 10);
+    date = localDateISO(yesterday);
   } else {
     const iso = words.match(/\b(\d{4})-(\d{1,2})-(\d{1,2})\b/);
     const local = words.match(/\b(\d{1,2})[/-](\d{1,2})(?:[/-](\d{4}))?\b/);
@@ -100,34 +100,24 @@ function parseMessage(text, categories, methods, history, config) {
 }
 
 export default function ChatPanel({ onClose, userId, onSaved }) {
+  const { categories: appCategories, transactions: appTransactions } = useAppData();
   const [text, setText] = useState("");
   const [parsed, setParsed] = useState(null);
   const [categories, setCategories] = useState([]);
   const [methods, setMethods] = useState([]);
   const [history, setHistory] = useState([]);
   const [message, setMessage] = useState("");
-  const [newCategoryName, setNewCategoryName] = useState("");
 
   useEffect(() => {
     let active = true;
 
     async function loadChatData() {
       try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (!data.session || data.session.user.id !== userId) {
-          throw new Error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
-        }
-
-        const [cats, paymentMethods] = await Promise.all([
-          fetchCategories(),
-          fetchPaymentMethods(),
-        ]);
-        const transactions = await fetchTransactions(paymentMethods);
+        const paymentMethods = await fetchPaymentMethods();
         if (!active) return;
-        setCategories(cats);
+        setCategories(appCategories);
         setMethods(paymentMethods);
-        setHistory(transactions);
+        setHistory(appTransactions);
         setMessage("");
       } catch (error) {
         if (active) setMessage(error.message);
@@ -136,7 +126,7 @@ export default function ChatPanel({ onClose, userId, onSaved }) {
 
     loadChatData();
     return () => { active = false; };
-  }, [userId]);
+  }, [appCategories, appTransactions]);
 
   async function send() {
     const result = parseMessage(text, categories, methods, history, QUICK_ENTRY_CONFIG);
@@ -160,21 +150,6 @@ export default function ChatPanel({ onClose, userId, onSaved }) {
     } catch (error) { setMessage(error.message); }
   }
 
-  async function addCategory() {
-    if (!newCategoryName.trim() || !parsed?.type) {
-      setMessage("Vui lòng chọn loại thu hoặc chi trước khi tạo danh mục.");
-      return;
-    }
-    try {
-      const category = await createCategory({ userId, name: newCategoryName, type: parsed.type, icon: "📌" });
-      setCategories((old) => [...old, category]);
-      setParsed((old) => ({ ...old, category, suggestionSource: "" }));
-      setNewCategoryName("");
-      setMessage("Đã tạo danh mục mới. Hãy kiểm tra và lưu giao dịch.");
-      await onSaved?.();
-    } catch (error) { setMessage(error.message); }
-  }
-
   return <div className="chatpanel show">
     <div className="chathead"><div className="bot"><Icon n="i-msg" /></div><div><b>Trợ lý MoneyWise</b><small>● Đang hoạt động</small></div><button className="x" onClick={onClose}>×</button></div>
     <div className="chatbody">
@@ -185,7 +160,7 @@ export default function ChatPanel({ onClose, userId, onSaved }) {
         <div className="pr"><span>Số tiền</span><input type="number" min="1" value={parsed.amount} onChange={(e) => setParsed((old) => ({ ...old, amount: Number(e.target.value) }))} /></div>
         <div className="pr"><span>Danh mục</span><select value={parsed.category?.id ?? ""} onChange={(e) => setParsed((old) => ({ ...old, category: categories.find((item) => String(item.id) === e.target.value) ?? null, suggestionSource: "" }))}><option value="">Chọn danh mục</option>{categories.filter((item) => item.type === parsed.type).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
         {parsed.category && parsed.suggestionSource && <small className="suggestion-note">{parsed.suggestionSource === "history" ? "Danh mục được gợi ý từ các giao dịch bạn đã xác nhận trước đây." : "Danh mục được gợi ý từ nội dung bạn nhập."}</small>}
-        {!parsed.category && <div style={{ display: "flex", gap: 6 }}><input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Tên danh mục mới" /><button className="btn" onClick={addCategory}>Tạo</button></div>}
+        {!parsed.category && parsed.type && <small className="suggestion-note">Không tìm thấy danh mục phù hợp. Hãy chọn một danh mục có sẵn.</small>}
         <div className="pr"><span>Phương thức</span><select value={parsed.method?.id ?? ""} onChange={(e) => setParsed((old) => ({ ...old, method: methods.find((item) => String(item.id) === e.target.value) ?? null }))}><option value="">Chọn phương thức</option>{methods.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
         <div className="pr"><span>Ngày</span><input type="date" max={new Date().toISOString().slice(0, 10)} value={parsed.date} onChange={(e) => setParsed((old) => ({ ...old, date: e.target.value }))} /></div>
         <div className="pbtn"><button className="ok" disabled={!parsed.type || !parsed.category || !parsed.method || !parsed.date || parsed.amount <= 0} onClick={save}>✓ Lưu</button><button className="edit" onClick={() => setParsed(null)}>Nhập lại</button></div>
