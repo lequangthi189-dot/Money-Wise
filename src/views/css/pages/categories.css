@@ -3,51 +3,73 @@
 .catgrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 .catcard {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px;
-  border-radius: var(--r-md);
+  gap: 18px;
+  min-height: 108px;
+  padding: 20px 22px;
+  border-radius: var(--r-lg);
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
 }
 .catcard .cat {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
   display: grid;
   place-items: center;
-  font-size: 1.1rem;
+  font-size: 1.65rem;
   flex: 0 0 auto;
 }
 .catcard .meta {
   flex: 1;
 }
 .catcard .meta b {
-  font-size: 0.88rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 600;
 }
 .catcard .act {
   display: flex;
-  gap: 4px;
+  gap: 8px;
 }
 .catcard .act button {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: transparent;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
   color: var(--text-dim);
   cursor: pointer;
   display: grid;
   place-items: center;
 }
 .catcard .act svg {
-  width: 15px;
-  height: 15px;
+  width: 19px;
+  height: 19px;
+}
+.catcard .act button:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+@media (max-width: 760px) {
+  .catgrid {
+    grid-template-columns: 1fr;
+  }
+
+  .catcard {
+    min-height: 92px;
+    padding: 16px;
+  }
+
+  .catcard .cat {
+    width: 54px;
+    height: 54px;
+    border-radius: 15px;
+  }
 }
 .cat-form {
   display: flex;

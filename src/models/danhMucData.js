@@ -45,22 +45,32 @@ function toUI(row) {
     cls: clsFor(row.ma_danh_muc),
     type: TYPE_FROM_LOAI[row.loai_danh_muc],
     isDefault: row.la_mac_dinh,
+    isSystem: row.ma_nguoi_dung === null,
+    isPreset: row.la_mac_dinh && row.ma_nguoi_dung !== null,
     active: row.dang_hoat_dong,
   };
 }
 
 // Danh mục mặc định (ma_nguoi_dung is null) + danh mục riêng của user;
 // RLS đã lọc sẵn nên không cần điều kiện ma_nguoi_dung ở đây.
-export async function fetchCategories() {
-  const { data, error } = await supabase
+export async function fetchCategories({ systemOnly = false } = {}) {
+  let query = supabase
     .from("danh_muc")
-    .select("ma_danh_muc, ten_danh_muc, loai_danh_muc, bieu_tuong, la_mac_dinh, dang_hoat_dong")
-    .eq("dang_hoat_dong", true)
+    .select("ma_danh_muc, ma_nguoi_dung, ten_danh_muc, loai_danh_muc, bieu_tuong, la_mac_dinh, dang_hoat_dong")
+    .eq("dang_hoat_dong", true);
+
+  if (systemOnly) query = query.is("ma_nguoi_dung", null);
+
+  const { data, error } = await query
     .order("la_mac_dinh", { ascending: false })
     .order("ma_danh_muc");
 
   if (error) throw error;
-  return data.map(toUI);
+  if (systemOnly) return data.map(toUI);
+
+  return data
+    .filter((row) => row.ma_nguoi_dung !== null)
+    .map(toUI);
 }
 
 export async function createCategory({ userId, name, type, icon }) {

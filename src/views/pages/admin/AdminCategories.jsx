@@ -10,7 +10,7 @@ export default function AdminCategories({ t }) {
 
   useEffect(() => {
     let alive = true;
-    fetchCategories().then(
+    fetchCategories({ systemOnly: true }).then(
       (data) => {
         if (!alive) return;
         setCats(data.filter((c) => c.isDefault));
