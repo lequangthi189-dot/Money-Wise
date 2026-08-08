@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "./icons";
 import { createCategory, fetchCategories } from "../../models/danhMucData";
 import { createTransaction, fetchPaymentMethods, fetchTransactions } from "../../models/giaoDichData";
+import { supabase } from "../../models/supabase";
 
 const QUICK_ENTRY_CONFIG = {
   ignoredWords: ["hom", "nay", "qua", "vao", "luc", "ngay", "thang", "nam", "tien", "mat", "vi", "dien", "tu", "the", "ngan", "hang", "chuyen", "khoan", "mua", "tra", "chi", "thu", "nhan", "duoc", "bang", "cho", "mot", "trieu", "nghin"],
@@ -108,11 +109,34 @@ export default function ChatPanel({ onClose, userId, onSaved }) {
   const [newCategoryName, setNewCategoryName] = useState("");
 
   useEffect(() => {
-    Promise.all([fetchCategories(), fetchPaymentMethods()])
-      .then(async ([cats, paymentMethods]) => [cats, paymentMethods, await fetchTransactions(paymentMethods)])
-      .then(([cats, paymentMethods, transactions]) => { setCategories(cats); setMethods(paymentMethods); setHistory(transactions); })
-      .catch((error) => setMessage(error.message));
-  }, []);
+    let active = true;
+
+    async function loadChatData() {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (!data.session || data.session.user.id !== userId) {
+          throw new Error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
+        }
+
+        const [cats, paymentMethods] = await Promise.all([
+          fetchCategories(),
+          fetchPaymentMethods(),
+        ]);
+        const transactions = await fetchTransactions(paymentMethods);
+        if (!active) return;
+        setCategories(cats);
+        setMethods(paymentMethods);
+        setHistory(transactions);
+        setMessage("");
+      } catch (error) {
+        if (active) setMessage(error.message);
+      }
+    }
+
+    loadChatData();
+    return () => { active = false; };
+  }, [userId]);
 
   async function send() {
     const result = parseMessage(text, categories, methods, history, QUICK_ENTRY_CONFIG);
