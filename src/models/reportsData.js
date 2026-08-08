@@ -1,23 +1,49 @@
-// Model: dữ liệu Báo cáo. BARS = biểu đồ cột 6 tháng; PIE_* = biểu đồ tròn cơ cấu chi.
-export const BARS = [
-  { h: "55%" },
-  { h: "70%" },
-  { h: "48%" },
-  { h: "82%" },
-  { h: "64%" },
-  {
-    h: "73%",
-    grad: "linear-gradient(180deg,var(--accent-2),rgba(34,211,238,.3))",
-  },
-];
+import { supabase } from "./supabase";
 
-export const PIE_RING = ["34 66", "22 78", "18 82", "26 74"];
-export const PIE_COLORS = ["#f87171", "#60a5fa", "#fbbf24", "#a78bfa"];
-export const PIE_OFF = ["0", "-34", "-56", "-74"];
+export const PIE_COLORS = ["#f87171", "#60a5fa", "#fbbf24", "#a78bfa", "#34d399", "#fb7185"];
 
-export const getPie = (t) => [
-  { c: "#f87171", name: t.cats.food, v: "34%" },
-  { c: "#60a5fa", name: t.cats.move, v: "22%" },
-  { c: "#fbbf24", name: t.cats.fun, v: "18%" },
-  { c: "#a78bfa", name: t.cats.other, v: "26%" },
-];
+async function refreshCurrentReport() {
+  const { data, error } = await supabase.rpc("lam_moi_bao_cao_thang");
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchMonthlyReports(userId) {
+  await refreshCurrentReport(userId);
+  const { data, error } = await supabase
+    .from("bao_cao_thang")
+    .select("ma_bao_cao, ky_thang, tong_thu, tong_chi, so_du")
+    .order("ky_thang", { ascending: false })
+    .limit(6);
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchReportDetails(reportId) {
+  if (!reportId) return [];
+  const { data, error } = await supabase
+    .from("chi_tiet_bao_cao_danh_muc")
+    .select("tong_chi_danh_muc, ty_le_phan_tram, danh_muc(ten_danh_muc)")
+    .eq("ma_bao_cao", reportId)
+    .order("tong_chi_danh_muc", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function createShareCode(reportId) {
+  const { data, error } = await supabase.rpc("tao_ma_chia_se_bao_cao", {
+    p_ma_bao_cao: reportId,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchSharedReport(code) {
+  const normalizedCode = code.trim().toUpperCase();
+  if (!normalizedCode) return null;
+  const { data, error } = await supabase.rpc("xem_bao_cao_qua_ma", {
+    p_ma_chia_se: normalizedCode,
+  });
+  if (error) throw error;
+  return data ?? null;
+}
