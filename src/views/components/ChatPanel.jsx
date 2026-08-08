@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Icon } from "./icons";
-import { createCategory, fetchCategories } from "../../models/danhMucData";
-import { createTransaction, fetchPaymentMethods, fetchTransactions } from "../../models/giaoDichData";
-import { supabase } from "../../models/supabase";
+import { createCategory } from "../../models/danhMucData";
+import { createTransaction, fetchPaymentMethods } from "../../models/giaoDichData";
+import { useAppData } from "../../context/AppDataContext";
 
 const QUICK_ENTRY_CONFIG = {
   ignoredWords: ["hom", "nay", "qua", "vao", "luc", "ngay", "thang", "nam", "tien", "mat", "vi", "dien", "tu", "the", "ngan", "hang", "chuyen", "khoan", "mua", "tra", "chi", "thu", "nhan", "duoc", "bang", "cho", "mot", "trieu", "nghin"],
@@ -100,6 +100,7 @@ function parseMessage(text, categories, methods, history, config) {
 }
 
 export default function ChatPanel({ onClose, userId, onSaved }) {
+  const { categories: appCategories, transactions: appTransactions } = useAppData();
   const [text, setText] = useState("");
   const [parsed, setParsed] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -113,21 +114,11 @@ export default function ChatPanel({ onClose, userId, onSaved }) {
 
     async function loadChatData() {
       try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (!data.session || data.session.user.id !== userId) {
-          throw new Error("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.");
-        }
-
-        const [cats, paymentMethods] = await Promise.all([
-          fetchCategories(),
-          fetchPaymentMethods(),
-        ]);
-        const transactions = await fetchTransactions(paymentMethods);
+        const paymentMethods = await fetchPaymentMethods();
         if (!active) return;
-        setCategories(cats);
+        setCategories(appCategories);
         setMethods(paymentMethods);
-        setHistory(transactions);
+        setHistory(appTransactions);
         setMessage("");
       } catch (error) {
         if (active) setMessage(error.message);
@@ -136,7 +127,7 @@ export default function ChatPanel({ onClose, userId, onSaved }) {
 
     loadChatData();
     return () => { active = false; };
-  }, [userId]);
+  }, [appCategories, appTransactions]);
 
   async function send() {
     const result = parseMessage(text, categories, methods, history, QUICK_ENTRY_CONFIG);
