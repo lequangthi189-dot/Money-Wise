@@ -606,7 +606,7 @@ export default function Profile({
             <span style={{ fontSize: "1.6rem" }}>🔥</span>
             <div>
               <b style={{ fontSize: "1rem" }}>
-                {p.streakDays(streak.dangNhap.current)}
+                {p.streakDays(streak.ghiChep.current)}
               </b>
               <small
                 style={{
@@ -615,7 +615,7 @@ export default function Profile({
                   color: "var(--text-dim)",
                 }}
               >
-                {p.record(streak.dangNhap.record)}
+                {p.record(streak.ghiChep.record)}
               </small>
             </div>
           </div>
