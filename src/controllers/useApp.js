@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { THEMES, ROLES } from "../models/constants";
 import { supabase } from "../models/supabase";
 import { fetchUserProfile, TRANG_THAI } from "../models/userProfile";
-import { CHUOI_RONG, fetchStreaks } from "../models/chuoiData";
+import { CHUOI_RONG, fetchStreaks, updateLoginStreak } from "../models/chuoiData";
 import { fetchSettings, saveSettings } from "../services/settingsService";
 
 export function useApp() {
@@ -114,8 +114,10 @@ export function useApp() {
       }
       setReady(true);
 
-      // Chuỗi ghi chép do trigger trên giao_dich tính, ở đây chỉ đọc.
+      // RPC Lab 3 tự bảo vệ việc gọi nhiều lần trong cùng ngày, nên có thể gọi lại
+      // khi Supabase khôi phục phiên mà không làm tăng sai chuỗi đăng nhập.
       try {
+        await updateLoginStreak();
         if (!huy) setStreak(await fetchStreaks(session.user.id));
       } catch {
         // Không lấy được chuỗi thì giữ số 0, không chặn việc dùng app.
@@ -162,8 +164,7 @@ export function useApp() {
     }
   }
 
-  // Chuỗi ghi chép đổi khi thêm/sửa/xoá giao dịch (trigger DB tính lại), gọi
-  // hàm này để lấy số mới mà không phải tải lại trang.
+  // Tải lại cả hai chuỗi mà không cần tải lại trang.
   async function reloadStreak() {
     if (!userId) return;
     try {

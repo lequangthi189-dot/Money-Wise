@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createShareCode, fetchMonthlyReports, fetchReportDetails, fetchSharedReport, PIE_COLORS } from "../../models/reportsData";
 
 const money = (value) => `${Number(value || 0).toLocaleString("vi-VN")} ₫`;
@@ -89,6 +89,25 @@ export default function Reports({ t, userId }) {
   useEffect(() => { if (userId) fetchMonthlyReports(userId).then((rows) => { setReports(rows); setSelectedId(String(rows[0]?.ma_bao_cao ?? "")); }).catch((e) => setError(e.message)); }, [userId]);
   useEffect(() => { fetchReportDetails(selectedId).then(setDetails).catch((e) => setError(e.message)); }, [selectedId]);
   const selected = shared ?? reports.find((row) => String(row.ma_bao_cao) === selectedId) ?? {};
+  const visibleDetails = shared
+    ? (shared.chi_tiet ?? []).map((row) => ({ ...row, danh_muc: { ten_danh_muc: row.ten_danh_muc } }))
+    : details;
+  const chartReports = useMemo(() => [...reports].reverse(), [reports]);
+  const maxExpense = Math.max(...chartReports.map((row) => Number(row.tong_chi) || 0), 1);
+  const totalDetails = visibleDetails.reduce((sum, row) => sum + Number(row.tong_chi_danh_muc || 0), 0);
+  const donutBackground = visibleDetails.length && totalDetails > 0
+    ? `conic-gradient(${visibleDetails.map((row, index) => {
+      const before = visibleDetails.slice(0, index).reduce((sum, item) => sum + Number(item.tong_chi_danh_muc || 0), 0);
+      const start = (before / totalDetails) * 100;
+      const end = ((before + Number(row.tong_chi_danh_muc || 0)) / totalDetails) * 100;
+      return `${PIE_COLORS[index % PIE_COLORS.length]} ${start}% ${end}%`;
+    }).join(", ")})`
+    : "var(--surface-2)";
+  const trendPoints = chartReports.map((row, index) => {
+    const x = chartReports.length === 1 ? 50 : (index / (chartReports.length - 1)) * 100;
+    const y = 44 - ((Number(row.tong_chi) || 0) / maxExpense) * 34;
+    return `${x},${y}`;
+  }).join(" ");
 
   async function share() {
     if (!selectedId) return;
@@ -101,14 +120,65 @@ export default function Reports({ t, userId }) {
     try { const row = await fetchSharedReport(lookup); if (!row) throw new Error("Mã chia sẻ không hợp lệ."); setShared(row); } catch (e) { setError(e.message); }
   }
 
-  return <>
-    <div style={{ display: "flex", gap: 12, marginBottom: 18 }}>
-      <select value={selectedId} onChange={(e) => { setSelectedId(e.target.value); setShared(null); }}>{reports.map((row) => <option key={row.ma_bao_cao} value={row.ma_bao_cao}>{new Date(row.ky_thang).toLocaleDateString("vi-VN", { month: "2-digit", year: "numeric" })}</option>)}</select>
-      <button className="btn" onClick={share}>{r.makeShare}</button>
+  return <div className="reports-page">
+    <div className="reports-toolbar">
+      <select value={selectedId} onChange={(e) => { setSelectedId(e.target.value); setShared(null); }}>
+        {reports.map((row) => <option key={row.ma_bao_cao} value={row.ma_bao_cao}>
+          {new Date(row.ky_thang).toLocaleDateString("vi-VN", { month: "long", year: "numeric" })}
+        </option>)}
+      </select>
+      <button className="btn btn-primary" onClick={share}>▣ {r.makeShare}</button>
     </div>
-    {error && <p style={{ color: "var(--danger)", marginBottom: 12 }}>{error}</p>}
-    <div className="grid g-3"><div className="stat glass"><label>{r.totalIn}</label><div className="val sm" style={{ color: "var(--ok)" }}>{money(selected.tong_thu)}</div></div><div className="stat glass"><label>{r.totalOut}</label><div className="val sm" style={{ color: "var(--danger)" }}>{money(selected.tong_chi)}</div></div><div className="stat glass"><label>{r.endBalance}</label><div className="val sm">{money(selected.so_du)}</div></div></div>
-    {!shared && <div className="card glass" style={{ marginTop: 18 }}><div className="card-h"><h3>{r.structure}</h3></div>{details.map((row, i) => <div key={i} style={{ display: "flex", gap: 12, margin: "10px 0" }}><span style={{ width: 10, height: 10, borderRadius: 9, background: PIE_COLORS[i % PIE_COLORS.length] }} /><span style={{ flex: 1 }}>{row.danh_muc?.ten_danh_muc}</span><b>{money(row.tong_chi_danh_muc)}</b><span>{row.ty_le_phan_tram}%</span></div>)}</div>}
-    <div className="card glass" style={{ marginTop: 18 }}><div className="card-h"><h3>{r.shareTitle}</h3></div>{shareCode && <div className="sharebox"><code>{shareCode}</code><button className="btn" onClick={() => navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#/share/${encodeURIComponent(shareCode)}`)}>Copy link</button></div>}<div style={{ display: "flex", gap: 8, marginTop: 12 }}><input value={lookup} onChange={(e) => setLookup(e.target.value)} placeholder="MW-XXXX-XXXX" /><button className="btn" onClick={openCode}>Xem mã</button></div></div>
-  </>;
+
+    {error && <div className="reports-error">{error}</div>}
+
+    <div className="reports-summary">
+      <article className="report-stat glass report-income"><span>{r.totalIn}</span><b>{money(selected.tong_thu)}</b><i>↗</i></article>
+      <article className="report-stat glass report-expense"><span>{r.totalOut}</span><b>{money(selected.tong_chi)}</b><i>↕</i></article>
+      <article className="report-stat glass report-balance"><span>{r.endBalance}</span><b>{money(selected.so_du)}</b><i>▣</i></article>
+    </div>
+
+    <div className="reports-charts-row">
+      <section className="report-panel glass">
+        <div className="report-panel-head"><h3>{r.structure}</h3><span>{r.pieChart}</span></div>
+        <div className="report-donut-layout">
+          <div className="report-donut" style={{ background: donutBackground }}>
+            <div><b>{money(selected.tong_chi)}</b><small>{r.totalOut.toLowerCase()}</small></div>
+          </div>
+          <div className="report-legend">
+            {visibleDetails.length ? visibleDetails.map((row, index) => <div key={`${row.danh_muc?.ten_danh_muc}-${index}`}>
+              <span style={{ background: PIE_COLORS[index % PIE_COLORS.length] }} />
+              <label>{row.danh_muc?.ten_danh_muc || "—"}</label>
+              <b>{Number(row.ty_le_phan_tram || 0).toLocaleString("vi-VN")}%</b>
+            </div>) : <p className="muted">Chưa có chi tiêu trong tháng này.</p>}
+          </div>
+        </div>
+      </section>
+
+      <section className="report-panel glass">
+        <div className="report-panel-head"><h3>{r.compare6}</h3><span>{r.barChart}</span></div>
+        <div className="report-bars">
+          {chartReports.map((row) => <div className="report-bar-column" key={row.ma_bao_cao}>
+            <div className="report-bar" style={{ height: `${Math.max(5, (Number(row.tong_chi || 0) / maxExpense) * 100)}%` }} />
+            <small>{new Date(row.ky_thang).toLocaleDateString("vi-VN", { month: "numeric" })}</small>
+          </div>)}
+        </div>
+      </section>
+    </div>
+
+    <section className="report-panel report-trend glass">
+      <div className="report-panel-head"><h3>{r.trend}</h3><span>{r.lineChart}</span></div>
+      {chartReports.length ? <svg viewBox="0 0 100 50" preserveAspectRatio="none" aria-label={r.trend}>
+        <defs><linearGradient id="reportTrendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--accent)" stopOpacity=".28"/><stop offset="1" stopColor="var(--accent)" stopOpacity="0"/></linearGradient></defs>
+        <polygon points={`0,50 ${trendPoints} 100,50`} fill="url(#reportTrendFill)" />
+        <polyline points={trendPoints} fill="none" stroke="var(--accent)" strokeWidth=".8" vectorEffect="non-scaling-stroke" />
+      </svg> : <p className="muted">Chưa có dữ liệu xu hướng.</p>}
+    </section>
+
+    <section className="report-panel report-share glass">
+      <div className="report-panel-head"><div><h3>{r.shareTitle}</h3><p className="muted">{r.shareDesc}</p></div></div>
+      {shareCode && <div className="sharebox"><code>{shareCode}</code><button className="btn" onClick={() => navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#/share/${encodeURIComponent(shareCode)}`)}>Sao chép</button></div>}
+      <div className="report-code-lookup"><input value={lookup} onChange={(e) => setLookup(e.target.value)} placeholder="MW-XXXX-XXXX" maxLength={20} /><button className="btn" onClick={openCode}>Xem mã</button></div>
+    </section>
+  </div>;
 }

@@ -135,7 +135,6 @@ export const i18n = {
       days: "ngày",
       record: (n) => `🔥 Kỷ lục: ${n} ngày`,
       byCategory: "Chi tiêu theo danh mục",
-      month: "Tháng 6/2026",
       totalSpent: "tổng chi",
       savingsGoals: "Mục tiêu tiết kiệm",
       running: (n) => `${n} đang chạy`,
@@ -185,7 +184,8 @@ export const i18n = {
     // ----- Danh mục -----
     categories: {
       heading: "Danh mục chi tiêu",
-      sub: "8 mặc định · 3 tự tạo · tối đa 20",
+      sub: (defaultCount, customCount) =>
+        `${defaultCount} mặc định · ${customCount} tự tạo`,
       add: "Thêm danh mục",
       expenseGroup: "Danh mục chi",
       incomeGroup: "Danh mục thu",
@@ -219,7 +219,6 @@ export const i18n = {
 
     // ----- Báo cáo -----
     reports: {
-      monthOpts: ["Tháng 6, 2026", "Tháng 5, 2026"],
       makeShare: "Tạo mã chia sẻ",
       totalIn: "Tổng thu",
       totalOut: "Tổng chi",
@@ -228,7 +227,6 @@ export const i18n = {
       pieChart: "Biểu đồ tròn",
       compare6: "So sánh 6 tháng",
       barChart: "Biểu đồ cột",
-      months6: ["T1", "T2", "T3", "T4", "T5", "T6"],
       trend: "Xu hướng chi tiêu",
       lineChart: "Biểu đồ đường",
       shareTitle: "Chia sẻ báo cáo (chỉ đọc)",
@@ -394,7 +392,6 @@ export const i18n = {
       days: "days",
       record: (n) => `🔥 Record: ${n} days`,
       byCategory: "Spending by category",
-      month: "June 2026",
       totalSpent: "total spent",
       savingsGoals: "Savings goals",
       running: (n) => `${n} active`,
@@ -442,7 +439,8 @@ export const i18n = {
 
     categories: {
       heading: "Spending categories",
-      sub: "8 default · 3 custom · max 20",
+      sub: (defaultCount, customCount) =>
+        `${defaultCount} default · ${customCount} custom`,
       add: "Add category",
       expenseGroup: "Expense categories",
       incomeGroup: "Income categories",
@@ -474,7 +472,6 @@ export const i18n = {
     },
 
     reports: {
-      monthOpts: ["June 2026", "May 2026"],
       makeShare: "Create share code",
       totalIn: "Total income",
       totalOut: "Total spending",
@@ -483,7 +480,6 @@ export const i18n = {
       pieChart: "Pie chart",
       compare6: "6-month comparison",
       barChart: "Bar chart",
-      months6: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
       trend: "Spending trend",
       lineChart: "Line chart",
       shareTitle: "Share report (read-only)",

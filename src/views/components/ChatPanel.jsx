@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
 import { Icon } from "./icons";
 import { createCategory, fetchCategories } from "../../models/danhMucData";
-import { createTransaction, fetchLearnedCategory, fetchPaymentMethods, fetchTransactions, recordCategorySuggestion } from "../../models/giaoDichData";
+import { createTransaction, fetchPaymentMethods, fetchTransactions } from "../../models/giaoDichData";
 
-const IGNORED_SUGGESTION_WORDS = new Set([
-  "hom", "nay", "qua", "vao", "luc", "ngay", "thang", "nam", "tien", "mat",
-  "vi", "dien", "tu", "the", "ngan", "hang", "chuyen", "khoan", "mua", "tra",
-  "chi", "thu", "nhan", "duoc", "bang", "qua", "cho", "mot", "trieu", "nghin", "ngan",
-]);
+const QUICK_ENTRY_CONFIG = {
+  ignoredWords: ["hom", "nay", "qua", "vao", "luc", "ngay", "thang", "nam", "tien", "mat", "vi", "dien", "tu", "the", "ngan", "hang", "chuyen", "khoan", "mua", "tra", "chi", "thu", "nhan", "duoc", "bang", "cho", "mot", "trieu", "nghin"],
+  incomeWords: ["thu ", "nhận", "lương", "thưởng", "tiền vào", "bán được"],
+  expenseWords: ["chi ", "mua", "trả", "đóng", "ăn", "uống", "tiền ra"],
+  methodAliases: {
+    cash: ["tiền mặt", "cash"],
+    ewallet: ["ví điện tử", "momo", "zalo pay", "zalopay", "vnpay"],
+    card: ["thẻ", "chuyển khoản", "ngân hàng", "bank"],
+  },
+  amountSuffixes: { k: 1000, nghìn: 1000, ngàn: 1000, tr: 1000000, triệu: 1000000 },
+  todayWords: ["hôm nay"],
+  yesterdayWords: ["hôm qua"],
+};
 
 function normalizeSuggestionText(value) {
   return String(value ?? "")
@@ -17,26 +25,27 @@ function normalizeSuggestionText(value) {
     .toLowerCase();
 }
 
-function suggestionTokens(value) {
+function suggestionTokens(value, config) {
+  const ignoredWords = new Set(config.ignoredWords ?? []);
   return new Set(normalizeSuggestionText(value)
     .replace(/\d[\d.,]*/g, " ")
     .split(/[^a-z]+/)
-    .filter((word) => word.length > 1 && !IGNORED_SUGGESTION_WORDS.has(word)));
+    .filter((word) => word.length > 1 && !ignoredWords.has(word)));
 }
 
-function suggestCategory(text, categories, history) {
+function suggestCategory(text, categories, history, config) {
   const normalizedText = normalizeSuggestionText(text);
   const direct = categories.find((item) => normalizedText.includes(normalizeSuggestionText(item.name)));
   if (direct) return { category: direct, source: "name" };
 
-  const inputTokens = suggestionTokens(text);
+  const inputTokens = suggestionTokens(text, config);
   if (!inputTokens.size) return { category: null, source: "" };
 
   const scores = new Map();
   history.forEach((transaction) => {
     const category = categories.find((item) => String(item.id) === String(transaction.categoryId));
     if (!category) return;
-    const matched = [...suggestionTokens(transaction.name)].filter((token) => inputTokens.has(token)).length;
+    const matched = [...suggestionTokens(transaction.name, config)].filter((token) => inputTokens.has(token)).length;
     if (matched > 0) scores.set(category.id, (scores.get(category.id) ?? 0) + matched);
   });
 
@@ -44,21 +53,20 @@ function suggestCategory(text, categories, history) {
   return { category: best ? categories.find((item) => item.id === best[0]) ?? null : null, source: best ? "history" : "" };
 }
 
-function parseMessage(text, categories, methods, history) {
+function parseMessage(text, categories, methods, history, config) {
   const words = text.toLowerCase();
-  const match = words.match(/(\d[\d.,]*)\s*(triệu|tr|k|nghìn|ngàn)?/);
+  const match = words.match(/(\d[\d.,]*)\s*([a-zA-ZÀ-ỹ]+)?/);
   if (!match) return null;
-  const suffix = match[2] ?? "";
+  const suffix = (match[2] ?? "").toLowerCase();
   let amount = suffix
     ? Number(match[1].replace(",", "."))
     : Number(match[1].replace(/[.,]/g, ""));
   if (!Number.isFinite(amount) || amount <= 0) return null;
-  if (suffix === "k" || suffix === "nghìn" || suffix === "ngàn") amount *= 1000;
-  if (match[2] === "tr" || match[2] === "triệu") amount *= 1000000;
+  amount *= Number(config.amountSuffixes?.[suffix] ?? 1);
 
-  const incomeWords = ["thu ", "nhận", "lương", "thưởng", "tiền vào", "bán được"];
-  const expenseWords = ["chi ", "mua", "trả", "đóng", "ăn", "uống", "tiền ra"];
-  const suggestion = suggestCategory(text, categories, history);
+  const incomeWords = config.incomeWords ?? [];
+  const expenseWords = config.expenseWords ?? [];
+  const suggestion = suggestCategory(text, categories, history, config);
   const matchedCategory = suggestion.category;
   const type = incomeWords.some((word) => words.includes(word))
     ? "in"
@@ -67,11 +75,7 @@ function parseMessage(text, categories, methods, history) {
       : matchedCategory?.type ?? "";
   const category = matchedCategory?.type === type ? matchedCategory : null;
 
-  const methodAliases = {
-    cash: ["tiền mặt", "cash"],
-    ewallet: ["ví điện tử", "momo", "zalo pay", "zalopay", "vnpay"],
-    card: ["thẻ", "chuyển khoản", "ngân hàng", "bank"],
-  };
+  const methodAliases = config.methodAliases ?? {};
   const method = methods.find((item) =>
     words.includes(item.name.toLowerCase()) ||
     (methodAliases[item.mkey] ?? []).some((alias) => words.includes(alias)),
@@ -79,8 +83,8 @@ function parseMessage(text, categories, methods, history) {
 
   const today = new Date();
   let date = "";
-  if (words.includes("hôm nay")) date = today.toISOString().slice(0, 10);
-  else if (words.includes("hôm qua")) {
+  if ((config.todayWords ?? []).some((word) => words.includes(word))) date = today.toISOString().slice(0, 10);
+  else if ((config.yesterdayWords ?? []).some((word) => words.includes(word))) {
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     date = yesterday.toISOString().slice(0, 10);
@@ -111,20 +115,7 @@ export default function ChatPanel({ onClose, userId, onSaved }) {
   }, []);
 
   async function send() {
-    const result = parseMessage(text, categories, methods, history);
-    if (result?.type) {
-      try {
-        const learnedId = await fetchLearnedCategory([...suggestionTokens(text)], result.type);
-        const learnedCategory = categories.find((item) => String(item.id) === String(learnedId));
-        if (learnedCategory) {
-          result.category = learnedCategory;
-          result.suggestionSource = "history";
-          result.suggestedCategoryId = learnedCategory.id;
-        }
-      } catch (error) {
-        setMessage(error.message);
-      }
-    }
+    const result = parseMessage(text, categories, methods, history, QUICK_ENTRY_CONFIG);
     setParsed(result);
     if (!result) setMessage("Không tìm thấy số tiền trong nội dung.");
     else setMessage("");
@@ -137,14 +128,8 @@ export default function ChatPanel({ onClose, userId, onSaved }) {
     }
     try {
       await createTransaction({ userId, categoryId: parsed.category.id, methodId: parsed.method.id, type: parsed.type, amount: parsed.amount, date: parsed.date, note: parsed.note });
-      let learningError = "";
-      try {
-        await recordCategorySuggestion({ content: parsed.note, keywords: [...suggestionTokens(parsed.note)], suggestedCategoryId: parsed.suggestedCategoryId, confirmedCategoryId: parsed.category.id });
-      } catch (error) {
-        learningError = error.message;
-      }
       setHistory((old) => [{ name: parsed.note, categoryId: parsed.category.id, type: parsed.type }, ...old]);
-      setMessage(learningError ? `Đã lưu giao dịch nhưng chưa ghi nhận được dữ liệu học: ${learningError}` : "Đã lưu giao dịch và ghi nhận lựa chọn danh mục.");
+      setMessage("Đã lưu giao dịch.");
       setParsed(null);
       setText("");
       await onSaved?.();

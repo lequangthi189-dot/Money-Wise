@@ -90,12 +90,16 @@ export default function Categories({ t, userId, onDataChanged }) {
     handleCloseForm,
   } = useCategories(userId, onDataChanged);
 
+  const categories = [...expenseCats, ...incomeCats];
+  const defaultCategoryCount = categories.filter((category) => category.isDefault).length;
+  const customCategoryCount = categories.length - defaultCategoryCount;
+
   return (
     <div className="card glass">
       <div className="card-h">
         <div>
           <h3>{c.heading}</h3>
-          <span className="muted">{c.sub}</span>
+          <span className="muted">{c.sub(defaultCategoryCount, customCategoryCount)}</span>
         </div>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>
           <svg

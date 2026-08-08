@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { createGoal, fetchGoals, fetchInterestSchedule, forecastGoal, updateGoal } from "../../models/goalsData";
+import { addGoalContribution, createGoal, fetchGoalContributions, fetchGoals, fetchInterestSchedule, forecastGoal, updateGoal } from "../../models/goalsData";
 
 const EMPTY = { name: "", target: "", rate: "", unit: "NAM", monthly: "", initial: "" };
+const EMPTY_CONTRIBUTION = () => ({ amount: "", date: new Date().toISOString().slice(0, 10), note: "" });
 const money = (value) => `${Number(value || 0).toLocaleString("vi-VN")} ₫`;
 
 export default function Goals({ t, userId, onDataChanged }) {
@@ -12,6 +13,8 @@ export default function Goals({ t, userId, onDataChanged }) {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [schedule, setSchedule] = useState([]);
+  const [contributions, setContributions] = useState([]);
+  const [contribution, setContribution] = useState(EMPTY_CONTRIBUTION);
 
   useEffect(() => {
     fetchGoals().then(setGoals).catch((e) => setError(e.message));
@@ -42,7 +45,38 @@ export default function Goals({ t, userId, onDataChanged }) {
   function edit(goal) {
     setEditingId(goal.ma_muc_tieu);
     setForm({ name: goal.ten_muc_tieu, target: goal.so_tien_muc_tieu, rate: goal.lai_suat, unit: goal.don_vi_lai_suat, monthly: goal.gop_du_kien_moi_ky, initial: goal.goc_da_tich_luy });
-    fetchInterestSchedule(goal.ma_muc_tieu).then(setSchedule).catch((e) => setError(e.message));
+    Promise.all([
+      fetchInterestSchedule(goal.ma_muc_tieu),
+      fetchGoalContributions(goal.ma_muc_tieu),
+    ]).then(([interestRows, contributionRows]) => {
+      setSchedule(interestRows);
+      setContributions(contributionRows);
+    }).catch((e) => setError(e.message));
+  }
+
+  async function addContribution() {
+    if (!editingId || Number(contribution.amount) <= 0 || !contribution.date) {
+      setError("Số tiền đóng góp phải lớn hơn 0 và ngày đóng góp là bắt buộc.");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const updatedGoal = await addGoalContribution(editingId, contribution);
+      const [interestRows, contributionRows] = await Promise.all([
+        fetchInterestSchedule(editingId),
+        fetchGoalContributions(editingId),
+      ]);
+      setGoals((old) => old.map((item) => item.ma_muc_tieu === editingId ? updatedGoal : item));
+      setSchedule(interestRows);
+      setContributions(contributionRows);
+      setContribution(EMPTY_CONTRIBUTION());
+      await onDataChanged?.();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return <>
@@ -75,6 +109,23 @@ export default function Goals({ t, userId, onDataChanged }) {
         <div className="field" style={{ display: "flex", alignItems: "flex-end" }}><button className="btn btn-primary" style={{ width: "100%" }} disabled={saving} onClick={submit}>{editingId ? "Cập nhật & tính lại" : g.createForecast}</button></div>
       </div>
     </div>
-    {editingId && <div className="card glass" style={{ marginTop: 18, overflowX: "auto" }}><div className="card-h"><h3>Bảng lãi tích lũy theo thời gian</h3></div><table style={{ width: "100%", borderCollapse: "collapse" }}><thead><tr><th>Kỳ</th><th>Số dư đầu kỳ</th><th>Trong kỳ</th><th>Lãi phát sinh</th><th>Lãi tích lũy</th><th>Tổng cuối kỳ</th></tr></thead><tbody>{schedule.map((row) => <tr key={row.so_thu_tu_ky}><td>{row.so_thu_tu_ky}</td><td>{money(row.so_du_dau_ky)}</td><td>{money(row.so_tien_trong_ky)}</td><td>{money(row.lai_phat_sinh)}</td><td>{money(row.lai_tich_luy)}</td><td>{money(row.tong_cuoi_ky)}</td></tr>)}</tbody></table></div>}
+    {editingId && <>
+      <div className="card glass" style={{ marginTop: 18 }}>
+        <div className="card-h"><h3>Thêm đóng góp thực tế</h3></div>
+        <div className="grid g-3" style={{ gap: 14 }}>
+          <div className="field"><label>Số tiền</label><input type="number" min="1" value={contribution.amount} onChange={(e) => setContribution((old) => ({ ...old, amount: e.target.value }))} /></div>
+          <div className="field"><label>Ngày đóng góp</label><input type="date" max={new Date().toISOString().slice(0, 10)} value={contribution.date} onChange={(e) => setContribution((old) => ({ ...old, date: e.target.value }))} /></div>
+          <div className="field"><label>Ghi chú</label><input maxLength={255} value={contribution.note} onChange={(e) => setContribution((old) => ({ ...old, note: e.target.value }))} /></div>
+        </div>
+        <button className="btn btn-primary" style={{ marginTop: 14 }} disabled={saving} onClick={addContribution}>{saving ? "Đang lưu…" : "Thêm đóng góp"}</button>
+      </div>
+
+      <div className="card glass" style={{ marginTop: 18, overflowX: "auto" }}>
+        <div className="card-h"><h3>Lịch sử đóng góp</h3></div>
+        {contributions.length ? <table style={{ width: "100%", borderCollapse: "collapse" }}><thead><tr><th>Ngày</th><th>Số tiền</th><th>Ghi chú</th></tr></thead><tbody>{contributions.map((row) => <tr key={row.ma_dong_gop}><td>{new Date(`${row.ngay_dong_gop}T00:00:00`).toLocaleDateString("vi-VN")}</td><td>{money(row.so_tien)}</td><td>{row.ghi_chu || "—"}</td></tr>)}</tbody></table> : <p className="muted">Chưa có khoản đóng góp thực tế.</p>}
+      </div>
+
+      <div className="card glass" style={{ marginTop: 18, overflowX: "auto" }}><div className="card-h"><h3>Bảng lãi tích lũy theo thời gian</h3></div><table style={{ width: "100%", borderCollapse: "collapse" }}><thead><tr><th>Kỳ</th><th>Số dư đầu kỳ</th><th>Trong kỳ</th><th>Lãi phát sinh</th><th>Lãi tích lũy</th><th>Tổng cuối kỳ</th></tr></thead><tbody>{schedule.map((row) => <tr key={row.so_thu_tu_ky}><td>{row.so_thu_tu_ky}</td><td>{money(row.so_du_dau_ky)}</td><td>{money(row.so_tien_trong_ky)}</td><td>{money(row.lai_phat_sinh)}</td><td>{money(row.lai_tich_luy)}</td><td>{money(row.tong_cuoi_ky)}</td></tr>)}</tbody></table></div>
+    </>}
   </>;
 }

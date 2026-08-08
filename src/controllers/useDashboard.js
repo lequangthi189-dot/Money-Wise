@@ -52,7 +52,7 @@ export function useDashboard(t, streakData) {
   const weekChange = percentChange(spentWeek, previousWeekSpent);
   const budgetAlert = budgets.filter((budget) => budget.categoryId !== "TOTAL" && budget.limit > 0).map((budget) => {
     const spent = spendingByCategory.find((row) => row.cat.id === budget.categoryId)?.amount ?? budget.spent ?? 0;
-    return { name: categories.find((item) => item.id === budget.categoryId)?.name || "Danh mục", pct: Math.round(spent / budget.limit * 100), left: budget.limit - spent };
-  }).filter((item) => item.pct >= 80).sort((a, b) => b.pct - a.pct)[0] ?? null;
-  return { legend, donut, goals: goalRows, recent, budgetAlert, balanceChange, weekChange, totalSpentLabel: `${(totalSpent / 1_000_000).toFixed(2).replace(".", ",")}tr`, spentToday, spentWeek, txCountToday, balance, streak: streakData?.ghiChep?.current ?? 0, streakRecord: streakData?.ghiChep?.record ?? 0 };
+    return { name: categories.find((item) => item.id === budget.categoryId)?.name || "Danh mục", pct: Math.round(spent / budget.limit * 100), left: budget.limit - spent, status: budget.status };
+  }).filter((item) => item.status !== "normal").sort((a, b) => b.pct - a.pct)[0] ?? null;
+  return { legend, donut, goals: goalRows, recent, budgetAlert, balanceChange, weekChange, totalSpentLabel: `${(totalSpent / 1_000_000).toFixed(2).replace(".", ",")}tr`, spentToday, spentWeek, txCountToday, balance, streak: streakData?.dangNhap?.current ?? 0, streakRecord: streakData?.dangNhap?.record ?? 0 };
 }

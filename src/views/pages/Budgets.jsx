@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getBudgetRows,
+  fetchBudgetConfig,
   fetchBudgetState,
   saveBudgetLimit,
 } from "../../models/budgetsData";
@@ -41,10 +42,11 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
   const q = query.trim().toLowerCase();
   const [categories, setCategories] = useState([]);
   const [budgetState, setBudgetState] = useState({ totalLimit: 0, totalSpent: 0, categoryLimits: {} });
+  const [budgetConfig, setBudgetConfig] = useState(null);
   const [limitType, setLimitType] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [limitInput, setLimitInput] = useState("300.000");
-  const BUDGETS = useMemo(() => getBudgetRows(t, categories, budgetState), [t, categories, budgetState]);
+  const [limitInput, setLimitInput] = useState("");
+  const BUDGETS = useMemo(() => getBudgetRows(t, categories, budgetState, budgetConfig), [t, categories, budgetState, budgetConfig]);
   const currentMonth = new Date().getMonth() + 1;
 
   useEffect(() => {
@@ -61,6 +63,7 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
       });
 
     fetchBudgetState().then((state) => alive && setBudgetState(state)).catch(() => {});
+    fetchBudgetConfig().then((config) => alive && setBudgetConfig(config)).catch(() => {});
 
     return () => {
       alive = false;
@@ -172,7 +175,7 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
             <div className="track" style={{ height: "13px" }}>
               <div
                 className={
-                  "bar " + (totalPct >= 100 ? "danger" : totalPct >= 80 ? "warn" : "")
+                  "bar " + (budgetConfig && totalPct >= budgetConfig.danger ? "danger" : budgetConfig && totalPct >= budgetConfig.warning ? "warn" : "")
                 }
                 style={{ width: Math.min(totalPct, 100) + "%" }}
               ></div>

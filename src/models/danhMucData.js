@@ -5,7 +5,7 @@ import { supabase } from "./supabase";
 export const LOAI = { in: "THU", out: "CHI" };
 const TYPE_FROM_LOAI = { THU: "in", CHI: "out" };
 
-// Bộ icon cho form thêm danh mục (giữ nguyên như bản mock).
+// Bộ icon cho người dùng chọn khi thêm danh mục.
 export const CATEGORY_ICONS = [
   "🍜", "🛵", "📚", "🏠", "🎮", "🛍️", "☕", "❤️", "💰",
   "🎓", "🐶", "🎵", "✈️", "💻", "🎁", "📌", "👨‍👩‍👧",

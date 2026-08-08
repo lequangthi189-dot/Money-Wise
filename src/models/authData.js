@@ -23,9 +23,9 @@ export const AUTH_TEXT = {
     goRegister: "Đăng ký ngay",
     goLogin: "Đăng nhập",
     streakLogin:
-      "Đăng nhập mỗi ngày để giữ chuỗi ghi chép — chuỗi được ghi nhận trong vòng 30 giây sau khi đăng nhập thành công.",
+      "Đăng nhập mỗi ngày để duy trì chuỗi đăng nhập — chuỗi được ghi nhận sau khi đăng nhập thành công.",
     streakRegister:
-      "Sau khi đăng ký, hãy đăng nhập 3 ngày liên tục để kích hoạt chuỗi ghi chép của bạn.",
+      "Sau khi đăng ký, hãy đăng nhập liên tục để duy trì chuỗi đăng nhập của bạn.",
     errFill: "Vui lòng điền đầy đủ tất cả thông tin.",
     errLogin: "Vui lòng nhập email và mật khẩu.",
     errLen: "Mật khẩu cần đủ 8 ký tự, chữ hoa, chữ thường, số và ký tự đặc biệt.",
@@ -88,9 +88,9 @@ export const AUTH_TEXT = {
     goRegister: "Sign up now",
     goLogin: "Sign in",
     streakLogin:
-      "Sign in every day to keep your logging streak — it is recorded within 30 seconds after a successful login.",
+      "Sign in every day to maintain your login streak; it is recorded after a successful sign-in.",
     streakRegister:
-      "After signing up, sign in for 3 consecutive days to activate your logging streak.",
+      "After signing up, sign in consistently to maintain your login streak.",
     errFill: "Please fill in all the fields.",
     errLogin: "Please enter email and password.",
     errLen: "Password needs 8 characters, uppercase, lowercase, a number, and a special character.",
