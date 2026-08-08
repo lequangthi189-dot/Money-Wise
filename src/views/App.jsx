@@ -22,13 +22,14 @@ import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Categories from "./pages/Categories";
 import Budgets from "./pages/Budgets";
-import Reports from "./pages/Reports";
+import Reports, { SharedReportView } from "./pages/Reports";
 import Goals from "./pages/Goals";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import UsersManager from "./pages/admin/UsersManager";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminStats from "./pages/admin/AdminStats";
+import { useAppData } from "../context/AppDataContext";
 
 const VIEWS = {
   dashboard: Dashboard,
@@ -55,6 +56,7 @@ function getInitials(name, email = "") {
 }
 
 export default function App() {
+  const { reload: reloadAppData } = useAppData();
   const {
     view,
     setView,
@@ -77,6 +79,7 @@ export default function App() {
     reloadStreak,
     currentEmail,
     currentProfile,
+    setCurrentProfile,
     completeAuth,
     showLogout,
     setShowLogout,
@@ -88,9 +91,21 @@ export default function App() {
   } = useApp();
 
   const [showProfile, setShowProfile] = useState(false);
+  const [dataVersion, setDataVersion] = useState(0);
   const t = i18n[lang];
   const at = ADMIN_TEXT[lang];
   const isAdmin = role === ROLES.ADMIN;
+  async function reloadChangedData() {
+    await Promise.allSettled([reloadAppData(), reloadStreak()]);
+    setDataVersion((version) => version + 1);
+  }
+  const sharedCode = (() => {
+    const hashMatch = window.location.hash.match(/^#\/share\/([^/?#]+)/i);
+    const pathMatch = window.location.pathname.match(/\/share\/([^/?#]+)/i);
+    const queryCode = new URLSearchParams(window.location.search).get("share");
+    const raw = hashMatch?.[1] ?? pathMatch?.[1] ?? queryCode;
+    return raw ? decodeURIComponent(raw).trim().toUpperCase() : "";
+  })();
 
   // Đang khôi phục session từ localStorage: chưa biết có đăng nhập hay
   // chưa, hiện màn chờ để không nháy qua màn đăng nhập rồi lại vào app.
@@ -128,11 +143,30 @@ export default function App() {
       </>
     );
 
+  if (sharedCode) {
+    return (
+      <>
+        <Sprite />
+        <SharedReportView
+          code={sharedCode}
+          t={t}
+          onClose={() => {
+            window.location.hash = "";
+            window.location.assign(window.location.pathname);
+          }}
+        />
+      </>
+    );
+  }
+
   const navItems = isAdmin ? ADMIN_NAV : NAV;
   const ViewComp = isAdmin ? ADMIN_VIEWS[view] : VIEWS[view];
-  const [title, sub] = isAdmin
+  const [title, defaultSub] = isAdmin
     ? (at.titles[view] ?? [view, ""])
     : (t.titles[view] ?? [view, ""]);
+  const sub = !isAdmin && view === "dashboard"
+    ? t.dashboardGreeting(currentProfile?.name || currentEmail.split("@")[0])
+    : defaultSub;
 
   return (
     <div className="root" data-theme={theme}>
@@ -222,7 +256,7 @@ export default function App() {
               <p>{sub}</p>
             </div>
             <div className="top-actions">
-              <SearchBar query={query} onSearch={onSearch} t={t} />
+              <SearchBar query={query} onSearch={onSearch} t={t} refreshKey={dataVersion} />
 
               <div className="themeswitch">
                 <div
@@ -251,7 +285,7 @@ export default function App() {
           </header>
 
           <div className="content">
-            <section className="view show" key={view}>
+            <section className="view show" key={`${view}-${dataVersion}`}>
               {view === "settings" ? (
                 <Settings
                   theme={theme}
@@ -269,7 +303,8 @@ export default function App() {
                   query={query}
                   t={t}
                   userId={userId}
-                  onDataChanged={reloadStreak}
+                  streak={streak}
+                  onDataChanged={reloadChangedData}
                   onOpenChat={() => setChatOpen(true)}
                 />
               )}
@@ -281,7 +316,7 @@ export default function App() {
       <button className="fab" onClick={() => setChatOpen((o) => !o)}>
         <Icon n="i-msg" size={26} />
       </button>
-      {chatOpen && <ChatPanel onClose={() => setChatOpen(false)} />}
+      {chatOpen && <ChatPanel userId={userId} onSaved={reloadChangedData} onClose={() => setChatOpen(false)} />}
 
       {showProfile && (
         <div
@@ -338,6 +373,8 @@ export default function App() {
               setFontSize={setFontSize}
               streak={streak}
               profile={currentProfile}
+              userId={userId}
+              onProfileUpdated={setCurrentProfile}
               onLogout={() => {
                 setShowProfile(false);
                 setShowLogout(true);

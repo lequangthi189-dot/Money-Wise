@@ -33,32 +33,6 @@ export function isValidPhone(phone) {
   return /^\+?[0-9]{9,15}$/.test(normalizePhone(phone));
 }
 
-// Các mã cho biết chuỗi ĐÃ được ghi (hoặc đã ghi từ trước trong ngày).
-// TS08 chỉ để phân loại "đúng hạn / trễ", không chặn ghi, nên hai mã
-// DA_GHI_NHAN_TRE và DA_GHI_NHAN_KHONG_RO_PHIEN vẫn là thành công.
-const CHUOI_DA_GHI = new Set([
-  "DA_GHI_NHAN",
-  "DA_GHI_NHAN_TRE",
-  "DA_GHI_NHAN_KHONG_RO_PHIEN",
-  "DA_GHI_TRONG_NGAY",
-]);
-
-// Ghi nhận chuỗi ngày đăng nhập (BM13). Hàm DB tự lấy auth.uid() nên không
-// cần truyền tham số. Lỗi ở đây không được chặn việc vào app.
-// Mã còn lại: 'KHONG_CO_BAN_GHI' — thiếu dòng trong chuoi_dang_nhap, tức là
-// hồ sơ dựng thiếu; phải thấy được chứ không hỏng âm thầm.
-export async function touchLoginStreak() {
-  const { data, error } = await supabase.rpc("cap_nhat_chuoi_dang_nhap");
-  if (error) {
-    console.warn("cap_nhat_chuoi_dang_nhap lỗi:", error.message);
-    return null;
-  }
-  if (!CHUOI_DA_GHI.has(data)) {
-    console.warn("Chuỗi đăng nhập không được ghi nhận:", data);
-  }
-  return data;
-}
-
 export async function fetchUserProfile(userId) {
   const { data, error } = await supabase
     .from("nguoi_dung")
@@ -79,6 +53,64 @@ export async function fetchUserProfile(userId) {
     avatarUrl: data.anh_dai_dien_url,
     joinedAt: data.ngay_tham_gia,
     status: data.trang_thai,
+    role: VAI_TRO_TO_ROLE[data.ma_vai_tro] ?? ROLES.USER,
+  };
+}
+
+export async function uploadUserAvatar(userId, file) {
+  const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+  if (!allowedTypes.has(file?.type)) {
+    throw new Error("Ảnh phải có định dạng JPG, PNG hoặc WEBP.");
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error("Ảnh vượt quá dung lượng 5MB.");
+  }
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user) throw authError ?? new Error("Phiên đăng nhập không hợp lệ.");
+  if (authData.user.id !== userId) throw new Error("Bạn chỉ được đổi ảnh đại diện của chính mình.");
+
+  const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `${userId}/${crypto.randomUUID()}.${extension}`;
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(path, file, { upsert: false, contentType: file.type, cacheControl: "3600" });
+  if (uploadError) throw uploadError;
+  const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+  const url = data.publicUrl;
+  const { error } = await supabase
+    .from("nguoi_dung")
+    .update({ anh_dai_dien_url: url })
+    .eq("ma_nguoi_dung", userId);
+  if (error) {
+    await supabase.storage.from("avatars").remove([path]);
+    throw error;
+  }
+
+  const { data: oldFiles } = await supabase.storage.from("avatars").list(userId);
+  const obsolete = (oldFiles ?? [])
+    .map((item) => `${userId}/${item.name}`)
+    .filter((itemPath) => itemPath !== path);
+  if (obsolete.length) await supabase.storage.from("avatars").remove(obsolete);
+  return url;
+}
+
+export async function updateUserProfile(userId, values) {
+  const phone = normalizePhone(values.phone);
+  if (!values.name.trim() || !values.username.trim()) throw new Error("Họ tên và tên đăng nhập không được để trống.");
+  if (phone && !isValidPhone(phone)) throw new Error("Số điện thoại không hợp lệ.");
+  const { data, error } = await supabase.from("nguoi_dung").update({
+    ho_ten: values.name.trim(),
+    ten_dang_nhap: values.username.trim(),
+    so_dien_thoai: phone || null,
+    cap_nhat_luc: new Date().toISOString(),
+  }).eq("ma_nguoi_dung", userId)
+    .select("ma_nguoi_dung, ma_vai_tro, email, ho_ten, ten_dang_nhap, so_dien_thoai, anh_dai_dien_url, trang_thai, ngay_tham_gia")
+    .single();
+  if (error) throw error;
+  return {
+    id: data.ma_nguoi_dung, name: data.ho_ten, username: data.ten_dang_nhap,
+    phone: data.so_dien_thoai, email: data.email, avatarUrl: data.anh_dai_dien_url,
+    joinedAt: data.ngay_tham_gia, status: data.trang_thai,
     role: VAI_TRO_TO_ROLE[data.ma_vai_tro] ?? ROLES.USER,
   };
 }

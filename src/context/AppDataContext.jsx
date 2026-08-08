@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useCallback,
@@ -11,6 +12,7 @@ import * as budgetService from "../services/budgetService";
 import * as transactionService from "../services/transactionService";
 import * as goalService from "../services/goalService";
 import * as settingsService from "../services/settingsService";
+import { supabase } from "../models/supabase";
 
 const AppDataContext = createContext(null);
 
@@ -47,7 +49,14 @@ export function AppDataProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    loadAll();
+    const initialLoad = setTimeout(loadAll, 0);
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || (event === "INITIAL_SESSION" && session)) setTimeout(loadAll, 0);
+    });
+    return () => {
+      clearTimeout(initialLoad);
+      data.subscription.unsubscribe();
+    };
   }, [loadAll]);
 
   const addCategory = useCallback(async (data) => {

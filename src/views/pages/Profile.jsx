@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Icon } from "../components/icons";
 import { supabase, xacMinhMatKhau } from "../../models/supabase";
 import { CHUOI_RONG } from "../../models/chuoiData";
+import { updateUserProfile, uploadUserAvatar } from "../../models/userProfile";
 
 // Màu HOÀN TOÀN lấy từ biến theme (--surface, --text, --accent...), không hardcode.
 
@@ -415,36 +416,40 @@ export default function Profile({
   setFontSize,
   streak = CHUOI_RONG,
   profile,
+  userId,
+  onProfileUpdated,
 }) {
   const p = t.profile;
   const fileRef = useRef(null);
   const [avatar, setAvatar] = useState(null);
   const [progress, setProgress] = useState(null); // null = không upload
   const [showPw, setShowPw] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({ name: profile?.name || "", username: profile?.username || "", phone: profile?.phone || "" });
+  const [profileError, setProfileError] = useState("");
 
-  function pickFile(e) {
+  async function pickFile(e) {
     const f = e.target.files?.[0];
     if (!f) return;
-    if (f.size > 5 * 1024 * 1024) return; // >5MB thì bỏ qua
+    if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
+      alert("Ảnh phải có định dạng JPG, PNG hoặc WEBP.");
+      return;
+    }
+    if (f.size > 5 * 1024 * 1024) {
+      alert("Ảnh vượt quá dung lượng 5MB.");
+      return;
+    }
 
-    const url = URL.createObjectURL(f);
-    setProgress(0);
-
-    // Giả lập tiến trình upload. Khi nối dịch vụ lưu trữ thì thay bằng
-    // tiến trình thật (XHR upload.onprogress hoặc TUS resumable upload).
-    let pct = 0;
-    const timer = setInterval(() => {
-      pct += Math.random() * 18 + 7;
-      if (pct >= 100) {
-        clearInterval(timer);
-        setProgress(100);
-        setAvatar(url);
-        setTimeout(() => setProgress(null), 600);
-      } else {
-        setProgress(Math.round(pct));
-      }
-    }, 180);
-    // TODO: gọi API upload avatar thật.
+    setProgress(20);
+    try {
+      const url = await uploadUserAvatar(userId, f);
+      setProgress(100);
+      setAvatar(url);
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setTimeout(() => setProgress(null), 600);
+    }
   }
 
   const uploading = progress !== null;
@@ -459,6 +464,15 @@ export default function Profile({
         new Date(profile.joinedAt),
       )
     : "—";
+
+  async function saveProfile() {
+    try {
+      setProfileError("");
+      const updated = await updateUserProfile(userId, profileForm);
+      onProfileUpdated?.(updated);
+      setEditingProfile(false);
+    } catch (error) { setProfileError(error.message); }
+  }
 
   return (
     <div className="card glass" style={{ padding: "22px 20px" }}>
@@ -619,10 +633,17 @@ export default function Profile({
       </div>
 
       {/* ---- Thông tin ---- */}
-      <Row label={p.name} value={displayName} editable={false} t={p} />
-      <Row label={p.username} value={profile?.username || "—"} editable={false} t={p} />
+      <Row label={p.name} value={displayName} onEdit={() => setEditingProfile(true)} t={p} />
+      <Row label={p.username} value={profile?.username || "—"} onEdit={() => setEditingProfile(true)} t={p} />
       <Row label={p.email} value={profile?.email || "—"} editable={false} t={p} />
-      <Row label={p.phone} value={profile?.phone || "—"} editable={false} t={p} />
+      <Row label={p.phone} value={profile?.phone || "—"} onEdit={() => setEditingProfile(true)} t={p} />
+      {editingProfile && <div style={{ padding: "14px 0", display: "grid", gap: 10 }}>
+        <div className="field"><label>{p.name}</label><input value={profileForm.name} onChange={(e) => setProfileForm((v) => ({ ...v, name: e.target.value }))} /></div>
+        <div className="field"><label>{p.username}</label><input value={profileForm.username} onChange={(e) => setProfileForm((v) => ({ ...v, username: e.target.value }))} /></div>
+        <div className="field"><label>{p.phone}</label><input value={profileForm.phone} onChange={(e) => setProfileForm((v) => ({ ...v, phone: e.target.value }))} /></div>
+        {profileError && <small style={{ color: "var(--danger)" }}>{profileError}</small>}
+        <div style={{ display: "flex", gap: 8 }}><button className="btn btn-primary" onClick={saveProfile}>Lưu thay đổi</button><button className="btn" onClick={() => setEditingProfile(false)}>Hủy</button></div>
+      </div>}
 
       {/* ---- Giao diện: cỡ chữ (thanh kéo) ---- */}
       <div

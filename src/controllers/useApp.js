@@ -1,12 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { THEMES, ROLES } from "../models/constants";
 import { supabase } from "../models/supabase";
-import {
-  fetchUserProfile,
-  touchLoginStreak,
-  TRANG_THAI,
-} from "../models/userProfile";
+import { fetchUserProfile, TRANG_THAI } from "../models/userProfile";
 import { CHUOI_RONG, fetchStreaks } from "../models/chuoiData";
+import { fetchSettings, saveSettings } from "../services/settingsService";
 
 export function useApp() {
   const [view, setView] = useState("dashboard");
@@ -33,6 +30,23 @@ export function useApp() {
   useEffect(() => {
     document.documentElement.style.fontSize = fontSize + "px";
   }, [fontSize]);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetchSettings().then((settings) => {
+      setTheme(settings.theme);
+      setLang(settings.language);
+      setFontSize(settings.fontSize);
+    }).catch(() => {});
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    const timer = setTimeout(() => {
+      saveSettings({ theme, language: lang, fontSize }).catch(() => {});
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [userId, theme, lang, fontSize]);
 
   // Khôi phục phiên khi tải lại trang và theo dõi đăng nhập/đăng xuất.
   useEffect(() => {
@@ -100,16 +114,7 @@ export function useApp() {
       }
       setReady(true);
 
-      // Gọi cả khi khôi phục session (INITIAL_SESSION), không chỉ lúc đăng
-      // nhập: Supabase giữ session qua nhiều ngày nên nếu chỉ bắt SIGNED_IN
-      // thì từ ngày thứ hai trở đi chuỗi sẽ không bao giờ tăng. Hàm DB tự bỏ
-      // qua lần gọi thứ hai trong cùng ngày ('DA_GHI_TRONG_NGAY'). Không gọi
-      // khi TOKEN_REFRESHED vì sự kiện đó lặp mỗi giờ và không mang ý nghĩa
-      // "mở app".
-      if (event === "SIGNED_IN" || event === "INITIAL_SESSION")
-        await touchLoginStreak();
-
-      // Đọc sau touchLoginStreak để lấy luôn số vừa được cập nhật.
+      // Chuỗi ghi chép do trigger trên giao_dich tính, ở đây chỉ đọc.
       try {
         if (!huy) setStreak(await fetchStreaks(session.user.id));
       } catch {
@@ -202,6 +207,7 @@ export function useApp() {
     setRole,
     currentEmail,
     currentProfile,
+    setCurrentProfile,
     completeAuth,
     showLogout,
     setShowLogout,

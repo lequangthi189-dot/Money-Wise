@@ -1,19 +1,19 @@
 import { useDashboard } from "../../controllers/useDashboard";
 
-export default function Dashboard({ t }) {
+export default function Dashboard({ t, streak }) {
   const d = t.dashboard;
   const {
     legend, donut, goals, recent, totalSpentLabel,
     spentToday, spentWeek, txCountToday,
-    balance, streak, streakRecord,
-  } = useDashboard(t);
+    balance, streak: streakDays, streakRecord, budgetAlert, balanceChange, weekChange,
+  } = useDashboard(t, streak);
 
   return (
     <>
-      <div className="alert">
+      {budgetAlert && <div className="alert">
         <svg><use href="#i-warn" /></svg>
-        <div>{d.alert(t.cats.coffee, "86%", "42.000 ₫")}</div>
-      </div>
+        <div>{d.alert(budgetAlert.name, `${budgetAlert.pct}%`, `${Math.max(0, budgetAlert.left).toLocaleString("vi-VN")} ₫`)}</div>
+      </div>}
 
       <div className="grid g-4">
         <div className="stat glass">
@@ -22,7 +22,7 @@ export default function Dashboard({ t }) {
             <div className="ico ico-pri"><svg><use href="#i-wallet" /></svg></div>
           </div>
           <div className="val">{balance.toLocaleString("vi-VN")} ₫</div>
-          <span className="chg up">↑ 8,2% {d.vsLastMonth}</span>
+          {balanceChange !== null && <span className={`chg ${balanceChange >= 0 ? "up" : "down"}`}>{balanceChange >= 0 ? "↑" : "↓"} {Math.abs(balanceChange)}% {d.vsLastMonth}</span>}
         </div>
         <div className="stat glass">
           <div className="row">
@@ -38,7 +38,7 @@ export default function Dashboard({ t }) {
             <div className="ico ico-cyan"><svg><use href="#i-chart" /></svg></div>
           </div>
           <div className="val">{spentWeek.toLocaleString("vi-VN")} ₫</div>
-          <span className="chg up">↓ 12% {d.vsLastWeek}</span>
+          {weekChange !== null && <span className={`chg ${weekChange <= 0 ? "up" : "down"}`}>{weekChange <= 0 ? "↓" : "↑"} {Math.abs(weekChange)}% {d.vsLastWeek}</span>}
         </div>
         <div className="stat glass">
           <div className="row">
@@ -46,7 +46,7 @@ export default function Dashboard({ t }) {
             <div className="ico ico-ok"><svg><use href="#i-flag" /></svg></div>
           </div>
           <div className="val">
-            {streak} <span style={{ fontSize: "1rem", color: "var(--text-dim)" }}>{d.days}</span>
+            {streakDays} <span style={{ fontSize: "1rem", color: "var(--text-dim)" }}>{d.days}</span>
           </div>
           <span className="chg up">{d.record(streakRecord)}</span>
         </div>
