@@ -319,7 +319,15 @@ export default function App() {
       <button className="fab" onClick={() => setChatOpen((o) => !o)}>
         <Icon n="i-msg" size={26} />
       </button>
-      {chatOpen && <ChatPanel userId={userId} onSaved={reloadChangedData} onClose={() => setChatOpen(false)} />}
+      {chatOpen && <ChatPanel
+        userId={userId}
+        onSaved={reloadChangedData}
+        onClose={() => setChatOpen(false)}
+        onOpenCategories={() => {
+          setView("categories");
+          setChatOpen(false);
+        }}
+      />}
 
       {showProfile && (
         <div
