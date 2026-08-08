@@ -1,18 +1,46 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getBudgetRows,
-  INITIAL_TOTAL_LIMIT,
-  INITIAL_TOTAL_SPENT,
-  readBudgetState,
-  writeBudgetState,
+  fetchBudgetState,
+  saveBudgetLimit,
 } from "../../models/budgetsData";
 import { fetchCategories } from "../../models/danhMucData";
 
-export default function Budgets({ query = "", t }) {
+function BudgetSelect({ value, onChange, label, options }) {
+  const menuRef = useRef(null);
+  const selected = options.find((option) => option.value === value) ?? options[0];
+
+  function select(nextValue) {
+    onChange(nextValue);
+    menuRef.current?.removeAttribute("open");
+  }
+
+  return (
+    <details className="budget-kind-select" ref={menuRef}>
+      <summary aria-label={label}>{selected.label}</summary>
+      <div className="budget-kind-menu" role="listbox" aria-label={label}>
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            role="option"
+            aria-selected={option.value === value}
+            className={option.value === value ? "selected" : ""}
+            onClick={() => select(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+export default function Budgets({ query = "", t, userId, onDataChanged }) {
   const b = t.budgets;
   const q = query.trim().toLowerCase();
   const [categories, setCategories] = useState([]);
-  const [budgetState, setBudgetState] = useState(() => readBudgetState());
+  const [budgetState, setBudgetState] = useState({ totalLimit: 0, totalSpent: 0, categoryLimits: {} });
   const [limitType, setLimitType] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [limitInput, setLimitInput] = useState("300.000");
@@ -31,22 +59,24 @@ export default function Budgets({ query = "", t }) {
         if (alive) setCategories([]);
       });
 
+    fetchBudgetState().then((state) => alive && setBudgetState(state)).catch(() => {});
+
     return () => {
       alive = false;
     };
   }, []);
 
   const fmt = (n) => Number(n).toLocaleString("vi-VN") + " ₫";
-  const totalLimit = budgetState.totalLimit;
-  const totalSpent = budgetState.totalSpent;
-  const totalPct = Math.round((totalSpent / totalLimit) * 100);
+  const totalLimit = Number(budgetState.totalLimit) || 0;
+  const totalSpent = Number(budgetState.totalSpent) || 0;
+  const totalPct = totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : 0;
   const totalLeft = totalLimit - totalSpent;
 
-  function handleSaveLimit() {
+  async function handleSaveLimit() {
     const value = Number(limitInput.replaceAll(".", "").replaceAll(",", ""));
 
-    if (Number.isNaN(value) || value < 0) {
-      alert("Hạn mức phải là số không âm");
+    if (Number.isNaN(value) || value <= 0) {
+      alert("Hạn mức phải là số lớn hơn 0");
       return;
     }
 
@@ -89,9 +119,14 @@ export default function Budgets({ query = "", t }) {
       nextState.categoryLimits = nextCategoryLimits;
     }
 
-    const savedState = writeBudgetState(nextState);
-    setBudgetState(savedState);
-    setLimitInput(value.toLocaleString("vi-VN"));
+    try {
+      const savedState = await saveBudgetLimit(userId, limitType, selectedCategory, value);
+      setBudgetState(savedState);
+      setLimitInput(value.toLocaleString("vi-VN"));
+      await onDataChanged?.();
+    } catch (error) {
+      alert(error.message);
+    }
   }
 
   // Gõ đúng "hạn mức" -> hiện tất cả; ngược lại lọc theo tên danh mục.
@@ -164,21 +199,17 @@ export default function Budgets({ query = "", t }) {
             </div>
             <div className="field">
               <label>{b.kind}</label>
-              <select value={limitType} onChange={(e) => setLimitType(e.target.value)}>
-                <option value="total">{b.kindTotal}</option>
-                <option value="category">{b.kindByCat}</option>
-              </select>
+              <BudgetSelect
+                value={limitType}
+                onChange={setLimitType}
+                label={b.kind}
+                options={[{ value: "total", label: b.kindTotal }, { value: "category", label: b.kindByCat }]}
+              />
             </div>
             {limitType === "category" && (
               <div className="field">
                 <label>{b.category}</label>
-                <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                  {BUDGETS.map((row) => (
-                    <option key={row.id} value={String(row.id)}>
-                      {row.icon} {row.name}
-                    </option>
-                  ))}
-                </select>
+                <BudgetSelect value={selectedCategory} onChange={setSelectedCategory} label={b.category} options={BUDGETS.map((row) => ({ value: String(row.id), label: `${row.icon} ${row.name}` }))} />
               </div>
             )}
             <div className="field">
@@ -256,4 +287,4 @@ export default function Budgets({ query = "", t }) {
       </div>
     </>
   );
-} 
+}

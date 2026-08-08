@@ -1,128 +1,120 @@
-// Model: dữ liệu Hạn mức. Giá trị khởi tạo + danh sách hạn mức theo danh mục.
-// Nếu có danh mục chi thật từ Supabase thì budget sẽ tự động tạo hàng tương ứng.
-export const INITIAL_TOTAL_LIMIT = 4000000;
-export const INITIAL_TOTAL_SPENT = 2180000;
-export const BUDGET_STORAGE_KEY = "moneywise-budget-state";
+import { supabase } from "./supabase";
 
-const DEFAULT_BUDGET_ROWS = [
-  {
-    id: 1,
-    icon: "☕",
-    cls: "c-coffee",
-    catKey: "coffee",
-    name: "Coffee",
-    cur: 305000,
-    tot: 350000,
-    pct: 86,
-    bar: "warn",
-    badge: "b-warn",
-  },
-  {
-    id: 2,
-    icon: "🍜",
-    cls: "c-food",
-    catKey: "food",
-    name: "Food",
-    cur: 741000,
-    tot: 1000000,
-    pct: 74,
-    bar: "",
-    badge: "dim",
-  },
-  {
-    id: 3,
-    icon: "🎮",
-    cls: "c-fun",
-    catKey: "fun",
-    name: "Fun",
-    cur: 392000,
-    tot: 400000,
-    pct: 98,
-    bar: "danger",
-    badge: "b-out",
-  },
-  {
-    id: 4,
-    icon: "🛵",
-    cls: "c-move",
-    catKey: "move",
-    name: "Move",
-    cur: 480000,
-    tot: 600000,
-    pct: 80,
-    bar: "warn",
-    badge: "dim",
-  },
-  {
-    id: 5,
-    icon: "🛍️",
-    cls: "c-shop",
-    catKey: "shop",
-    name: "Shop",
-    cur: 120000,
-    tot: 500000,
-    pct: 24,
-    bar: "ok",
-    badge: "b-in",
-  },
-];
+// Model: dữ liệu hạn mức lấy và lưu trực tiếp trên Supabase.
 
-function createDefaultBudgetState() {
+const monthStart = () => new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10);
+const nextMonthStart = () => new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString().slice(0, 10);
+
+async function fetchMonthlySpending() {
+  const { data, error } = await supabase
+    .from("giao_dich")
+    .select("ma_danh_muc, so_tien")
+    .eq("loai_giao_dich", "CHI")
+    .gte("ngay_giao_dich", monthStart())
+    .lt("ngay_giao_dich", nextMonthStart());
+  if (error) throw error;
+  const byCategory = {};
+  let total = 0;
+  data.forEach((transaction) => {
+    const amount = Number(transaction.so_tien);
+    total += amount;
+    byCategory[transaction.ma_danh_muc] = (byCategory[transaction.ma_danh_muc] || 0) + amount;
+  });
+  return { total, byCategory };
+}
+
+function progressFields(limit, spent) {
+  const percent = limit > 0 ? Math.round((spent / limit) * 10000) / 100 : 0;
   return {
-    totalLimit: INITIAL_TOTAL_LIMIT,
-    totalSpent: INITIAL_TOTAL_SPENT,
-    categoryLimits: {},
+    tong_da_chi: spent,
+    phan_tram_da_dung: percent,
+    so_tien_con_lai: limit - spent,
+    trang_thai_canh_bao: percent >= 100 ? "VUOT_HAN_MUC" : percent >= 80 ? "SAP_DAT" : "BINH_THUONG",
   };
 }
 
-function normalizeBudgetState(value) {
-  const base = createDefaultBudgetState();
-  if (!value || typeof value !== "object") return base;
+export async function fetchBudgetState() {
+  const { data: total, error } = await supabase
+    .from("han_muc_thang")
+    .select("ma_han_muc_thang, so_tien_han_muc, tong_da_chi")
+    .eq("ky_thang", monthStart())
+    .maybeSingle();
+  if (error) throw error;
+  if (!total) return { totalLimit: 0, totalSpent: 0, categoryLimits: {} };
+  const { data: rows, error: childError } = await supabase
+    .from("han_muc_danh_muc")
+    .select("ma_danh_muc, so_tien_han_muc, tong_da_chi")
+    .eq("ma_han_muc_thang", total.ma_han_muc_thang);
+  if (childError) throw childError;
   return {
-    totalLimit: Number(value.totalLimit) || base.totalLimit,
-    totalSpent: Number(value.totalSpent) || base.totalSpent,
+    totalLimit: Number(total.so_tien_han_muc),
+    totalSpent: Number(total.tong_da_chi),
+    categoryLimits: Object.fromEntries(rows.map((row) => [String(row.ma_danh_muc), { tot: Number(row.so_tien_han_muc), cur: Number(row.tong_da_chi) }])),
+  };
+}
+
+export async function saveBudgetLimit(userId, type, categoryId, amount) {
+  const month = monthStart();
+  const spending = await fetchMonthlySpending();
+  let { data: total, error } = await supabase
+    .from("han_muc_thang")
+    .select("ma_han_muc_thang, so_tien_han_muc")
+    .eq("ky_thang", month)
+    .maybeSingle();
+  if (error) throw error;
+  if (type === "total") {
+    const payload = {
+      ma_nguoi_dung: userId,
+      ky_thang: month,
+      so_tien_han_muc: amount,
+      ...progressFields(amount, spending.total),
+    };
+    const result = await supabase.from("han_muc_thang").upsert(payload, { onConflict: "ma_nguoi_dung,ky_thang" });
+    if (result.error) throw result.error;
+  } else {
+    if (!total) throw new Error("Hãy đặt hạn mức tổng tháng trước.");
+    const categorySpent = spending.byCategory[Number(categoryId)] || 0;
+    const payload = {
+      ma_han_muc_thang: total.ma_han_muc_thang,
+      ma_danh_muc: Number(categoryId),
+      so_tien_han_muc: amount,
+      ...progressFields(amount, categorySpent),
+    };
+    const result = await supabase.from("han_muc_danh_muc").upsert(payload, { onConflict: "ma_han_muc_thang,ma_danh_muc" });
+    if (result.error) throw result.error;
+    const refreshedTotal = await supabase
+      .from("han_muc_thang")
+      .update(progressFields(Number(total.so_tien_han_muc), spending.total))
+      .eq("ma_han_muc_thang", total.ma_han_muc_thang);
+    if (refreshedTotal.error) throw refreshedTotal.error;
+  }
+  return fetchBudgetState();
+}
+
+function normalizeBudgetState(value) {
+  if (!value || typeof value !== "object") return { totalLimit: 0, totalSpent: 0, categoryLimits: {} };
+  return {
+    totalLimit: Number(value.totalLimit) || 0,
+    totalSpent: Number(value.totalSpent) || 0,
     categoryLimits: value.categoryLimits && typeof value.categoryLimits === "object"
       ? value.categoryLimits
       : {},
   };
 }
 
-export function readBudgetState() {
-  if (typeof window === "undefined") return createDefaultBudgetState();
-
-  try {
-    const raw = window.localStorage.getItem(BUDGET_STORAGE_KEY);
-    if (!raw) return createDefaultBudgetState();
-    return normalizeBudgetState(JSON.parse(raw));
-  } catch {
-    return createDefaultBudgetState();
-  }
-}
-
-export function writeBudgetState(nextState) {
-  const state = normalizeBudgetState(nextState);
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(BUDGET_STORAGE_KEY, JSON.stringify(state));
-  }
-  return state;
-}
-
-function toBudgetRow(t, category, fallback = null, savedLimit = null) {
-  const fallbackName = fallback?.name ?? "Danh mục";
-  const name = category?.name || fallbackName;
-  const catKey = String(category?.id ?? category?.name?.toLowerCase().replace(/\s+/g, "-") ?? fallback?.catKey ?? "custom");
-  const total = Number(savedLimit?.tot ?? fallback?.tot ?? 0);
-  const current = Number(savedLimit?.cur ?? fallback?.cur ?? 0);
-  const pct = total > 0 ? Math.round((current / total) * 100) : fallback?.pct ?? 0;
+function toBudgetRow(category, savedLimit) {
+  const total = Number(savedLimit?.tot ?? 0);
+  const current = Number(savedLimit?.cur ?? 0);
+  const pct = total > 0 ? Math.round((current / total) * 100) : 0;
   const isAtLimit = pct >= 100;
   const isWarning = pct >= 80 && pct < 100;
 
   return {
-    id: category?.id ?? fallback?.id ?? catKey,
-    icon: category?.icon || fallback?.icon || "📌",
-    cls: category?.cls || fallback?.cls || "c-default",
-    catKey,
-    name: t?.cats?.[fallback?.catKey] || name,
+    id: category.id,
+    icon: category.icon || "📌",
+    cls: category.cls || "c-default",
+    catKey: String(category.id),
+    name: category.name,
     cur: current,
     tot: total,
     pct,
@@ -132,26 +124,13 @@ function toBudgetRow(t, category, fallback = null, savedLimit = null) {
 }
 
 export function getBudgetRows(t, categories = [], budgetState = null) {
-  const state = normalizeBudgetState(budgetState ?? readBudgetState());
-
-  if (!Array.isArray(categories) || categories.length === 0) {
-    return DEFAULT_BUDGET_ROWS.map((row) => ({
-      ...row,
-      name: t?.cats?.[row.catKey] || row.name,
-    }));
-  }
+  void t;
+  const state = normalizeBudgetState(budgetState);
+  if (!Array.isArray(categories) || categories.length === 0) return [];
 
   const expenseCategories = categories.filter((category) => category?.type === "out");
-  if (expenseCategories.length === 0) {
-    return DEFAULT_BUDGET_ROWS.map((row) => ({
-      ...row,
-      name: t?.cats?.[row.catKey] || row.name,
-    }));
-  }
-
   return expenseCategories.map((category) => {
-    const fallback = DEFAULT_BUDGET_ROWS.find((row) => row.catKey === category?.name?.toLowerCase());
-    const saved = state.categoryLimits[String(category.id)] ?? state.categoryLimits[String(category.name).toLowerCase()];
-    return toBudgetRow(t, category, fallback, saved);
+    const saved = state.categoryLimits[String(category.id)];
+    return toBudgetRow(category, saved);
   });
 }
