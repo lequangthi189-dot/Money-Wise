@@ -84,7 +84,6 @@ export async function createTransaction({
   });
   if (error) throw error;
 }
-
 export async function updateTransaction(id, {
   categoryId,
   methodId,
@@ -113,3 +112,23 @@ export async function deleteTransaction(id) {
   });
   if (error) throw error;
 }
+export async function fetchLearnedCategory(keywords, type) {
+  if (!keywords.length) return null;
+  const { data, error } = await supabase.rpc("goi_y_danh_muc_uc32", {
+    p_tu_khoa: keywords,
+    p_loai_giao_dich: LOAI[type] ?? null,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function recordCategorySuggestion({ content, keywords, suggestedCategoryId, confirmedCategoryId }) {
+  const { error } = await supabase.rpc("ghi_nhan_goi_y_danh_muc_uc32", {
+    p_noi_dung: content.trim().slice(0, 255),
+    p_tu_khoa: keywords,
+    p_ma_danh_muc_goi_y: suggestedCategoryId || null,
+    p_ma_danh_muc_xac_nhan: confirmedCategoryId,
+  });
+  if (error) throw error;
+}
+
