@@ -1,3 +1,1 @@
-import * as mockDb from "./mockDb";
-
-export const fetchGoals = () => mockDb.getGoals();
+export { fetchGoals, createGoal, updateGoal, fetchInterestSchedule } from "../models/goalsData";
