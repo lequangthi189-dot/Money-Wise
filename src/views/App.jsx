@@ -188,7 +188,7 @@ export default function App() {
             <div className="streak">
               <span className="fire">🔥</span>
               <div>
-                <b>{t.streakDays(streak.ghiChep.current)}</b>
+                <b>{t.streakDays(streak.dangNhap.current)}</b>
                 <span>{t.streak}</span>
               </div>
             </div>

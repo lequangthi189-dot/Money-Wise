@@ -4,7 +4,7 @@ import { supabase, xacMinhMatKhau } from "../../models/supabase";
 import { CHUOI_RONG } from "../../models/chuoiData";
 import { updateUserProfile, uploadUserAvatar } from "../../models/userProfile";
 
-// Màu HOÀN TOÀN lấy từ biến theme (--surface, --text, --accent...), không hardcode.
+// Màu lấy từ các biến theme (--surface, --text, --accent...).
 
 // Đổi thông báo lỗi tiếng Anh của Supabase sang chuỗi đã dịch trong t.pw.
 // Lỗi không nhận ra thì dùng câu chung, kèm log nguyên văn để còn debug.
@@ -606,7 +606,7 @@ export default function Profile({
             <span style={{ fontSize: "1.6rem" }}>🔥</span>
             <div>
               <b style={{ fontSize: "1rem" }}>
-                {p.streakDays(streak.ghiChep.current)}
+                {p.streakDays(streak.dangNhap.current)}
               </b>
               <small
                 style={{
@@ -615,7 +615,7 @@ export default function Profile({
                   color: "var(--text-dim)",
                 }}
               >
-                {p.record(streak.ghiChep.record)}
+                {p.record(streak.dangNhap.record)}
               </small>
             </div>
           </div>

@@ -4,7 +4,7 @@ import {
   fetchPaymentMethods,
   fetchTransactions,
 } from "../../models/giaoDichData";
-import { fetchBudgetState, getBudgetRows } from "../../models/budgetsData";
+import { fetchBudgetConfig, fetchBudgetState, getBudgetRows } from "../../models/budgetsData";
 import { fetchCategories } from "../../models/danhMucData";
 
 // Tìm kiếm cả GIAO DỊCH và HẠN MỨC, hiện kết quả ngay trong dropdown.
@@ -77,7 +77,8 @@ export default function SearchBar({ query, onSearch, t, refreshKey = 0 }) {
   const q = query.trim().toLowerCase();
   const [categories, setCategories] = useState([]);
   const [budgetState, setBudgetState] = useState({ totalLimit: 0, totalSpent: 0, categoryLimits: {} });
-  const BUDGETS = getBudgetRows(t, categories, budgetState);
+  const [budgetConfig, setBudgetConfig] = useState(null);
+  const BUDGETS = getBudgetRows(t, categories, budgetState, budgetConfig);
 
   // Gợi ý tìm kiếm lấy từ dữ liệu thật và tải lại sau mỗi thay đổi dữ liệu.
   const [txns, setTxns] = useState([]);
@@ -104,6 +105,14 @@ export default function SearchBar({ query, onSearch, t, refreshKey = 0 }) {
       })
       .catch(() => {
         if (alive) setBudgetState({ totalLimit: 0, totalSpent: 0, categoryLimits: {} });
+      });
+
+    fetchBudgetConfig()
+      .then((data) => {
+        if (alive) setBudgetConfig(data);
+      })
+      .catch(() => {
+        if (alive) setBudgetConfig(null);
       });
 
     return () => {

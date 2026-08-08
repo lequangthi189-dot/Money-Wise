@@ -45,5 +45,20 @@ export async function fetchSharedReport(code) {
     p_ma_chia_se: normalizedCode,
   });
   if (error) throw error;
-  return data ?? null;
+  if (!data?.length) return null;
+  const first = data[0];
+  return {
+    ky_thang: first.ky_thang,
+    tong_thu: first.tong_thu,
+    tong_chi: first.tong_chi,
+    so_du: first.so_du,
+    chi_tiet: data
+      .filter((row) => row.ten_danh_muc)
+      .map((row) => ({
+        ten_danh_muc: row.ten_danh_muc,
+        tong_chi_danh_muc: row.tong_chi_danh_muc,
+        so_giao_dich: row.so_giao_dich,
+        ty_le_phan_tram: row.ty_le_phan_tram,
+      })),
+  };
 }

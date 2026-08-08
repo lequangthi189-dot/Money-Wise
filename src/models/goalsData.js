@@ -83,3 +83,33 @@ export async function fetchInterestSchedule(goalId) {
   if (error) throw error;
   return data;
 }
+
+export async function fetchGoalContributions(goalId) {
+  if (!goalId) return [];
+  const { data, error } = await supabase
+    .from("dong_gop_muc_tieu")
+    .select("ma_dong_gop, so_tien, ngay_dong_gop, ghi_chu")
+    .eq("ma_muc_tieu", goalId)
+    .order("ngay_dong_gop", { ascending: false })
+    .order("ma_dong_gop", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function addGoalContribution(goalId, { amount, date, note }) {
+  const { error } = await supabase.from("dong_gop_muc_tieu").insert({
+    ma_muc_tieu: goalId,
+    so_tien: Number(amount),
+    ngay_dong_gop: date,
+    ghi_chu: note.trim() || null,
+  });
+  if (error) throw error;
+
+  const { data, error: goalError } = await supabase
+    .from("muc_tieu_tiet_kiem")
+    .select(SELECT_GOAL)
+    .eq("ma_muc_tieu", goalId)
+    .single();
+  if (goalError) throw goalError;
+  return data;
+}

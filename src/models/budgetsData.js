@@ -23,13 +23,26 @@ async function fetchMonthlySpending() {
   return { total, byCategory };
 }
 
-function progressFields(limit, spent) {
+export async function fetchBudgetConfig() {
+  const { data, error } = await supabase
+    .from("tham_so")
+    .select("ma_tham_so, gia_tri")
+    .in("ma_tham_so", ["TS03", "TS04"]);
+  if (error) throw error;
+  const values = Object.fromEntries(data.map((row) => [row.ma_tham_so, Number(row.gia_tri)]));
+  const warning = values.TS03;
+  const danger = values.TS04;
+  if (!Number.isFinite(warning) || !Number.isFinite(danger)) throw new Error("Thiếu cấu hình ngưỡng hạn mức trong DB.");
+  return { warning, danger };
+}
+
+function progressFields(limit, spent, config) {
   const percent = limit > 0 ? Math.round((spent / limit) * 10000) / 100 : 0;
   return {
     tong_da_chi: spent,
     phan_tram_da_dung: percent,
     so_tien_con_lai: limit - spent,
-    trang_thai_canh_bao: percent >= 100 ? "VUOT_HAN_MUC" : percent >= 80 ? "SAP_DAT" : "BINH_THUONG",
+    trang_thai_canh_bao: percent >= config.danger ? "VUOT_HAN_MUC" : percent >= config.warning ? "SAP_DAT" : "BINH_THUONG",
   };
 }
 
@@ -54,6 +67,7 @@ export async function fetchBudgetState() {
 }
 
 export async function saveBudgetLimit(userId, type, categoryId, amount) {
+  const config = await fetchBudgetConfig();
   const month = monthStart();
   const spending = await fetchMonthlySpending();
   let { data: total, error } = await supabase
@@ -67,7 +81,7 @@ export async function saveBudgetLimit(userId, type, categoryId, amount) {
       ma_nguoi_dung: userId,
       ky_thang: month,
       so_tien_han_muc: amount,
-      ...progressFields(amount, spending.total),
+      ...progressFields(amount, spending.total, config),
     };
     const result = await supabase.from("han_muc_thang").upsert(payload, { onConflict: "ma_nguoi_dung,ky_thang" });
     if (result.error) throw result.error;
@@ -78,13 +92,13 @@ export async function saveBudgetLimit(userId, type, categoryId, amount) {
       ma_han_muc_thang: total.ma_han_muc_thang,
       ma_danh_muc: Number(categoryId),
       so_tien_han_muc: amount,
-      ...progressFields(amount, categorySpent),
+      ...progressFields(amount, categorySpent, config),
     };
     const result = await supabase.from("han_muc_danh_muc").upsert(payload, { onConflict: "ma_han_muc_thang,ma_danh_muc" });
     if (result.error) throw result.error;
     const refreshedTotal = await supabase
       .from("han_muc_thang")
-      .update(progressFields(Number(total.so_tien_han_muc), spending.total))
+      .update(progressFields(Number(total.so_tien_han_muc), spending.total, config))
       .eq("ma_han_muc_thang", total.ma_han_muc_thang);
     if (refreshedTotal.error) throw refreshedTotal.error;
   }
@@ -102,12 +116,12 @@ function normalizeBudgetState(value) {
   };
 }
 
-function toBudgetRow(category, savedLimit) {
+function toBudgetRow(category, savedLimit, config) {
   const total = Number(savedLimit?.tot ?? 0);
   const current = Number(savedLimit?.cur ?? 0);
   const pct = total > 0 ? Math.round((current / total) * 100) : 0;
-  const isAtLimit = pct >= 100;
-  const isWarning = pct >= 80 && pct < 100;
+  const isAtLimit = pct >= config.danger;
+  const isWarning = pct >= config.warning && pct < config.danger;
 
   return {
     id: category.id,
@@ -123,14 +137,14 @@ function toBudgetRow(category, savedLimit) {
   };
 }
 
-export function getBudgetRows(t, categories = [], budgetState = null) {
+export function getBudgetRows(t, categories = [], budgetState = null, config = null) {
   void t;
   const state = normalizeBudgetState(budgetState);
-  if (!Array.isArray(categories) || categories.length === 0) return [];
+  if (!Array.isArray(categories) || categories.length === 0 || !config) return [];
 
   const expenseCategories = categories.filter((category) => category?.type === "out");
   return expenseCategories.map((category) => {
     const saved = state.categoryLimits[String(category.id)];
-    return toBudgetRow(category, saved);
+    return toBudgetRow(category, saved, config);
   });
 }
