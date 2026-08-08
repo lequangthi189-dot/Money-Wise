@@ -102,7 +102,7 @@ export function useCategories(userId, onDataChanged) {
 
   async function handleDeleteCategory(id) {
     const cat = cats.find((c) => c.id === id);
-    if (!cat || cat.isDefault || saving) return;
+    if (!cat || cat.isSystem || saving) return;
 
     setSaving(true);
     setError("");

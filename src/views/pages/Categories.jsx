@@ -14,7 +14,7 @@ function CatCard({ c, type, t, onDelete, onEdit }) {
         {type === "in" ? t.thu : t.chi}
       </span>
       <div className="act">
-        {!c.isDefault && (
+        {!c.isSystem && (
           <>
             <button aria-label="edit" onClick={() => onEdit(c)}>
               <svg width="15" height="15">
@@ -91,7 +91,7 @@ export default function Categories({ t, userId, onDataChanged }) {
   } = useCategories(userId, onDataChanged);
 
   const categories = [...expenseCats, ...incomeCats];
-  const defaultCategoryCount = categories.filter((category) => category.isDefault).length;
+  const defaultCategoryCount = categories.filter((category) => category.isPreset).length;
   const customCategoryCount = categories.length - defaultCategoryCount;
 
   return (
