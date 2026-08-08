@@ -59,8 +59,8 @@ export default function Transactions({
 
   return (
     <>
-      <div className="grid g-12">
-        <div className="card glass">
+      <div className="transactions-layout">
+        <div className="card glass transaction-form-card">
           <div className="card-h">
             <h3>{tr.add}</h3>
           </div>
@@ -166,64 +166,49 @@ export default function Transactions({
           </button>
         </div>
 
-        <div className="card glass">
-          <div className="card-h">
+        <div className="card glass transaction-list-card">
+          <div className="card-h transaction-list-head">
             <h3>{tr.list}</h3>
-          </div>
-
-          <div className="transaction-filters">
-            <TransactionSelect value={filters.period} onChange={(value) => setFilter("period", value)} label={tr.filterTime} options={[{ value: "", label: tr.allPeriods }, { value: "month", label: tr.fMonth }, { value: "week", label: tr.fWeek }, { value: "day", label: tr.fDay }]} />
-            <TransactionSelect value={filters.categoryId} onChange={(value) => setFilter("categoryId", value)} label={tr.category} options={[{ value: "", label: tr.allCategories }, ...filterCategories.map((category) => ({ value: category.id, label: `${category.icon} ${category.name}` }))]} />
-            {hasFilters && <button type="button" className="btn" onClick={resetFilters}>{tr.clearFilters}</button>}
+            <div className="transaction-period-pills" aria-label={tr.filterTime}>
+              {[
+                ["month", tr.fMonth],
+                ["week", tr.fWeek],
+                ["day", tr.fDay],
+              ].map(([value, label]) => (
+                <button key={value} type="button" className={filters.period === value ? "active" : ""} onClick={() => setFilter("period", filters.period === value ? "" : value)}>
+                  {label}
+                </button>
+              ))}
+              <div className="transaction-category-filter">
+                <TransactionSelect value={filters.categoryId} onChange={(value) => setFilter("categoryId", value)} label={tr.category} options={[{ value: "", label: tr.allCategories }, ...filterCategories.map((category) => ({ value: category.id, label: `${category.icon} ${category.name}` }))]} />
+              </div>
+            </div>
           </div>
 
           {(q || hasFilters) && (
-            <div
-              style={{
-                fontSize: ".78rem",
-                color: "var(--text-dim)",
-                marginBottom: "10px",
-              }}
-            >
-              {tr.filteredCount(filtered.length)}
+            <div className="transaction-filter-summary">
+              <span>{tr.filteredCount(filtered.length)}</span>
+              {hasFilters && <button type="button" onClick={resetFilters}>{tr.clearFilters}</button>}
             </div>
           )}
 
           {filtered.length > 0 && (
-            <div className="transaction-table-wrap">
-              <table className="transaction-table">
-                <thead>
-                  <tr>
-                    <th>{tr.date}</th>
-                    <th>{tr.transactionColumn}</th>
-                    <th>{tr.category}</th>
-                    <th>{tr.method}</th>
-                    <th>{tr.type}</th>
-                    <th className="amount-column">{tr.amount}</th>
-                    <th className="actions-column">{tr.actions}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((tx) => (
-                    <tr key={tx.id}>
-                      <td data-label={tr.date}>{tx.date}</td>
-                      <td data-label={tr.transactionColumn} className="transaction-name">{tx.name}</td>
-                      <td data-label={tr.category}>
-                        <span className="transaction-category"><span className={"cat " + tx.cls}>{tx.icon}</span>{tx.catName}</span>
-                      </td>
-                      <td data-label={tr.method}>{t.methods[tx.mkey]}</td>
-                      <td data-label={tr.type}><span className={"badge " + (tx.type === "in" ? "b-in" : "b-out")}>{tx.type === "in" ? t.thu : t.chi}</span></td>
-                      <td data-label={tr.amount} className={"amount-column amt " + tx.type}>{tx.amount}</td>
-                      <td data-label={tr.actions} className="actions-column">
-                        <div className="transaction-actions">
-                          <button type="button" onClick={() => edit(tx)} disabled={saving} title={tr.actions}><svg width="15" height="15"><use href="#i-edit" /></svg></button>
-                          <button type="button" onClick={() => remove(tx.id)} disabled={saving} title={tr.actions}><svg width="15" height="15"><use href="#i-trash" /></svg></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="transaction-list">
+              {filtered.map((tx) => (
+                <article className="transaction-item" key={tx.id}>
+                  <span className={"cat " + tx.cls}>{tx.icon}</span>
+                  <div className="transaction-item-main">
+                    <strong>{tx.name}</strong>
+                    <small>{tx.date} · {t.methods[tx.mkey]}</small>
+                  </div>
+                  <span className={"badge " + (tx.type === "in" ? "b-in" : "b-out")}>{tx.type === "in" ? t.thu : t.chi}</span>
+                  <strong className={"amt " + tx.type}>{tx.amount}</strong>
+                  <div className="transaction-actions">
+                    <button type="button" onClick={() => edit(tx)} disabled={saving} title={tr.actions}><svg width="15" height="15"><use href="#i-edit" /></svg></button>
+                    <button type="button" onClick={() => remove(tx.id)} disabled={saving} title={tr.actions}><svg width="15" height="15"><use href="#i-trash" /></svg></button>
+                  </div>
+                </article>
+              ))}
             </div>
           )}
 

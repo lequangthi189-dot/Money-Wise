@@ -1,5 +1,63 @@
 /* transactions.css — Giao dịch: dòng giao dịch */
 /* list rows */
+.transactions-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.78fr) minmax(520px, 1.22fr);
+  gap: 18px;
+  align-items: start;
+}
+.transaction-form-card, .transaction-list-card { min-width: 0; }
+.transaction-list-head { align-items: center; gap: 18px; }
+.transaction-period-pills { display: flex; align-items: center; justify-content: flex-end; gap: 7px; margin-left: auto; }
+.transaction-period-pills > button,
+.transaction-category-filter .transaction-select summary {
+  min-height: 32px;
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.transaction-period-pills > button:hover,
+.transaction-period-pills > button.active { border-color: transparent; background: var(--accent); color: #fff; }
+.transaction-category-filter { width: 118px; }
+.transaction-category-filter .transaction-select summary::after { width: 6px; height: 6px; margin-left: 8px; }
+.transaction-category-filter .transaction-select-menu { right: 0; left: auto; width: 230px; }
+.transaction-filter-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: -2px 0 10px; color: var(--text-dim); font-size: 0.72rem; }
+.transaction-filter-summary button { padding: 0; border: 0; background: transparent; color: var(--accent); cursor: pointer; font: inherit; }
+.transaction-list { display: grid; }
+.transaction-item {
+  display: grid;
+  grid-template-columns: 42px minmax(140px, 1fr) auto minmax(105px, auto) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.transaction-item:last-child { border-bottom: 0; }
+.transaction-item > .cat { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; font-size: 1rem; }
+.transaction-item-main { min-width: 0; }
+.transaction-item-main strong,
+.transaction-item-main small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.transaction-item-main strong { margin-bottom: 4px; font-size: 0.82rem; font-weight: 600; }
+.transaction-item-main small { color: var(--text-dim); font-size: 0.7rem; }
+.transaction-item > .amt { text-align: right; font-size: 0.84rem; white-space: nowrap; }
+
+@media (max-width: 1100px) {
+  .transactions-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .transaction-list-head { align-items: flex-start; flex-direction: column; }
+  .transaction-period-pills { width: 100%; justify-content: flex-start; overflow-x: auto; }
+  .transaction-item { grid-template-columns: 42px minmax(0, 1fr) auto; }
+  .transaction-item > .badge { grid-column: 2; justify-self: start; }
+  .transaction-item > .amt { grid-column: 3; grid-row: 1; }
+  .transaction-item > .transaction-actions { grid-column: 3; grid-row: 2; }
+}
+
 .quick-chat-link {
   display: flex;
   align-items: center;
