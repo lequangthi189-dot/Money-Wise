@@ -4,7 +4,7 @@ import {
   fetchPaymentMethods,
   fetchTransactions,
 } from "../../models/giaoDichData";
-import { getBudgetRows } from "../../models/budgetsData";
+import { fetchBudgetState, getBudgetRows } from "../../models/budgetsData";
 import { fetchCategories } from "../../models/danhMucData";
 
 // Tìm kiếm cả GIAO DỊCH và HẠN MỨC, hiện kết quả ngay trong dropdown.
@@ -67,7 +67,7 @@ const swatch = {
   fontSize: ".9rem",
 };
 
-export default function SearchBar({ query, onSearch, t }) {
+export default function SearchBar({ query, onSearch, t, refreshKey = 0 }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const inputRef = useRef(null);
@@ -76,9 +76,10 @@ export default function SearchBar({ query, onSearch, t }) {
   const s = t.searchbar;
   const q = query.trim().toLowerCase();
   const [categories, setCategories] = useState([]);
-  const BUDGETS = getBudgetRows(t, categories);
+  const [budgetState, setBudgetState] = useState({ totalLimit: 0, totalSpent: 0, categoryLimits: {} });
+  const BUDGETS = getBudgetRows(t, categories, budgetState);
 
-  // Gợi ý tìm kiếm lấy từ giao dịch thật; tải một lần khi mở app.
+  // Gợi ý tìm kiếm lấy từ dữ liệu thật và tải lại sau mỗi thay đổi dữ liệu.
   const [txns, setTxns] = useState([]);
   useEffect(() => {
     let alive = true;
@@ -97,10 +98,18 @@ export default function SearchBar({ query, onSearch, t }) {
         if (alive) setCategories([]);
       });
 
+    fetchBudgetState()
+      .then((data) => {
+        if (alive) setBudgetState(data);
+      })
+      .catch(() => {
+        if (alive) setBudgetState({ totalLimit: 0, totalSpent: 0, categoryLimits: {} });
+      });
+
     return () => {
       alive = false;
     };
-  }, []);
+  }, [refreshKey]);
 
   const txHits = q
     ? txns
