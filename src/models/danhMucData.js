@@ -72,7 +72,6 @@ export async function createCategory({ userId, name, type, icon }) {
       loai_danh_muc: LOAI[type],
       bieu_tuong: icon,
       dang_hoat_dong: true,
-      la_mac_dinh: false,
     })
     .select("ma_danh_muc, ten_danh_muc, loai_danh_muc, bieu_tuong, la_mac_dinh, dang_hoat_dong")
     .single();
