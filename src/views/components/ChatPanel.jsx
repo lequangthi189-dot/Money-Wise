@@ -17,6 +17,10 @@ const QUICK_ENTRY_CONFIG = {
   yesterdayWords: ["hôm qua"],
 };
 
+function localDateISO(value) {
+  return new Date(value.getTime() - value.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+
 function normalizeSuggestionText(value) {
   return String(value ?? "")
     .normalize("NFD")
@@ -82,7 +86,6 @@ function parseMessage(text, categories, methods, history, config) {
   ) ?? null;
 
   const today = new Date();
-  const localDateISO = (value) => new Date(value.getTime() - value.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   let date = localDateISO(today);
   if ((config.todayWords ?? []).some((word) => words.includes(word))) date = localDateISO(today);
   else if ((config.yesterdayWords ?? []).some((word) => words.includes(word))) {
@@ -99,7 +102,7 @@ function parseMessage(text, categories, methods, history, config) {
   return { amount, type, category, method, date, note: text, suggestionSource: category ? suggestion.source : "", suggestedCategoryId: category?.id ?? null };
 }
 
-export default function ChatPanel({ onClose, userId, onSaved }) {
+export default function ChatPanel({ onClose, userId, onSaved, onOpenCategories }) {
   const { categories: appCategories, transactions: appTransactions } = useAppData();
   const [text, setText] = useState("");
   const [parsed, setParsed] = useState(null);
@@ -160,9 +163,12 @@ export default function ChatPanel({ onClose, userId, onSaved }) {
         <div className="pr"><span>Số tiền</span><input type="number" min="1" value={parsed.amount} onChange={(e) => setParsed((old) => ({ ...old, amount: Number(e.target.value) }))} /></div>
         <div className="pr"><span>Danh mục</span><select value={parsed.category?.id ?? ""} onChange={(e) => setParsed((old) => ({ ...old, category: categories.find((item) => String(item.id) === e.target.value) ?? null, suggestionSource: "" }))}><option value="">Chọn danh mục</option>{categories.filter((item) => item.type === parsed.type).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
         {parsed.category && parsed.suggestionSource && <small className="suggestion-note">{parsed.suggestionSource === "history" ? "Danh mục được gợi ý từ các giao dịch bạn đã xác nhận trước đây." : "Danh mục được gợi ý từ nội dung bạn nhập."}</small>}
-        {!parsed.category && parsed.type && <small className="suggestion-note">Không tìm thấy danh mục phù hợp. Hãy chọn một danh mục có sẵn.</small>}
+        {!parsed.category && parsed.type && <div className="suggestion-note suggestion-missing">
+          <span>Không tìm thấy danh mục phù hợp. Bạn có thể chọn danh mục có sẵn hoặc tự tạo danh mục mới.</span>
+          <button type="button" onClick={onOpenCategories}>Đi đến Danh mục</button>
+        </div>}
         <div className="pr"><span>Phương thức</span><select value={parsed.method?.id ?? ""} onChange={(e) => setParsed((old) => ({ ...old, method: methods.find((item) => String(item.id) === e.target.value) ?? null }))}><option value="">Chọn phương thức</option>{methods.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
-        <div className="pr"><span>Ngày</span><input type="date" max={new Date().toISOString().slice(0, 10)} value={parsed.date} onChange={(e) => setParsed((old) => ({ ...old, date: e.target.value }))} /></div>
+        <div className="pr"><span>Ngày</span><input type="date" max={localDateISO(new Date())} value={parsed.date} onChange={(e) => setParsed((old) => ({ ...old, date: e.target.value }))} /></div>
         <div className="pbtn"><button className="ok" disabled={!parsed.type || !parsed.category || !parsed.method || !parsed.date || parsed.amount <= 0} onClick={save}>✓ Lưu</button><button className="edit" onClick={() => setParsed(null)}>Nhập lại</button></div>
       </div></div>}
     </div>
