@@ -49,12 +49,23 @@ export function AppDataProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    const initialLoad = setTimeout(loadAll, 0);
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || (event === "INITIAL_SESSION" && session)) setTimeout(loadAll, 0);
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
+        setTimeout(loadAll, 0);
+        return;
+      }
+
+      if (event === "SIGNED_OUT" || (event === "INITIAL_SESSION" && !session)) {
+        setCategories([]);
+        setBudgets([]);
+        setTransactions([]);
+        setGoals([]);
+        setSettings({});
+        setError(null);
+        setLoading(false);
+      }
     });
     return () => {
-      clearTimeout(initialLoad);
       data.subscription.unsubscribe();
     };
   }, [loadAll]);
