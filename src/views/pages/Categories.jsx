@@ -126,13 +126,14 @@ export default function Categories({ t, userId, onDataChanged }) {
 
       {showForm && (
         <div className="card glass category-form-card" style={{ margin: "12px 0" }}>
-          <div>
+          <div className="cat-form-icons" role="group" aria-label="Chọn biểu tượng danh mục">
             {CATEGORY_ICONS.map((icon) => (
               <button
                 key={icon}
                 type="button"
                 className={"icon-choice" + (selectedIcon === icon ? " active" : "")}
                 onClick={() => setSelectedIcon(icon)}
+                aria-pressed={selectedIcon === icon}
               >
                 {icon}
               </button>
