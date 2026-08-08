@@ -102,7 +102,8 @@ function parseMessage(text, categories, methods, history, config) {
   return { amount, type, category, method, date, note: text, suggestionSource: category ? suggestion.source : "", suggestedCategoryId: category?.id ?? null };
 }
 
-export default function ChatPanel({ onClose, userId, onSaved, onOpenCategories }) {
+export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategories }) {
+  const c = t.chat;
   const { categories: appCategories, transactions: appTransactions } = useAppData();
   const [text, setText] = useState("");
   const [parsed, setParsed] = useState(null);
@@ -134,19 +135,19 @@ export default function ChatPanel({ onClose, userId, onSaved, onOpenCategories }
   async function send() {
     const result = parseMessage(text, categories, methods, history, QUICK_ENTRY_CONFIG);
     setParsed(result);
-    if (!result) setMessage("Không tìm thấy số tiền trong nội dung.");
+    if (!result) setMessage(c.noAmount);
     else setMessage("");
   }
 
   async function save() {
     if (!parsed?.type || !parsed?.category || !parsed?.method || !parsed?.date || parsed.amount <= 0) {
-      setMessage("Vui lòng chọn đủ loại, danh mục, phương thức, ngày và số tiền.");
+      setMessage(c.incomplete);
       return;
     }
     try {
       await createTransaction({ userId, categoryId: parsed.category.id, methodId: parsed.method.id, type: parsed.type, amount: parsed.amount, date: parsed.date, note: parsed.note });
       setHistory((old) => [{ name: parsed.note, categoryId: parsed.category.id, type: parsed.type }, ...old]);
-      setMessage("Đã lưu giao dịch.");
+      setMessage(c.saved);
       setParsed(null);
       setText("");
       await onSaved?.();
@@ -154,24 +155,24 @@ export default function ChatPanel({ onClose, userId, onSaved, onOpenCategories }
   }
 
   return <div className="chatpanel show">
-    <div className="chathead"><div className="bot"><Icon n="i-msg" /></div><div><b>Trợ lý MoneyWise</b><small>● Đang hoạt động</small></div><button className="x" onClick={onClose}>×</button></div>
+    <div className="chathead"><div className="bot"><Icon n="i-msg" /></div><div><b>{c.title}</b><small>{c.online}</small></div><button className="x" onClick={onClose}>×</button></div>
     <div className="chatbody">
-      <div className="msg bot">Mô tả khoản thu hoặc chi, ví dụ: “hôm qua nhận lương 8tr qua ngân hàng” hoặc “hôm nay uống trà sữa 35k tiền mặt”.</div>
+      <div className="msg bot">{c.intro}</div>
       {message && <div className="msg bot">{message}</div>}
       {parsed && <div className="msg bot"><div className="parsed">
-        <div className="pr"><span>Loại</span><select value={parsed.type} onChange={(e) => setParsed((old) => ({ ...old, type: e.target.value, category: null, suggestionSource: "", suggestedCategoryId: null }))}><option value="">Chọn loại</option><option value="out">Chi</option><option value="in">Thu</option></select></div>
-        <div className="pr"><span>Số tiền</span><input type="number" min="1" value={parsed.amount} onChange={(e) => setParsed((old) => ({ ...old, amount: Number(e.target.value) }))} /></div>
-        <div className="pr"><span>Danh mục</span><select value={parsed.category?.id ?? ""} onChange={(e) => setParsed((old) => ({ ...old, category: categories.find((item) => String(item.id) === e.target.value) ?? null, suggestionSource: "" }))}><option value="">Chọn danh mục</option>{categories.filter((item) => item.type === parsed.type).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
-        {parsed.category && parsed.suggestionSource && <small className="suggestion-note">{parsed.suggestionSource === "history" ? "Danh mục được gợi ý từ các giao dịch bạn đã xác nhận trước đây." : "Danh mục được gợi ý từ nội dung bạn nhập."}</small>}
+        <div className="pr"><span>{c.type}</span><select value={parsed.type} onChange={(e) => setParsed((old) => ({ ...old, type: e.target.value, category: null, suggestionSource: "", suggestedCategoryId: null }))}><option value="">{c.chooseType}</option><option value="out">{c.expense}</option><option value="in">{c.income}</option></select></div>
+        <div className="pr"><span>{c.amount}</span><input type="number" min="1" value={parsed.amount} onChange={(e) => setParsed((old) => ({ ...old, amount: Number(e.target.value) }))} /></div>
+        <div className="pr"><span>{c.category}</span><select value={parsed.category?.id ?? ""} onChange={(e) => setParsed((old) => ({ ...old, category: categories.find((item) => String(item.id) === e.target.value) ?? null, suggestionSource: "" }))}><option value="">{c.chooseCategory}</option>{categories.filter((item) => item.type === parsed.type).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
+        {parsed.category && parsed.suggestionSource && <small className="suggestion-note">{parsed.suggestionSource === "history" ? c.suggestedFromHistory : c.suggestedFromText}</small>}
         {!parsed.category && parsed.type && <div className="suggestion-note suggestion-missing">
-          <span>Không tìm thấy danh mục phù hợp. Bạn có thể chọn danh mục có sẵn hoặc tự tạo danh mục mới.</span>
-          <button type="button" onClick={onOpenCategories}>Đi đến Danh mục</button>
+          <span>{c.noSuggestion}</span>
+          <button type="button" onClick={onOpenCategories}>{c.openCategories}</button>
         </div>}
-        <div className="pr"><span>Phương thức</span><select value={parsed.method?.id ?? ""} onChange={(e) => setParsed((old) => ({ ...old, method: methods.find((item) => String(item.id) === e.target.value) ?? null }))}><option value="">Chọn phương thức</option>{methods.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
-        <div className="pr"><span>Ngày</span><input type="date" max={localDateISO(new Date())} value={parsed.date} onChange={(e) => setParsed((old) => ({ ...old, date: e.target.value }))} /></div>
-        <div className="pbtn"><button className="ok" disabled={!parsed.type || !parsed.category || !parsed.method || !parsed.date || parsed.amount <= 0} onClick={save}>✓ Lưu</button><button className="edit" onClick={() => setParsed(null)}>Nhập lại</button></div>
+        <div className="pr"><span>{c.method}</span><select value={parsed.method?.id ?? ""} onChange={(e) => setParsed((old) => ({ ...old, method: methods.find((item) => String(item.id) === e.target.value) ?? null }))}><option value="">{c.chooseMethod}</option>{methods.map((item) => <option key={item.id} value={item.id}>{t.methods[item.mkey] ?? item.name}</option>)}</select></div>
+        <div className="pr"><span>{c.date}</span><input type="date" max={localDateISO(new Date())} value={parsed.date} onChange={(e) => setParsed((old) => ({ ...old, date: e.target.value }))} /></div>
+        <div className="pbtn"><button className="ok" disabled={!parsed.type || !parsed.category || !parsed.method || !parsed.date || parsed.amount <= 0} onClick={save}>{c.save}</button><button className="edit" onClick={() => setParsed(null)}>{c.retry}</button></div>
       </div></div>}
     </div>
-    <div className="chatfoot"><input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Nhập khoản thu hoặc chi…" /><button className="send" onClick={send}><Icon n="i-send" size={18} /></button></div>
+    <div className="chatfoot"><input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder={c.placeholder} /><button className="send" onClick={send}><Icon n="i-send" size={18} /></button></div>
   </div>;
 }

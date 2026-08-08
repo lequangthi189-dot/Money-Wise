@@ -16,12 +16,12 @@ function CatCard({ c, type, t, onDelete, onEdit }) {
       <div className="act">
         {!c.isSystem && (
           <>
-            <button aria-label="edit" onClick={() => onEdit(c)}>
+            <button aria-label={t.categories.editLabel} onClick={() => onEdit(c)}>
               <svg width="15" height="15">
                 <use href="#i-edit" />
               </svg>
             </button>
-            <button aria-label="delete" onClick={() => onDelete(c.id)}>
+            <button aria-label={t.categories.deleteLabel} onClick={() => onDelete(c.id)}>
               <svg width="15" height="15">
                 <use href="#i-trash" />
               </svg>
@@ -33,11 +33,11 @@ function CatCard({ c, type, t, onDelete, onEdit }) {
   );
 }
 
-function CategoryTypeSelect({ value, onChange }) {
+function CategoryTypeSelect({ value, onChange, text }) {
   const menuRef = useRef(null);
   const options = [
-    { value: "out", label: "Chi tiêu" },
-    { value: "in", label: "Thu nhập" },
+    { value: "out", label: text.typeExpense },
+    { value: "in", label: text.typeIncome },
   ];
   const selected = options.find((option) => option.value === value) ?? options[0];
 
@@ -48,8 +48,8 @@ function CategoryTypeSelect({ value, onChange }) {
 
   return (
     <details className="category-type-select" ref={menuRef}>
-      <summary aria-label="Loại danh mục">{selected.label}</summary>
-      <div className="category-type-menu" role="listbox" aria-label="Loại danh mục">
+      <summary aria-label={text.typeLabel}>{selected.label}</summary>
+      <div className="category-type-menu" role="listbox" aria-label={text.typeLabel}>
         {options.map((option) => (
           <button
             key={option.value}
@@ -130,7 +130,7 @@ export default function Categories({ t, userId, onDataChanged }) {
 
       {showForm && (
         <div className="card glass category-form-card" style={{ margin: "12px 0" }}>
-          <div className="cat-form-icons" role="group" aria-label="Chọn biểu tượng danh mục">
+          <div className="cat-form-icons" role="group" aria-label={c.chooseIcon}>
             {CATEGORY_ICONS.map((icon) => (
               <button
                 key={icon}
@@ -145,20 +145,20 @@ export default function Categories({ t, userId, onDataChanged }) {
           </div>
           <input
             type="text"
-            placeholder="Tên danh mục"
+            placeholder={c.namePlaceholder}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
           />
           {/* DB không cho đổi loại sau khi tạo, nên khi sửa chỉ hiển thị. */}
           {isEditing ? (
             <div className="category-type-pill">
-              <span className="category-type-pill-label">Loại</span>
+              <span className="category-type-pill-label">{c.type}</span>
               <span className={newType === "in" ? "category-type-pill-value income" : "category-type-pill-value expense"}>
                 {newType === "in" ? t.thu : t.chi}
               </span>
             </div>
           ) : (
-            <CategoryTypeSelect value={newType} onChange={setNewType} />
+            <CategoryTypeSelect value={newType} onChange={setNewType} text={c} />
           )}
           <div className="category-form-actions">
             <button
@@ -166,10 +166,10 @@ export default function Categories({ t, userId, onDataChanged }) {
               onClick={handleAddCategory}
               disabled={saving}
             >
-              {saving ? "Đang lưu…" : "Lưu"}
+              {saving ? c.saving : (isEditing ? c.update : c.save)}
             </button>
             <button className="btn" onClick={handleCloseForm}>
-              Đóng
+              {c.close}
             </button>
           </div>
         </div>

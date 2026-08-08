@@ -320,6 +320,7 @@ export default function App() {
         <Icon n="i-msg" size={26} />
       </button>
       {chatOpen && <ChatPanel
+        t={t}
         userId={userId}
         onSaved={reloadChangedData}
         onClose={() => setChatOpen(false)}

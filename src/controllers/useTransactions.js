@@ -102,14 +102,14 @@ export function useTransactions(query, t, userId, onDataChanged) {
 
     const amount = parseMoney(form.amount);
     if (!Number.isFinite(amount) || amount <= 0)
-      return setError("Số tiền phải lớn hơn 0.");
-    if (!form.categoryId) return setError("Vui lòng chọn danh mục.");
-    if (!form.methodId) return setError("Vui lòng chọn phương thức.");
-    if (!form.date) return setError("Vui lòng chọn ngày.");
+      return setError(t.transactions.invalidAmount);
+    if (!form.categoryId) return setError(t.transactions.selectCategory);
+    if (!form.methodId) return setError(t.transactions.selectMethod);
+    if (!form.date) return setError(t.transactions.selectDate);
     if (form.note.length > 255)
-      return setError("Ghi chú không được vượt quá 255 ký tự.");
+      return setError(t.transactions.noteTooLong);
     if (form.date > todayISO())
-      return setError("Ngày giao dịch không được lớn hơn hôm nay.");
+      return setError(t.transactions.futureDate);
 
     const payload = {
       userId,
