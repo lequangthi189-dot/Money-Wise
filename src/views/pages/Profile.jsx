@@ -432,18 +432,17 @@ export default function Profile({
     const f = e.target.files?.[0];
     if (!f) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
-      alert("Ảnh phải có định dạng JPG, PNG hoặc WEBP.");
+      alert(p.invalidImageType);
       return;
     }
     if (f.size > 5 * 1024 * 1024) {
-      alert("Ảnh vượt quá dung lượng 5MB.");
+      alert(p.imageTooLarge);
       return;
     }
 
-    setProgress(20);
+    setProgress(0);
     try {
-      const url = await uploadUserAvatar(userId, f);
-      setProgress(100);
+      const url = await uploadUserAvatar(userId, f, setProgress);
       setAvatar(url);
     } catch (error) {
       alert(error.message);
@@ -642,7 +641,7 @@ export default function Profile({
         <div className="field"><label>{p.username}</label><input value={profileForm.username} onChange={(e) => setProfileForm((v) => ({ ...v, username: e.target.value }))} /></div>
         <div className="field"><label>{p.phone}</label><input value={profileForm.phone} onChange={(e) => setProfileForm((v) => ({ ...v, phone: e.target.value }))} /></div>
         {profileError && <small style={{ color: "var(--danger)" }}>{profileError}</small>}
-        <div style={{ display: "flex", gap: 8 }}><button className="btn btn-primary" onClick={saveProfile}>Lưu thay đổi</button><button className="btn" onClick={() => setEditingProfile(false)}>Hủy</button></div>
+        <div style={{ display: "flex", gap: 8 }}><button className="btn btn-primary" onClick={saveProfile}>{p.saveChanges}</button><button className="btn" onClick={() => setEditingProfile(false)}>{p.cancel}</button></div>
       </div>}
 
       {/* ---- Giao diện: cỡ chữ (thanh kéo) ---- */}
