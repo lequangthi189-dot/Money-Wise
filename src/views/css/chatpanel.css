@@ -41,6 +41,32 @@
   flex-direction: column;
   overflow: hidden;
 }
+
+/* Glass cần đủ đặc để nội dung phía sau không xuyên qua làm rối chữ. */
+[data-theme="glass"] .chatpanel {
+  background: rgba(18, 20, 42, 0.94);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.68);
+}
+
+[data-theme="glass"] .chathead,
+[data-theme="glass"] .chatfoot {
+  background: rgba(255, 255, 255, 0.055);
+}
+
+[data-theme="glass"] .msg.bot {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+[data-theme="glass"] .chatfoot input {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="glass"] .chatfoot input::placeholder {
+  color: rgba(243, 243, 251, 0.72);
+}
 .chatpanel.show {
   display: flex;
   animation: fade 0.25s ease;
