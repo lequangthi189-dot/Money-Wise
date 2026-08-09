@@ -183,17 +183,6 @@ export function Sprite() {
         <path d="m21 21-4.3-4.3" />
       </symbol>
       <symbol
-        id="i-bell"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-      </symbol>
-      <symbol
         id="i-plus"
         viewBox="0 0 24 24"
         fill="none"
