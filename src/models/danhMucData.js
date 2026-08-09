@@ -165,6 +165,17 @@ export async function deleteHiddenCategoryIfUnused(id) {
   if (lookupError) throw lookupError;
   if (!category || category.ma_nguoi_dung === null || category.dang_hoat_dong) return false;
 
+  // RLS của giao_dich chỉ trả về giao dịch còn hoạt động. Đếm trực tiếp để bảo đảm
+  // không xóa danh mục khi vẫn còn dù chỉ một giao dịch khác.
+  const { count: remainingTransactions, error: countError } = await supabase
+    .from("giao_dich")
+    .select("ma_giao_dich", { count: "exact", head: true })
+    .eq("ma_danh_muc", id);
+  if (countError) throw countError;
+  if ((remainingTransactions ?? 0) > 0) return false;
+
+  // Kiểm tra thêm bằng hàm DB trước thao tác xóa để tránh trường hợp giao dịch
+  // mới được thêm từ tab/thiết bị khác ngay sau lúc đếm.
   const canDelete = await canDeleteCategory(id);
   if (!canDelete) return false;
 
