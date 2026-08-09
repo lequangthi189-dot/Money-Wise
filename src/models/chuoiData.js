@@ -16,6 +16,7 @@ function toUI(row, fallbackStatus, dateField) {
     current: stillActive ? (row?.so_ngay_hien_tai ?? 0) : 0,
     record: row?.ky_luc ?? 0,
     status: row?.trang_thai ?? fallbackStatus,
+    lastDate,
   };
 }
 

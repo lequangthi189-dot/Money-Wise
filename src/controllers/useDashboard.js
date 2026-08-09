@@ -55,5 +55,5 @@ export function useDashboard(t, streakData) {
     const spent = spendingByCategory.find((row) => row.cat.id === budget.categoryId)?.amount ?? budget.spent ?? 0;
     return { name: categories.find((item) => item.id === budget.categoryId)?.name || "Danh mục", pct: Math.round(spent / budget.limit * 100), left: budget.limit - spent, status: budget.status };
   }).filter((item) => item.status !== "normal").sort((a, b) => b.pct - a.pct)[0] ?? null;
-  return { legend, donut, goals: goalRows, recent, budgetAlert, balanceChange, weekChange, monthLabel: d.month(Number(currentMonth.slice(5, 7)), currentMonth.slice(0, 4)), totalSpentLabel: `${(totalSpent / 1_000_000).toFixed(2).replace(".", ",")}tr`, spentToday, spentWeek, txCountToday, balance, streak: streakData?.ghiChep?.current ?? 0, streakRecord: streakData?.ghiChep?.record ?? 0 };
+  return { legend, donut, goals: goalRows, recent, budgetAlert, balanceChange, weekChange, monthLabel: d.month(Number(currentMonth.slice(5, 7)), currentMonth.slice(0, 4)), totalSpentLabel: `${(totalSpent / 1_000_000).toFixed(2).replace(".", ",")}tr`, spentToday, spentWeek, txCountToday, balance, streak: streakData?.ghiChep?.current ?? 0, streakRecord: streakData?.ghiChep?.record ?? 0, streakLastDate: streakData?.ghiChep?.lastDate ?? null };
 }
