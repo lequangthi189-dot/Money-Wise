@@ -145,4 +145,9 @@
   .report-donut-layout { grid-template-columns: 1fr; align-items: stretch; }
   .report-donut { align-self: center; }
   .report-code-lookup { flex-direction: column; }
+  .sharebox { align-items: stretch; flex-direction: column; }
+  .sharebox code { overflow-wrap: anywhere; }
+  .report-panel { padding: 14px; }
+  .report-stat { min-height: 100px; padding: 16px; }
+  .report-stat b { padding-right: 36px; font-size: 1.12rem; overflow-wrap: anywhere; }
 }

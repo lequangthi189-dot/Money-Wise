@@ -230,3 +230,34 @@
   place-items: center;
   flex: 0 0 auto;
 }
+
+@media (max-width: 900px) {
+  .fab {
+    right: 16px;
+    bottom: 86px;
+  }
+  .chatpanel {
+    right: 12px;
+    bottom: 84px;
+    width: min(360px, calc(100vw - 24px));
+    max-height: min(560px, calc(100dvh - 108px));
+  }
+}
+
+@media (max-width: 420px) {
+  .fab { width: 50px; height: 50px; }
+  .chatpanel {
+    left: 8px;
+    right: 8px;
+    bottom: 78px;
+    width: auto;
+    max-height: calc(100dvh - 94px);
+    border-radius: 18px;
+  }
+  .chathead { padding: 12px 14px; }
+  .chatbody { padding: 12px; }
+  .msg { max-width: 94%; padding: 9px 11px; }
+  .parsed .pr { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .parsed .pr input,
+  .parsed .pr select { width: 100%; }
+}

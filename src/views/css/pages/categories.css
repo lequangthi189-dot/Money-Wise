@@ -71,6 +71,29 @@
     border-radius: 15px;
   }
 }
+
+@media (max-width: 480px) {
+  .catcard {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    gap: 10px;
+    min-width: 0;
+    padding: 12px;
+  }
+  .catcard .cat { width: 46px; height: 46px; }
+  .catcard .meta { min-width: 0; }
+  .catcard .meta b {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .catcard .act {
+    grid-column: 2 / 4;
+    justify-content: flex-end;
+  }
+  .catcard .act button { width: 38px; height: 38px; }
+}
 .cat-form {
   display: flex;
   flex-direction: column;
