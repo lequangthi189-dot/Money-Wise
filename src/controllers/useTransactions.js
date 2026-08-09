@@ -6,7 +6,7 @@ import {
   fetchTransactions,
   updateTransaction,
 } from "../models/giaoDichData";
-import { fetchCategories } from "../models/danhMucData";
+import { deleteHiddenCategoryIfUnused, fetchCategories } from "../models/danhMucData";
 import { parseMoney, todayISO } from "../models/format";
 
 const FORM_RONG = {
@@ -158,6 +158,7 @@ export function useTransactions(query, t, userId, onDataChanged) {
     setError("");
     try {
       await deleteTransaction(id);
+      await deleteHiddenCategoryIfUnused(tx.categoryId);
       if (editingId === id) resetForm();
       await reload();
       await onDataChanged?.();

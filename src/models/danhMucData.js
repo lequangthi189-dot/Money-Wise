@@ -152,3 +152,23 @@ export async function hideCategory(id) {
   if (error) throw error;
 }
 
+// Sau khi giao dịch cuối cùng bị xóa, dọn luôn danh mục cá nhân đang ẩn.
+// Danh mục còn giao dịch hoặc đang hoạt động sẽ được giữ nguyên.
+export async function deleteHiddenCategoryIfUnused(id) {
+  if (!id) return false;
+
+  const { data: category, error: lookupError } = await supabase
+    .from("danh_muc")
+    .select("ma_danh_muc, ma_nguoi_dung, dang_hoat_dong")
+    .eq("ma_danh_muc", id)
+    .maybeSingle();
+  if (lookupError) throw lookupError;
+  if (!category || category.ma_nguoi_dung === null || category.dang_hoat_dong) return false;
+
+  const canDelete = await canDeleteCategory(id);
+  if (!canDelete) return false;
+
+  await deleteCategory(id);
+  return true;
+}
+
