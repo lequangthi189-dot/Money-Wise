@@ -180,8 +180,8 @@ export default function Reports({ t, userId, lang = "vi" }) {
 
     <section className="report-panel report-share glass">
       <div className="report-panel-head"><div><h3>{r.shareTitle}</h3><p className="muted">{r.shareDesc}</p></div></div>
-      {shareCode && <div className="sharebox"><code>{shareCode}</code><button className="btn" onClick={() => navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#/share/${encodeURIComponent(shareCode)}`)}>{r.copy}</button></div>}
-      <div className="report-code-lookup"><input value={lookup} onChange={(e) => setLookup(e.target.value)} placeholder={r.codePlaceholder} maxLength={20} /><button className="btn" onClick={openCode}>{r.viewCode}</button></div>
+      {shareCode && <div className="sharebox"><code>{shareCode}</code><button className="btn" onClick={() => navigator.clipboard.writeText(shareCode)}>{r.copy}</button></div>}
+      <div className="report-code-lookup"><input value={lookup} onChange={(e) => setLookup(e.target.value)} onKeyDown={(e) => e.key === "Enter" && openCode()} placeholder={r.codePlaceholder} /><button className="btn" onClick={openCode}>{r.viewCode}</button></div>
     </section>
   </div>;
 }
