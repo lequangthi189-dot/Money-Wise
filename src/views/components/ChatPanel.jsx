@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "./icons";
 import { createChatAnalysis, createTransaction, createTransactions, fetchPaymentMethods, suggestTransactionCategory, updateChatAnalysis } from "../../models/giaoDichData";
 import { useAppData } from "../../context/AppDataContext";
+import { parseMoney } from "../../models/format";
 
 const QUICK_ENTRY_CONFIG = {
   incomeWords: ["thu ", "nhận", "lương", "thưởng", "tiền vào", "bán được", "income", "received", "salary", "earned"],
@@ -75,6 +76,25 @@ function parseMultipleMessages(text, methods, config) {
     const note = text.slice(match.index, end).replace(/(?:\s|,|;)*(?:rồi|và|and|then)?(?:\s|,|;)*$/iu, "").trim();
     return { ...shared, amount, note, category: null, suggestionSource: "", suggestedCategoryId: null, analysisId: null };
   }).filter((item) => Number.isFinite(item.amount) && item.amount > 0);
+}
+
+const normalizeLabel = (value) => String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+function parseTransactionTable(text, categories, methods, config) {
+  const rows = text.split(/\r?\n/).map((line) => line.trim()).filter((line) => line.startsWith("|") && line.endsWith("|"));
+  return rows.map((line) => line.slice(1, -1).split("|").map((cell) => cell.trim())).filter((cells) => /^\d+$/.test(cells[0] ?? "") && cells.length >= 6).map((cells) => {
+    const [, dateText, categoryText, note, amountText, methodText] = cells;
+    const dateParts = dateText.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+    const date = dateParts ? `${dateParts[3]}-${dateParts[2].padStart(2, "0")}-${dateParts[1].padStart(2, "0")}` : "";
+    const categoryLabel = normalizeLabel(categoryText);
+    const category = categories.find((item) => normalizeLabel(item.name) === categoryLabel) ?? null;
+    const methodWords = normalizeLabel(methodText);
+    const method = methods.find((item) => methodWords.includes(normalizeLabel(item.name)) || (config.methodAliases[item.mkey] ?? []).some((alias) => methodWords.includes(normalizeLabel(alias)))) ?? null;
+    return {
+      amount: parseMoney(amountText), type: category?.type || "out", category, method, date, note,
+      suggestionSource: category ? "name" : "", suggestedCategoryId: category?.id ?? null, analysisId: null,
+    };
+  }).filter((item) => Number.isFinite(item.amount) && item.amount > 0 && item.date && item.note);
 }
 
 async function applyBackendSuggestion(value, text, categories) {
@@ -174,10 +194,11 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
       } catch (error) { console.warn("Không thể cập nhật phân tích chatbot:", error.message); }
       return;
     }
-    const multiple = parseMultipleMessages(text, methods, QUICK_ENTRY_CONFIG);
-    if (multiple.length > 1) {
+    const tableItems = parseTransactionTable(text, categories, methods, QUICK_ENTRY_CONFIG);
+    const multiple = tableItems.length ? tableItems : parseMultipleMessages(text, methods, QUICK_ENTRY_CONFIG);
+    if (tableItems.length || multiple.length > 1) {
       try {
-        const suggested = await Promise.all(multiple.map((item) => applyBackendSuggestion(item, item.note, categories)));
+        const suggested = await Promise.all(multiple.map((item) => item.category ? item : applyBackendSuggestion(item, item.note, categories)));
         const withAnalysis = await Promise.all(suggested.map(async (item) => {
           let analysisId = null;
           try {
