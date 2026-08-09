@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createShareCode, DONUT_COLORS, fetchMonthlyReports, fetchReportDetails, fetchSharedReport } from "../../models/reportsData";
+import { createShareCode, DONUT_COLORS, fetchMonthlyReports, fetchReportDetails, fetchSharedReport, normalizeShareCode } from "../../models/reportsData";
 
 const localeFor = (lang) => lang === "en" ? "en-US" : "vi-VN";
 const money = (value, locale) => `${Number(value || 0).toLocaleString(locale)} ₫`;
@@ -119,8 +119,13 @@ export default function Reports({ t, userId, lang = "vi" }) {
       setShareCode(code);
     } catch (e) { setError(e.message); }
   }
-  async function openCode() {
-    try { const row = await fetchSharedReport(lookup); if (!row) throw new Error(r.sharedInvalid); setShared(row); } catch (e) { setError(e.message); }
+  function openCode() {
+    const code = normalizeShareCode(lookup);
+    if (!code) {
+      setError(r.sharedInvalid);
+      return;
+    }
+    window.location.assign(`${window.location.origin}${window.location.pathname}#/share/${encodeURIComponent(code)}`);
   }
 
   return <div className="reports-page">

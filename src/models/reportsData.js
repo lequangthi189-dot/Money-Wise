@@ -38,7 +38,7 @@ export async function createShareCode(reportId) {
   return data;
 }
 
-function normalizeShareCode(value) {
+export function normalizeShareCode(value) {
   const input = String(value ?? "").trim();
   if (!input) return "";
 
