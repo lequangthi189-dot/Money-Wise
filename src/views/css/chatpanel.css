@@ -113,11 +113,14 @@
   flex: 1;
 }
 .msg {
+  min-width: 0;
   max-width: 82%;
   padding: 11px 14px;
   border-radius: 16px;
   font-size: 0.84rem;
   line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .msg.bot {
   background: var(--surface-2);
@@ -131,6 +134,9 @@
   align-self: flex-end;
 }
 .parsed {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   margin-top: 9px;
   background: var(--surface);
   border: 1px solid var(--border);

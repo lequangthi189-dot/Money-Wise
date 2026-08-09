@@ -42,7 +42,16 @@
 .transaction-item-main { min-width: 0; }
 .transaction-item-main strong,
 .transaction-item-main small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.transaction-item-main strong { margin-bottom: 4px; font-size: 0.82rem; font-weight: 600; }
+.transaction-item-main strong {
+  display: -webkit-box;
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
 .transaction-item-main small { color: var(--text-dim); font-size: 0.7rem; }
 .transaction-item > .amt { text-align: right; font-size: 0.84rem; white-space: nowrap; }
 
