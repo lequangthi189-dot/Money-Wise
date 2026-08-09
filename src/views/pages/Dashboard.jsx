@@ -1,6 +1,6 @@
 import { useDashboard } from "../../controllers/useDashboard";
 
-export default function Dashboard({ t, streak }) {
+export default function Dashboard({ t, streak, onOpenTransactions }) {
   const d = t.dashboard;
   const {
     legend, donut, goals, recent, totalSpentLabel,
@@ -111,7 +111,7 @@ export default function Dashboard({ t, streak }) {
       <div className="card glass dashboard-recent-card">
         <div className="card-h">
           <h3>{d.recentTx}</h3>
-          <span className="muted" style={{ cursor: "pointer" }}>{d.viewAll}</span>
+          <button type="button" className="dashboard-view-all" onClick={onOpenTransactions}>{d.viewAll}</button>
         </div>
         <div className="dashboard-recent-list">
           {recent.map((r, i) => (

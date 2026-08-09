@@ -2,16 +2,26 @@ import { supabase } from "./supabase";
 
 // Model: dữ liệu hạn mức lấy và lưu trực tiếp trên Supabase.
 
-const monthStart = () => new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10);
-const nextMonthStart = () => new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString().slice(0, 10);
+const formatMonthStart = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-01`;
+const monthStart = () => formatMonthStart(new Date());
+const normalizeMonthStart = (value) => /^\d{4}-\d{2}(?:-01)?$/.test(value ?? "")
+  ? `${String(value).slice(0, 7)}-01`
+  : monthStart();
+const nextMonthStart = (value) => {
+  const current = normalizeMonthStart(value);
+  const date = new Date(`${current}T00:00:00`);
+  date.setMonth(date.getMonth() + 1);
+  return formatMonthStart(date);
+};
 
-async function fetchMonthlySpending() {
+async function fetchMonthlySpending(selectedMonth) {
+  const month = normalizeMonthStart(selectedMonth);
   const { data, error } = await supabase
     .from("giao_dich")
     .select("ma_danh_muc, so_tien")
     .eq("loai_giao_dich", "CHI")
-    .gte("ngay_giao_dich", monthStart())
-    .lt("ngay_giao_dich", nextMonthStart());
+    .gte("ngay_giao_dich", month)
+    .lt("ngay_giao_dich", nextMonthStart(month));
   if (error) throw error;
   const byCategory = {};
   let total = 0;
@@ -46,11 +56,12 @@ function progressFields(limit, spent, config) {
   };
 }
 
-export async function fetchBudgetState() {
+export async function fetchBudgetState(selectedMonth = monthStart()) {
+  const month = normalizeMonthStart(selectedMonth);
   const { data: total, error } = await supabase
     .from("han_muc_thang")
     .select("ma_han_muc_thang, so_tien_han_muc, tong_da_chi")
-    .eq("ky_thang", monthStart())
+    .eq("ky_thang", month)
     .maybeSingle();
   if (error) throw error;
   if (!total) return { totalLimit: 0, totalSpent: 0, categoryLimits: {} };
@@ -66,10 +77,10 @@ export async function fetchBudgetState() {
   };
 }
 
-export async function saveBudgetLimit(userId, type, categoryId, amount) {
+export async function saveBudgetLimit(userId, type, categoryId, amount, selectedMonth = monthStart()) {
   const config = await fetchBudgetConfig();
-  const month = monthStart();
-  const spending = await fetchMonthlySpending();
+  const month = normalizeMonthStart(selectedMonth);
+  const spending = await fetchMonthlySpending(month);
   let { data: total, error } = await supabase
     .from("han_muc_thang")
     .select("ma_han_muc_thang, so_tien_han_muc")
@@ -102,7 +113,7 @@ export async function saveBudgetLimit(userId, type, categoryId, amount) {
       .eq("ma_han_muc_thang", total.ma_han_muc_thang);
     if (refreshedTotal.error) throw refreshedTotal.error;
   }
-  return fetchBudgetState();
+  return fetchBudgetState(month);
 }
 
 function normalizeBudgetState(value) {

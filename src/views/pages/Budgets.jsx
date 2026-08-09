@@ -46,8 +46,16 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
   const [limitType, setLimitType] = useState("total");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [limitInput, setLimitInput] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+  });
   const BUDGETS = useMemo(() => getBudgetRows(t, categories, budgetState, budgetConfig), [t, categories, budgetState, budgetConfig]);
-  const currentMonth = new Date().getMonth() + 1;
+  const currentMonth = selectedMonth.split("-").reverse().join("/");
+  const maxMonth = (() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+  })();
 
   useEffect(() => {
     let alive = true;
@@ -62,13 +70,20 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
         if (alive) setCategories([]);
       });
 
-    fetchBudgetState().then((state) => alive && setBudgetState(state)).catch(() => {});
     fetchBudgetConfig().then((config) => alive && setBudgetConfig(config)).catch(() => {});
 
     return () => {
       alive = false;
     };
   }, []);
+
+  useEffect(() => {
+    let alive = true;
+    fetchBudgetState(selectedMonth)
+      .then((state) => alive && setBudgetState(state))
+      .catch(() => alive && setBudgetState({ totalLimit: 0, totalSpent: 0, categoryLimits: {} }));
+    return () => { alive = false; };
+  }, [selectedMonth]);
 
   const fmt = (n) => Number(n).toLocaleString("vi-VN") + " ₫";
   const totalLimit = Number(budgetState.totalLimit) || 0;
@@ -124,7 +139,7 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
     }
 
     try {
-      const savedState = await saveBudgetLimit(userId, limitType, selectedCategory, value);
+      const savedState = await saveBudgetLimit(userId, limitType, selectedCategory, value, selectedMonth);
       setBudgetState(savedState);
       setLimitInput(value.toLocaleString("vi-VN"));
       await onDataChanged?.();
@@ -154,6 +169,10 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
     <>
       <div className="grid g-12">
         <div>
+          <div className="field budget-month-field">
+            <label>{b.selectMonth}</label>
+            <input type="month" max={maxMonth} value={selectedMonth} onChange={(event) => { setSelectedMonth(event.target.value); setLimitInput(""); }} />
+          </div>
           <div className="card glass" style={{ marginBottom: "18px" }}>
             <div className="card-h">
               <h3>{b.totalTitle(currentMonth)}</h3>
