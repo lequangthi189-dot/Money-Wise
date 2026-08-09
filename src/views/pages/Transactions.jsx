@@ -117,9 +117,7 @@ export default function Transactions({
               placeholder={tr.notePh}
               value={form.note}
               onChange={upd("note")}
-              maxLength={255}
             ></textarea>
-            <small className="field-counter">{form.note.length}/255</small>
           </div>
 
           {error && (
@@ -205,7 +203,7 @@ export default function Transactions({
                 <article className="transaction-item" key={tx.id}>
                   <span className={"cat " + tx.cls}>{tx.icon}</span>
                   <div className="transaction-item-main">
-                    <strong>{tx.name}</strong>
+                    <strong title={tx.name}>{tx.name}</strong>
                     <small>{tx.date} · {t.methods[tx.mkey]}</small>
                   </div>
                   <span className={"badge " + (tx.type === "in" ? "b-in" : "b-out")}>{tx.type === "in" ? t.thu : t.chi}</span>

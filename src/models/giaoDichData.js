@@ -6,6 +6,8 @@ import { fmtDayMonth, fmtSigned } from "./format";
 
 const LOAI = { in: "THU", out: "CHI" };
 const TYPE_FROM_LOAI = { THU: "in", CHI: "out" };
+const varchar255 = (value) => String(value ?? "").trim().slice(0, 255) || null;
+const textValue = (value) => String(value ?? "").trim() || null;
 
 // ma_hien_thi trong DB -> khoá trong i18n (t.methods).
 const MKEY_FROM_MA = {
@@ -70,7 +72,7 @@ export async function fetchTransactions(methods) {
 // UC32: DB tra ve toi da mot danh muc tu lich su xac nhan cua chinh user.
 export async function suggestTransactionCategory(text, type = "") {
   const { data, error } = await supabase.rpc("goi_y_danh_muc", {
-    p_noi_dung: text.trim(),
+    p_noi_dung: varchar255(text),
     p_loai_giao_dich: type === "in" ? "THU" : type === "out" ? "CHI" : null,
   });
   if (error) throw error;
@@ -101,7 +103,7 @@ export async function createTransaction({
     loai_giao_dich: LOAI[type],
     so_tien: amount,
     ngay_giao_dich: date,
-    noi_dung: note?.trim() || null,
+    noi_dung: textValue(note),
     nguon_tao: source === "chatbot" ? "CHATBOT" : "THU_CONG",
   }).select("ma_giao_dich").single();
   if (error) throw error;
@@ -116,7 +118,7 @@ export async function createTransactions(items) {
     loai_giao_dich: LOAI[type],
     so_tien: amount,
     ngay_giao_dich: date,
-    noi_dung: note?.trim() || null,
+    noi_dung: textValue(note),
     nguon_tao: "CHATBOT",
   }));
   const { data, error } = await supabase.from("giao_dich").insert(payload).select("ma_giao_dich");
@@ -127,13 +129,13 @@ export async function createTransactions(items) {
 export async function createChatAnalysis({ userId, text, amount, type, categoryId, date, methodId, question, status }) {
   const { data, error } = await supabase.from("phan_tich_chatbot").insert({
     ma_nguoi_dung: userId,
-    noi_dung_nguoi_dung: text.trim(),
+    noi_dung_nguoi_dung: varchar255(text),
     so_tien_goi_y: amount || null,
     loai_goi_y: type === "in" ? "THU" : type === "out" ? "CHI" : null,
     ma_danh_muc_goi_y: categoryId || null,
     ngay_goi_y: date || null,
     ma_phuong_thuc_goi_y: methodId || null,
-    cau_hoi_bo_sung: question || null,
+    cau_hoi_bo_sung: varchar255(question),
     trang_thai: status,
   }).select("ma_phan_tich").single();
   if (error) throw error;
@@ -148,7 +150,7 @@ export async function updateChatAnalysis(analysisId, { amount, type, categoryId,
     ma_danh_muc_goi_y: categoryId || null,
     ngay_goi_y: date || null,
     ma_phuong_thuc_goi_y: methodId || null,
-    cau_hoi_bo_sung: question || null,
+    cau_hoi_bo_sung: varchar255(question),
     trang_thai: status,
   };
   if (transactionId) {
@@ -174,7 +176,7 @@ export async function updateTransaction(id, {
       loai_giao_dich: LOAI[type],
       so_tien: amount,
       ngay_giao_dich: date,
-      noi_dung: note?.trim() || null,
+      noi_dung: textValue(note),
     })
     .eq("ma_giao_dich", id);
   if (error) throw error;

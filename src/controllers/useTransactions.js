@@ -107,8 +107,6 @@ export function useTransactions(query, t, userId, onDataChanged, onTransactionDe
     if (!form.categoryId) return setError(t.transactions.selectCategory);
     if (!form.methodId) return setError(t.transactions.selectMethod);
     if (!form.date) return setError(t.transactions.selectDate);
-    if (form.note.length > 255)
-      return setError(t.transactions.noteTooLong);
     if (form.date > todayISO())
       return setError(t.transactions.futureDate);
 
