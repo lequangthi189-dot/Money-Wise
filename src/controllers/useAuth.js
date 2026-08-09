@@ -37,19 +37,24 @@ function translateAuthError(err, tr) {
 
 function passwordResetRedirectUrl() {
   const configured = import.meta.env.VITE_APP_URL?.trim();
-  if (!configured) return window.location.origin;
+  let origin = window.location.origin;
 
-  try {
-    const url = new URL(configured);
-    const configuredIsLocal = ["localhost", "127.0.0.1"].includes(url.hostname);
-    const currentIsLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  if (configured) {
+    try {
+      const url = new URL(configured);
+      const configuredIsLocal = ["localhost", "127.0.0.1"].includes(url.hostname);
+      const currentIsLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
-    // Không để một biến môi trường cũ kéo bản production quay về localhost.
-    if (configuredIsLocal && !currentIsLocal) return window.location.origin;
-    return url.origin;
-  } catch {
-    return window.location.origin;
+      // Không để một biến môi trường cũ kéo bản production quay về localhost.
+      if (!configuredIsLocal || currentIsLocal) origin = url.origin;
+    } catch {
+      origin = window.location.origin;
+    }
   }
+
+  const redirect = new URL(window.location.pathname || "/", origin);
+  redirect.searchParams.set("password-recovery", "1");
+  return redirect.toString();
 }
 
 function recoveryErrorFromUrl(tr) {

@@ -20,6 +20,7 @@ function restoredView(userId, role) {
 }
 
 export function useApp() {
+  const recoveryMarker = new URLSearchParams(window.location.search).get("password-recovery") === "1";
   const [view, setView] = useState("dashboard");
   const [query, setQuery] = useState("");
   const [theme, setTheme] = useState("glass");
@@ -35,7 +36,9 @@ export function useApp() {
   // false cho tới khi biết chắc có session hay không, để không nháy màn
   // đăng nhập trong lúc Supabase khôi phục session từ localStorage.
   const [ready, setReady] = useState(false);
-  const [passwordRecovery, setPasswordRecovery] = useState(false);
+  // Marker trong callback giúp nhận đúng luồng reset kể cả khi Supabase phát
+  // INITIAL_SESSION/SIGNED_IN trước PASSWORD_RECOVERY trên bản deploy.
+  const [passwordRecovery, setPasswordRecovery] = useState(recoveryMarker);
   const [streak, setStreak] = useState(CHUOI_RONG);
   // Đã áp dụng một phiên đăng nhập vào app hay chưa (để không reset trang khi
   // nhận thêm sự kiện SIGNED_IN của cùng một phiên).
@@ -219,6 +222,13 @@ export function useApp() {
     setView(userRole === ROLES.ADMIN ? "admin-users" : "dashboard");
   }
 
+  function finishPasswordRecovery() {
+    setPasswordRecovery(false);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("password-recovery");
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+
   return {
     view,
     setView,
@@ -236,7 +246,7 @@ export function useApp() {
     setAuthed,
     ready,
     passwordRecovery,
-    finishPasswordRecovery: () => setPasswordRecovery(false),
+    finishPasswordRecovery,
     userId,
     streak,
     reloadStreak,
