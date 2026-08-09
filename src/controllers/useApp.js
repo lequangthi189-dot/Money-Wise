@@ -5,6 +5,20 @@ import { fetchUserProfile, TRANG_THAI } from "../models/userProfile";
 import { CHUOI_RONG, fetchStreaks, initializeRecordingStreak } from "../models/chuoiData";
 import { fetchSettings, saveSettings } from "../services/settingsService";
 
+const USER_VIEWS = new Set(["dashboard", "transactions", "categories", "budgets", "reports", "goals", "settings"]);
+const ADMIN_VIEWS = new Set(["admin-users", "admin-categories", "admin-stats"]);
+const viewStorageKey = (userId) => `moneywise:view:${userId}`;
+
+function restoredView(userId, role) {
+  try {
+    const saved = sessionStorage.getItem(viewStorageKey(userId));
+    const allowed = role === ROLES.ADMIN ? ADMIN_VIEWS : USER_VIEWS;
+    return allowed.has(saved) ? saved : role === ROLES.ADMIN ? "admin-users" : "dashboard";
+  } catch {
+    return role === ROLES.ADMIN ? "admin-users" : "dashboard";
+  }
+}
+
 export function useApp() {
   const [view, setView] = useState("dashboard");
   const [query, setQuery] = useState("");
@@ -47,6 +61,15 @@ export function useApp() {
     }, 400);
     return () => clearTimeout(timer);
   }, [userId, theme, lang, fontSize]);
+
+  useEffect(() => {
+    if (!authed || !userId) return;
+    try {
+      sessionStorage.setItem(viewStorageKey(userId), view);
+    } catch {
+      // Trinh duyet chan storage thi app van hoat dong, chi khong nho trang khi reload.
+    }
+  }, [authed, userId, view]);
 
   // Khôi phục phiên khi tải lại trang và theo dõi đăng nhập/đăng xuất.
   useEffect(() => {
@@ -110,7 +133,7 @@ export function useApp() {
       // khẩu), lúc đó không được đá user về dashboard.
       if (!daVaoApp.current) {
         daVaoApp.current = true;
-        setView(profile.role === ROLES.ADMIN ? "admin-users" : "dashboard");
+        setView(restoredView(session.user.id, profile.role));
       }
       setReady(true);
 
