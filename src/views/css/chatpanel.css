@@ -218,14 +218,16 @@
   min-height: 64px;
   max-height: 150px;
   padding: 8px 10px;
-  resize: none;
-  overflow-y: auto;
+  resize: none !important;
+  overflow-y: hidden;
   overflow-wrap: anywhere;
-  scrollbar-width: none;
+  scrollbar-width: none !important;
   -ms-overflow-style: none;
+  appearance: none;
   white-space: pre-wrap;
 }
-.parsed .pr textarea::-webkit-scrollbar { display: none; }
+.parsed .pr textarea::-webkit-scrollbar,
+.parsed .pr textarea::-webkit-resizer { display: none !important; }
 .parsed .pr-note { align-items: flex-start; }
 .parsed .pbtn {
   display: flex;
@@ -266,13 +268,15 @@
   max-height: 110px;
   border-radius: 22px;
   padding: 10px 15px;
-  resize: none;
-  overflow-y: auto;
-  scrollbar-width: none;
+  resize: none !important;
+  overflow-y: hidden;
+  scrollbar-width: none !important;
   -ms-overflow-style: none;
+  appearance: none;
   line-height: 1.35;
 }
-.chatfoot textarea::-webkit-scrollbar { display: none; }
+.chatfoot textarea::-webkit-scrollbar,
+.chatfoot textarea::-webkit-resizer { display: none !important; }
 .chatfoot .send {
   width: 40px;
   height: 40px;
