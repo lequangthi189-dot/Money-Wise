@@ -247,6 +247,7 @@ export const i18n = {
       confirmDelete: (name) => `Bạn có chắc muốn xóa danh mục “${name}” không?`,
       confirmHide: (name) => `Danh mục “${name}” đang có giao dịch. Không thể xóa vĩnh viễn vì sẽ mất liên kết lịch sử. Bạn có muốn ẩn danh mục này không?`,
       hiddenWithTransactions: "Danh mục có giao dịch đã được ẩn để giữ nguyên lịch sử.",
+      alreadyExists: (name) => `Danh mục “${name}” đã tồn tại. Vui lòng chọn tên khác.`,
     },
 
     // ----- Hạn mức -----
@@ -590,6 +591,7 @@ export const i18n = {
       confirmDelete: (name) => `Are you sure you want to delete the “${name}” category?`,
       confirmHide: (name) => `The “${name}” category has transactions. It cannot be permanently deleted without breaking its history. Do you want to hide it instead?`,
       hiddenWithTransactions: "The category was hidden to preserve its transaction history.",
+      alreadyExists: (name) => `The “${name}” category already exists. Please choose another name.`,
     },
 
     budgets: {

@@ -94,7 +94,11 @@ export function useCategories(userId, onDataChanged, text) {
       resetForm();
       await onDataChanged?.();
     } catch (e) {
-      setError(e.message);
+      if (e.code === "CATEGORY_ALREADY_EXISTS" || e.code === "23505") {
+        setError(text.alreadyExists(newName.trim()));
+      } else {
+        setError(e.message);
+      }
     } finally {
       setSaving(false);
     }

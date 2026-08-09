@@ -74,11 +74,36 @@ export async function fetchCategories({ systemOnly = false } = {}) {
 }
 
 export async function createCategory({ userId, name, type, icon }) {
+  const trimmedName = name.trim();
+  const { data: existing, error: lookupError } = await supabase
+    .from("danh_muc")
+    .select("ma_danh_muc, ten_danh_muc, loai_danh_muc, bieu_tuong, la_mac_dinh, dang_hoat_dong")
+    .eq("ma_nguoi_dung", userId)
+    .ilike("ten_danh_muc", trimmedName)
+    .maybeSingle();
+
+  if (lookupError) throw lookupError;
+  if (existing?.dang_hoat_dong) {
+    const duplicateError = new Error("CATEGORY_ALREADY_EXISTS");
+    duplicateError.code = "CATEGORY_ALREADY_EXISTS";
+    throw duplicateError;
+  }
+  if (existing) {
+    const { data: restored, error: restoreError } = await supabase
+      .from("danh_muc")
+      .update({ dang_hoat_dong: true, bieu_tuong: icon })
+      .eq("ma_danh_muc", existing.ma_danh_muc)
+      .select("ma_danh_muc, ten_danh_muc, loai_danh_muc, bieu_tuong, la_mac_dinh, dang_hoat_dong")
+      .single();
+    if (restoreError) throw restoreError;
+    return toUI(restored);
+  }
+
   const { data, error } = await supabase
     .from("danh_muc")
     .insert({
       ma_nguoi_dung: userId,
-      ten_danh_muc: name.trim(),
+      ten_danh_muc: trimmedName,
       loai_danh_muc: LOAI[type],
       bieu_tuong: icon,
       dang_hoat_dong: true,
