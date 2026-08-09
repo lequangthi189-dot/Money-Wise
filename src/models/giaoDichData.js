@@ -7,6 +7,7 @@ import { fmtDayMonth, fmtSigned } from "./format";
 const LOAI = { in: "THU", out: "CHI" };
 const TYPE_FROM_LOAI = { THU: "in", CHI: "out" };
 const varchar255 = (value) => String(value ?? "").trim().slice(0, 255) || null;
+const textValue = (value) => String(value ?? "").trim() || null;
 
 // ma_hien_thi trong DB -> khoá trong i18n (t.methods).
 const MKEY_FROM_MA = {
@@ -102,7 +103,7 @@ export async function createTransaction({
     loai_giao_dich: LOAI[type],
     so_tien: amount,
     ngay_giao_dich: date,
-    noi_dung: varchar255(note),
+    noi_dung: textValue(note),
     nguon_tao: source === "chatbot" ? "CHATBOT" : "THU_CONG",
   }).select("ma_giao_dich").single();
   if (error) throw error;
@@ -117,7 +118,7 @@ export async function createTransactions(items) {
     loai_giao_dich: LOAI[type],
     so_tien: amount,
     ngay_giao_dich: date,
-    noi_dung: varchar255(note),
+    noi_dung: textValue(note),
     nguon_tao: "CHATBOT",
   }));
   const { data, error } = await supabase.from("giao_dich").insert(payload).select("ma_giao_dich");
@@ -175,7 +176,7 @@ export async function updateTransaction(id, {
       loai_giao_dich: LOAI[type],
       so_tien: amount,
       ngay_giao_dich: date,
-      noi_dung: varchar255(note),
+      noi_dung: textValue(note),
     })
     .eq("ma_giao_dich", id);
   if (error) throw error;

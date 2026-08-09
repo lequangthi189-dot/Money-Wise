@@ -98,14 +98,6 @@
   flex: 0 0 auto;
 }
 
-.field-counter {
-  display: block;
-  margin-top: 5px;
-  color: var(--text-dim);
-  font-size: 0.7rem;
-  text-align: right;
-}
-
 .transaction-filters {
   display: grid;
   grid-template-columns: repeat(2, minmax(160px, 1fr)) auto;

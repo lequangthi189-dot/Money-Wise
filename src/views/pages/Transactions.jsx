@@ -117,9 +117,7 @@ export default function Transactions({
               placeholder={tr.notePh}
               value={form.note}
               onChange={upd("note")}
-              maxLength={255}
             ></textarea>
-            <small className="field-counter">{form.note.length}/255</small>
           </div>
 
           {error && (
