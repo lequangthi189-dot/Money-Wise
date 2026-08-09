@@ -67,6 +67,23 @@ export async function fetchTransactions(methods) {
   return data.map((row) => toUI(row, methodsById));
 }
 
+// UC32: DB tra ve toi da mot danh muc tu lich su xac nhan cua chinh user.
+export async function suggestTransactionCategory(text, type = "") {
+  const { data, error } = await supabase.rpc("goi_y_danh_muc", {
+    p_noi_dung: text.trim(),
+    p_loai_giao_dich: type === "in" ? "THU" : type === "out" ? "CHI" : null,
+  });
+  if (error) throw error;
+
+  const suggestion = Array.isArray(data) ? data[0] : data;
+  if (!suggestion?.ma_danh_muc || suggestion.de_xuat_tao_moi) return null;
+  return {
+    categoryId: suggestion.ma_danh_muc,
+    categoryType: TYPE_FROM_LOAI[suggestion.loai_danh_muc] ?? "",
+    source: suggestion.nguon_goi_y,
+  };
+}
+
 export async function createTransaction({
   userId,
   categoryId,
