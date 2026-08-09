@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Icon } from "./icons";
-import { createChatAnalysis, createTransaction, fetchPaymentMethods, suggestTransactionCategory, updateChatAnalysis } from "../../models/giaoDichData";
+import { createChatAnalysis, createTransaction, createTransactions, fetchPaymentMethods, suggestTransactionCategory, updateChatAnalysis } from "../../models/giaoDichData";
 import { useAppData } from "../../context/AppDataContext";
 
 const QUICK_ENTRY_CONFIG = {
@@ -62,6 +62,21 @@ function parseMessage(text, methods, config) {
   return { amount, type, category: null, method, date, note: text, suggestionSource: "", suggestedCategoryId: null, analysisId: null };
 }
 
+function parseMultipleMessages(text, methods, config) {
+  const matches = [...text.matchAll(/(\d[\d.,]*)\s*(k|nghìn|ngàn|tr|triệu|m)\b/giu)];
+  if (matches.length < 2) return [];
+  const shared = parseMessage(text, methods, config);
+  if (!shared) return [];
+
+  return matches.map((match, index) => {
+    const suffix = match[2].toLowerCase();
+    const amount = Number(match[1].replace(",", ".")) * Number(config.amountSuffixes[suffix]);
+    const end = matches[index + 1]?.index ?? text.length;
+    const note = text.slice(match.index, end).replace(/(?:\s|,|;)*(?:rồi|và|and|then)?(?:\s|,|;)*$/iu, "").trim();
+    return { ...shared, amount, note, category: null, suggestionSource: "", suggestedCategoryId: null, analysisId: null };
+  }).filter((item) => Number.isFinite(item.amount) && item.amount > 0);
+}
+
 async function applyBackendSuggestion(value, text, categories) {
   const suggestion = await suggestTransactionCategory(text, value.type);
   if (!suggestion) return value;
@@ -108,6 +123,7 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
   const { categories: appCategories } = useAppData();
   const [text, setText] = useState("");
   const [parsed, setParsed] = useState(null);
+  const [parsedBatch, setParsedBatch] = useState([]);
   const [categories, setCategories] = useState([]);
   const [methods, setMethods] = useState([]);
   const [message, setMessage] = useState("");
@@ -133,6 +149,10 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
 
   async function send() {
     if (!text.trim()) return;
+    if (parsedBatch.length) {
+      setMessage(c.finishBatchFirst);
+      return;
+    }
     if (parsed && nextQuestion(parsed, c)) {
       let updated;
       try {
@@ -154,6 +174,28 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
       } catch (error) { console.warn("Không thể cập nhật phân tích chatbot:", error.message); }
       return;
     }
+    const multiple = parseMultipleMessages(text, methods, QUICK_ENTRY_CONFIG);
+    if (multiple.length > 1) {
+      try {
+        const suggested = await Promise.all(multiple.map((item) => applyBackendSuggestion(item, item.note, categories)));
+        const withAnalysis = await Promise.all(suggested.map(async (item) => {
+          let analysisId = null;
+          try {
+            analysisId = await createChatAnalysis({
+              userId, text: item.note, amount: item.amount, type: item.type, categoryId: item.category?.id,
+              date: item.date, methodId: item.method?.id, question: "", status: "DA_PHAN_TICH",
+            });
+          } catch (error) { console.warn("Không thể lưu phân tích chatbot:", error.message); }
+          return { ...item, analysisId };
+        }));
+        setParsed(null);
+        setParsedBatch(withAnalysis);
+        setText("");
+        setMessage(c.batchReady(withAnalysis.length));
+      } catch (error) { setMessage(error.message); }
+      return;
+    }
+
     let result = parseMessage(text, methods, QUICK_ENTRY_CONFIG);
     if (!result) setMessage(c.noAmount);
     else {
@@ -196,6 +238,31 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
     } catch (error) { setMessage(error.message); }
   }
 
+  function updateBatch(index, patch) {
+    setParsedBatch((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item));
+  }
+
+  async function saveBatch() {
+    if (!parsedBatch.length || parsedBatch.some((item) => !item.type || !item.category || !item.method || !item.date || item.amount <= 0)) {
+      setMessage(c.batchIncomplete);
+      return;
+    }
+    try {
+      const transactionIds = await createTransactions(parsedBatch.map((item) => ({
+        userId, categoryId: item.category.id, methodId: item.method.id, type: item.type,
+        amount: item.amount, date: item.date, note: item.note,
+      })));
+      await Promise.allSettled(parsedBatch.map((item, index) => updateChatAnalysis(item.analysisId, {
+        amount: item.amount, type: item.type, categoryId: item.category.id, date: item.date,
+        methodId: item.method.id, question: "", status: "DA_XAC_NHAN", transactionId: transactionIds[index],
+      })));
+      setMessage(c.batchSaved(parsedBatch.length));
+      setParsedBatch([]);
+      setText("");
+      await onSaved?.();
+    } catch (error) { setMessage(error.message); }
+  }
+
   return <div className="chatpanel show">
     <div className="chathead"><div className="bot"><Icon n="i-msg" /></div><div><b>{c.title}</b><small>{c.online}</small></div><button className="x" onClick={onClose}>×</button></div>
     <div className="chatbody">
@@ -214,6 +281,18 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
         <div className="pr"><span>{c.date}</span><input type="date" max={localDateISO(new Date())} value={parsed.date} onChange={(e) => setParsed((old) => ({ ...old, date: e.target.value }))} /></div>
         <div className="pbtn"><button className="ok" disabled={!parsed.type || !parsed.category || !parsed.method || !parsed.date || parsed.amount <= 0} onClick={save}>{c.save}</button><button className="edit" onClick={() => setParsed(null)}>{c.retry}</button></div>
       </div></div>}
+      {parsedBatch.length > 0 && <div className="msg bot batch-review">
+        <b>{c.batchTitle(parsedBatch.length)}</b>
+        {parsedBatch.map((item, index) => <div className="parsed batch-item" key={`${item.note}-${index}`}>
+          <small>{c.batchItem(index + 1)}</small>
+          <div className="pr"><span>{c.type}</span><select value={item.type} onChange={(e) => updateBatch(index, { type: e.target.value, category: null })}><option value="">{c.chooseType}</option><option value="out">{c.expense}</option><option value="in">{c.income}</option></select></div>
+          <div className="pr"><span>{c.amount}</span><input type="number" min="1" value={item.amount} onChange={(e) => updateBatch(index, { amount: Number(e.target.value) })} /></div>
+          <div className="pr"><span>{c.category}</span><select value={item.category?.id ?? ""} onChange={(e) => updateBatch(index, { category: categories.find((category) => String(category.id) === e.target.value) ?? null })}><option value="">{c.chooseCategory}</option>{categories.filter((category) => category.type === item.type).map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div>
+          <div className="pr"><span>{c.method}</span><select value={item.method?.id ?? ""} onChange={(e) => updateBatch(index, { method: methods.find((method) => String(method.id) === e.target.value) ?? null })}><option value="">{c.chooseMethod}</option>{methods.map((method) => <option key={method.id} value={method.id}>{t.methods[method.mkey] ?? method.name}</option>)}</select></div>
+          <div className="pr"><span>{c.date}</span><input type="date" max={localDateISO(new Date())} value={item.date} onChange={(e) => updateBatch(index, { date: e.target.value })} /></div>
+        </div>)}
+        <div className="pbtn"><button className="ok" onClick={saveBatch}>{c.saveBatch}</button><button className="edit" onClick={() => setParsedBatch([])}>{c.retry}</button></div>
+      </div>}
     </div>
     <div className="chatfoot"><input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder={c.placeholder} /><button className="send" onClick={send}><Icon n="i-send" size={18} /></button></div>
   </div>;
