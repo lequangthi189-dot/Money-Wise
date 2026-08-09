@@ -1,5 +1,12 @@
 # React + Vite
 
+## Password recovery configuration
+
+Set `VITE_APP_URL` to the public application origin in the deployment environment,
+for example `https://money-wise.example.com`. Add the same origin to Supabase under
+Authentication > URL Configuration > Redirect URLs. Keep the local development URL
+as a separate allowed redirect when needed.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
