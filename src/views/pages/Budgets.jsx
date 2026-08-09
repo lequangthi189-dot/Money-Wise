@@ -102,6 +102,10 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
     const nextState = { ...budgetState };
 
     if (limitType === "total") {
+      if (value < totalSpent) {
+        alert(b.totalBelowSpent(fmt(totalSpent)));
+        return;
+      }
       const categoryTotal = Object.values(nextState.categoryLimits || {}).reduce(
         (sum, item) => sum + Number(item?.tot || 0),
         0,
@@ -114,6 +118,12 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
     } else {
       if (!selectedCategory) {
         alert(b.selectCategory);
+        return;
+      }
+
+      const categorySpent = Number(nextState.categoryLimits?.[selectedCategory]?.cur || 0);
+      if (value < categorySpent) {
+        alert(b.categoryBelowSpent(fmt(categorySpent)));
         return;
       }
 
@@ -144,6 +154,14 @@ export default function Budgets({ query = "", t, userId, onDataChanged }) {
       setLimitInput(value.toLocaleString("vi-VN"));
       await onDataChanged?.();
     } catch (error) {
+      if (error.code === "TOTAL_BUDGET_BELOW_SPENT") {
+        alert(b.totalBelowSpent(fmt(error.spent)));
+        return;
+      }
+      if (error.code === "CATEGORY_BUDGET_BELOW_SPENT") {
+        alert(b.categoryBelowSpent(fmt(error.spent)));
+        return;
+      }
       alert(error.message);
     }
   }

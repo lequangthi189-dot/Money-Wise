@@ -58,22 +58,40 @@ function progressFields(limit, spent, config) {
 
 export async function fetchBudgetState(selectedMonth = monthStart()) {
   const month = normalizeMonthStart(selectedMonth);
+  const spending = await fetchMonthlySpending(month);
   const { data: total, error } = await supabase
     .from("han_muc_thang")
     .select("ma_han_muc_thang, so_tien_han_muc, tong_da_chi")
     .eq("ky_thang", month)
     .maybeSingle();
   if (error) throw error;
-  if (!total) return { totalLimit: 0, totalSpent: 0, categoryLimits: {} };
+  if (!total) {
+    return {
+      totalLimit: 0,
+      totalSpent: spending.total,
+      categoryLimits: Object.fromEntries(
+        Object.entries(spending.byCategory).map(([categoryId, spent]) => [String(categoryId), { tot: 0, cur: Number(spent) }]),
+      ),
+    };
+  }
   const { data: rows, error: childError } = await supabase
     .from("han_muc_danh_muc")
     .select("ma_danh_muc, so_tien_han_muc, tong_da_chi")
     .eq("ma_han_muc_thang", total.ma_han_muc_thang);
   if (childError) throw childError;
+  const categoryLimits = Object.fromEntries(
+    rows.map((row) => [String(row.ma_danh_muc), { tot: Number(row.so_tien_han_muc), cur: Number(row.tong_da_chi) }]),
+  );
+  Object.entries(spending.byCategory).forEach(([categoryId, spent]) => {
+    categoryLimits[String(categoryId)] = {
+      tot: categoryLimits[String(categoryId)]?.tot || 0,
+      cur: Number(spent),
+    };
+  });
   return {
     totalLimit: Number(total.so_tien_han_muc),
-    totalSpent: Number(total.tong_da_chi),
-    categoryLimits: Object.fromEntries(rows.map((row) => [String(row.ma_danh_muc), { tot: Number(row.so_tien_han_muc), cur: Number(row.tong_da_chi) }])),
+    totalSpent: spending.total,
+    categoryLimits,
   };
 }
 
@@ -88,6 +106,12 @@ export async function saveBudgetLimit(userId, type, categoryId, amount, selected
     .maybeSingle();
   if (error) throw error;
   if (type === "total") {
+    if (amount < spending.total) {
+      const validationError = new Error("TOTAL_BUDGET_BELOW_SPENT");
+      validationError.code = "TOTAL_BUDGET_BELOW_SPENT";
+      validationError.spent = spending.total;
+      throw validationError;
+    }
     const payload = {
       ma_nguoi_dung: userId,
       ky_thang: month,
@@ -99,6 +123,12 @@ export async function saveBudgetLimit(userId, type, categoryId, amount, selected
   } else {
     if (!total) throw new Error("Hãy đặt hạn mức tổng tháng trước.");
     const categorySpent = spending.byCategory[Number(categoryId)] || 0;
+    if (amount < categorySpent) {
+      const validationError = new Error("CATEGORY_BUDGET_BELOW_SPENT");
+      validationError.code = "CATEGORY_BUDGET_BELOW_SPENT";
+      validationError.spent = categorySpent;
+      throw validationError;
+    }
     const payload = {
       ma_han_muc_thang: total.ma_han_muc_thang,
       ma_danh_muc: Number(categoryId),
