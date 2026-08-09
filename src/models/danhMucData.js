@@ -74,11 +74,36 @@ export async function fetchCategories({ systemOnly = false } = {}) {
 }
 
 export async function createCategory({ userId, name, type, icon }) {
+  const trimmedName = name.trim();
+  const { data: existing, error: lookupError } = await supabase
+    .from("danh_muc")
+    .select("ma_danh_muc, ten_danh_muc, loai_danh_muc, bieu_tuong, la_mac_dinh, dang_hoat_dong")
+    .eq("ma_nguoi_dung", userId)
+    .ilike("ten_danh_muc", trimmedName)
+    .maybeSingle();
+
+  if (lookupError) throw lookupError;
+  if (existing?.dang_hoat_dong) {
+    const duplicateError = new Error("CATEGORY_ALREADY_EXISTS");
+    duplicateError.code = "CATEGORY_ALREADY_EXISTS";
+    throw duplicateError;
+  }
+  if (existing) {
+    const { data: restored, error: restoreError } = await supabase
+      .from("danh_muc")
+      .update({ dang_hoat_dong: true, bieu_tuong: icon })
+      .eq("ma_danh_muc", existing.ma_danh_muc)
+      .select("ma_danh_muc, ten_danh_muc, loai_danh_muc, bieu_tuong, la_mac_dinh, dang_hoat_dong")
+      .single();
+    if (restoreError) throw restoreError;
+    return toUI(restored);
+  }
+
   const { data, error } = await supabase
     .from("danh_muc")
     .insert({
       ma_nguoi_dung: userId,
-      ten_danh_muc: name.trim(),
+      ten_danh_muc: trimmedName,
       loai_danh_muc: LOAI[type],
       bieu_tuong: icon,
       dang_hoat_dong: true,
@@ -125,5 +150,36 @@ export async function hideCategory(id) {
     .update({ dang_hoat_dong: false })
     .eq("ma_danh_muc", id);
   if (error) throw error;
+}
+
+// Sau khi giao dịch cuối cùng bị xóa, dọn luôn danh mục cá nhân đang ẩn.
+// Danh mục còn giao dịch hoặc đang hoạt động sẽ được giữ nguyên.
+export async function deleteHiddenCategoryIfUnused(id) {
+  if (!id) return false;
+
+  const { data: category, error: lookupError } = await supabase
+    .from("danh_muc")
+    .select("ma_danh_muc, ma_nguoi_dung, dang_hoat_dong")
+    .eq("ma_danh_muc", id)
+    .maybeSingle();
+  if (lookupError) throw lookupError;
+  if (!category || category.ma_nguoi_dung === null || category.dang_hoat_dong) return false;
+
+  // RLS của giao_dich chỉ trả về giao dịch còn hoạt động. Đếm trực tiếp để bảo đảm
+  // không xóa danh mục khi vẫn còn dù chỉ một giao dịch khác.
+  const { count: remainingTransactions, error: countError } = await supabase
+    .from("giao_dich")
+    .select("ma_giao_dich", { count: "exact", head: true })
+    .eq("ma_danh_muc", id);
+  if (countError) throw countError;
+  if ((remainingTransactions ?? 0) > 0) return false;
+
+  // Kiểm tra thêm bằng hàm DB trước thao tác xóa để tránh trường hợp giao dịch
+  // mới được thêm từ tab/thiết bị khác ngay sau lúc đếm.
+  const canDelete = await canDeleteCategory(id);
+  if (!canDelete) return false;
+
+  await deleteCategory(id);
+  return true;
 }
 
