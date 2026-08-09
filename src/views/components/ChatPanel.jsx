@@ -81,7 +81,8 @@ function parseMultipleMessages(text, methods, config) {
 const normalizeLabel = (value) => String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 function parseTransactionTable(text, categories, methods, config) {
-  const rows = text.split(/\r?\n/).map((line) => {
+  const normalizedTable = text.replace(/\|\s*\|/g, "|\n|");
+  const rows = normalizedTable.split(/\r?\n/).map((line) => {
     const trimmed = line.trim();
     const delimiter = trimmed.includes("|") ? "|" : trimmed.includes("\t") ? "\t" : null;
     if (!delimiter) return [];
@@ -325,6 +326,6 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
         <div className="pbtn"><button className="ok" onClick={saveBatch}>{c.saveBatch}</button><button className="edit" onClick={() => setParsedBatch([])}>{c.retry}</button></div>
       </div>}
     </div>
-    <div className="chatfoot"><input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder={c.placeholder} /><button className="send" onClick={send}><Icon n="i-send" size={18} /></button></div>
+    <div className="chatfoot"><textarea value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }} placeholder={c.placeholder} rows="1" /><button className="send" onClick={send}><Icon n="i-send" size={18} /></button></div>
   </div>;
 }
