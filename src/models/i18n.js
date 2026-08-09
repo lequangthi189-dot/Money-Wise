@@ -231,6 +231,13 @@ export const i18n = {
       askMethod: "Bạn thanh toán hoặc nhận tiền bằng phương thức nào?",
       askDate: "Giao dịch diễn ra ngày nào? Nếu không nhập, hệ thống dùng hôm nay.",
       readyToConfirm: "Mình đã điền đủ thông tin. Bạn hãy kiểm tra và xác nhận lưu giao dịch.",
+      batchReady: (n) => `Đã tách được ${n} giao dịch. Hãy kiểm tra từng khoản trước khi lưu.`,
+      batchTitle: (n) => `${n} giao dịch được nhận diện`,
+      batchItem: (n) => `Giao dịch ${n}`,
+      saveBatch: "Lưu tất cả",
+      batchSaved: (n) => `Đã lưu ${n} giao dịch.`,
+      batchIncomplete: "Vui lòng bổ sung đủ loại, danh mục, phương thức và ngày cho từng giao dịch.",
+      finishBatchFirst: "Hãy lưu hoặc hủy nhóm giao dịch đang chờ trước khi nhập nội dung mới.",
     },
 
     // ----- Danh mục -----
@@ -590,6 +597,13 @@ export const i18n = {
       askMethod: "Which payment method did you use?",
       askDate: "When did the transaction occur? Today is used when no date is provided.",
       readyToConfirm: "All required information is ready. Review it and confirm to save the transaction.",
+      batchReady: (n) => `${n} transactions were detected. Review each one before saving.`,
+      batchTitle: (n) => `${n} transactions detected`,
+      batchItem: (n) => `Transaction ${n}`,
+      saveBatch: "Save all",
+      batchSaved: (n) => `${n} transactions saved.`,
+      batchIncomplete: "Complete the type, category, method, and date for every transaction.",
+      finishBatchFirst: "Save or cancel the pending transaction group before entering a new message.",
     },
 
     categories: {

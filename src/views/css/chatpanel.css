@@ -138,6 +138,18 @@
   padding: 11px;
   font-size: 0.78rem;
 }
+.batch-review { display: grid; gap: 10px; }
+.batch-item {
+  padding-top: 12px;
+  margin-top: 2px;
+  border-top: 1px solid var(--border);
+}
+.batch-item > small {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--accent-2);
+  font-weight: 700;
+}
 .parsed .pr {
   display: flex;
   justify-content: space-between;

@@ -108,6 +108,22 @@ export async function createTransaction({
   return data.ma_giao_dich;
 }
 
+export async function createTransactions(items) {
+  const payload = items.map(({ userId, categoryId, methodId, type, amount, date, note }) => ({
+    ma_nguoi_dung: userId,
+    ma_danh_muc: categoryId,
+    ma_phuong_thuc: methodId,
+    loai_giao_dich: LOAI[type],
+    so_tien: amount,
+    ngay_giao_dich: date,
+    noi_dung: note?.trim() || null,
+    nguon_tao: "CHATBOT",
+  }));
+  const { data, error } = await supabase.from("giao_dich").insert(payload).select("ma_giao_dich");
+  if (error) throw error;
+  return data.map((row) => row.ma_giao_dich);
+}
+
 export async function createChatAnalysis({ userId, text, amount, type, categoryId, date, methodId, question, status }) {
   const { data, error } = await supabase.from("phan_tich_chatbot").insert({
     ma_nguoi_dung: userId,
