@@ -81,7 +81,8 @@ function parseMultipleMessages(text, methods, config) {
 const normalizeLabel = (value) => String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 function parseTransactionTable(text, categories, methods, config) {
-  const rows = text.split(/\r?\n/).map((line) => {
+  const normalizedTable = text.replace(/\|\s*\|/g, "|\n|");
+  const rows = normalizedTable.split(/\r?\n/).map((line) => {
     const trimmed = line.trim();
     const delimiter = trimmed.includes("|") ? "|" : trimmed.includes("\t") ? "\t" : null;
     if (!delimiter) return [];
@@ -90,8 +91,42 @@ function parseTransactionTable(text, categories, methods, config) {
     if (!cells.at(-1)) cells.pop();
     return cells;
   });
-  return rows.filter((cells) => /^\d+$/.test(cells[0] ?? "") && cells.length >= 6).map((cells) => {
-    const [, dateText, categoryText, note, amountText, methodText] = cells;
+  const headerIndex = rows.findIndex((cells) => {
+    const labels = cells.map(normalizeLabel);
+    return labels.some((label) => label.includes("ngay")) &&
+      labels.some((label) => label.includes("danh muc")) &&
+      labels.some((label) => label.includes("so tien"));
+  });
+  const header = headerIndex >= 0 ? rows[headerIndex].map(normalizeLabel) : [];
+  const columnIndex = (name) => header.findIndex((label) => label.includes(name));
+  const indexes = {
+    date: columnIndex("ngay"),
+    category: columnIndex("danh muc"),
+    note: header.findIndex((label) => label.includes("noi dung") || label.includes("ghi chu")),
+    amount: columnIndex("so tien"),
+    method: header.findIndex((label) => label.includes("hinh thuc") || label.includes("phuong thuc")),
+  };
+  const hasMappedHeader = Object.values(indexes).every((index) => index >= 0);
+  const dataRows = headerIndex >= 0 ? rows.slice(headerIndex + 1) : rows;
+
+  return dataRows.map((cells) => {
+    if (cells.every((cell) => /^:?-{2,}:?$/.test(cell))) return null;
+    let dateText;
+    let categoryText;
+    let note;
+    let amountText;
+    let methodText;
+    if (hasMappedHeader) {
+      dateText = cells[indexes.date];
+      categoryText = cells[indexes.category];
+      note = cells[indexes.note];
+      amountText = cells[indexes.amount];
+      methodText = cells[indexes.method];
+    } else {
+      const offset = /^\d+$/.test(cells[0] ?? "") && cells.length >= 6 ? 1 : 0;
+      [dateText, categoryText, note, amountText, methodText] = cells.slice(offset, offset + 5);
+    }
+    if (!dateText || !categoryText || !note || !amountText || !methodText) return null;
     const dateParts = dateText.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
     const date = dateParts ? `${dateParts[3]}-${dateParts[2].padStart(2, "0")}-${dateParts[1].padStart(2, "0")}` : "";
     const categoryLabel = normalizeLabel(categoryText);
@@ -102,7 +137,7 @@ function parseTransactionTable(text, categories, methods, config) {
       amount: parseMoney(amountText), type: category?.type || "out", category, method, date, note,
       suggestionSource: category ? "name" : "", suggestedCategoryId: category?.id ?? null, analysisId: null,
     };
-  }).filter((item) => Number.isFinite(item.amount) && item.amount > 0 && item.date && item.note);
+  }).filter((item) => item && Number.isFinite(item.amount) && item.amount > 0 && item.date && item.note);
 }
 
 async function applyBackendSuggestion(value, text, categories) {
@@ -325,6 +360,6 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
         <div className="pbtn"><button className="ok" onClick={saveBatch}>{c.saveBatch}</button><button className="edit" onClick={() => setParsedBatch([])}>{c.retry}</button></div>
       </div>}
     </div>
-    <div className="chatfoot"><input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder={c.placeholder} /><button className="send" onClick={send}><Icon n="i-send" size={18} /></button></div>
+    <div className="chatfoot"><textarea value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }} placeholder={c.placeholder} rows="1" /><button className="send" onClick={send}><Icon n="i-send" size={18} /></button></div>
   </div>;
 }
