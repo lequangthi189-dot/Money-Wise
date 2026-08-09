@@ -87,8 +87,9 @@ export default function Transactions({
             <input
               value={form.amount}
               onChange={upd("amount")}
-              placeholder="0 ₫"
-              inputMode="numeric"
+              placeholder={tr.amountPlaceholder}
+              inputMode="text"
+              autoComplete="off"
             />
           </div>
           <div className="field">
