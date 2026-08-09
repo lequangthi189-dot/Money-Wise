@@ -284,6 +284,19 @@ select option:hover {
   color: var(--text);
 }
 
+@media (max-width: 480px) {
+  .card-h {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .btn-row { flex-wrap: wrap; }
+  .btn-row .btn { min-width: 96px; }
+  .alert { align-items: flex-start; padding: 11px 12px; }
+  input,
+  select,
+  textarea { min-width: 0; }
+}
+
 /* --- ẩn thanh cuộn (popup Hồ sơ) --- */
 .scroll-hide {
   scrollbar-width: none;          /* Firefox */
