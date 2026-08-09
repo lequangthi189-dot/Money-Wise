@@ -37,19 +37,24 @@ function translateAuthError(err, tr) {
 
 function passwordResetRedirectUrl() {
   const configured = import.meta.env.VITE_APP_URL?.trim();
-  if (!configured) return window.location.origin;
+  let origin = window.location.origin;
 
-  try {
-    const url = new URL(configured);
-    const configuredIsLocal = ["localhost", "127.0.0.1"].includes(url.hostname);
-    const currentIsLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  if (configured) {
+    try {
+      const url = new URL(configured);
+      const configuredIsLocal = ["localhost", "127.0.0.1"].includes(url.hostname);
+      const currentIsLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
-    // Không để một biến môi trường cũ kéo bản production quay về localhost.
-    if (configuredIsLocal && !currentIsLocal) return window.location.origin;
-    return url.origin;
-  } catch {
-    return window.location.origin;
+      // Không để một biến môi trường cũ kéo bản production quay về localhost.
+      if (!configuredIsLocal || currentIsLocal) origin = url.origin;
+    } catch {
+      origin = window.location.origin;
+    }
   }
+
+  const redirect = new URL(window.location.pathname || "/", origin);
+  redirect.searchParams.set("password-recovery", "1");
+  return redirect.toString();
 }
 
 function recoveryErrorFromUrl(tr) {
@@ -183,8 +188,9 @@ export function useAuth({
 
     setLoading(true);
     try {
+      const normalizedEmail = form.email.trim().toLowerCase();
       const { data, error: err } = await supabase.auth.signUp({
-        email: form.email,
+        email: normalizedEmail,
         password: form.password,
         // Vào raw_user_meta_data của auth.users — trigger tao_ho_so_nguoi_dung
         // đọc đúng các khoá ho_ten / ten_dang_nhap / so_dien_thoai.
@@ -197,6 +203,16 @@ export function useAuth({
         },
       });
       if (err) return setError(translateAuthError(err, tr));
+
+      // Supabase hides duplicate-email errors when email confirmation is enabled.
+      // A duplicate returns a user with no identities instead of an explicit error.
+      if (
+        data.user &&
+        Array.isArray(data.user.identities) &&
+        data.user.identities.length === 0
+      ) {
+        return setError(tr.errEmailTaken);
+      }
 
       // Bật "Confirm email" trên dashboard: chưa có session, phải xác nhận mail.
       if (!data.session) {
