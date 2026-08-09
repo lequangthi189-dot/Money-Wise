@@ -81,8 +81,16 @@ function parseMultipleMessages(text, methods, config) {
 const normalizeLabel = (value) => String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 function parseTransactionTable(text, categories, methods, config) {
-  const rows = text.split(/\r?\n/).map((line) => line.trim()).filter((line) => line.startsWith("|") && line.endsWith("|"));
-  return rows.map((line) => line.slice(1, -1).split("|").map((cell) => cell.trim())).filter((cells) => /^\d+$/.test(cells[0] ?? "") && cells.length >= 6).map((cells) => {
+  const rows = text.split(/\r?\n/).map((line) => {
+    const trimmed = line.trim();
+    const delimiter = trimmed.includes("|") ? "|" : trimmed.includes("\t") ? "\t" : null;
+    if (!delimiter) return [];
+    const cells = trimmed.split(delimiter).map((cell) => cell.trim());
+    if (!cells[0]) cells.shift();
+    if (!cells.at(-1)) cells.pop();
+    return cells;
+  });
+  return rows.filter((cells) => /^\d+$/.test(cells[0] ?? "") && cells.length >= 6).map((cells) => {
     const [, dateText, categoryText, note, amountText, methodText] = cells;
     const dateParts = dateText.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
     const date = dateParts ? `${dateParts[3]}-${dateParts[2].padStart(2, "0")}-${dateParts[1].padStart(2, "0")}` : "";
@@ -289,7 +297,7 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
     <div className="chatbody">
       <div className="msg bot">{c.intro}</div>
       {message && <div className="msg bot">{message}</div>}
-      {parsed && <div className="msg bot"><div className="parsed">
+      {parsed && <div className="msg bot transaction-review"><div className="parsed">
         <div className="pr"><span>{c.type}</span><select value={parsed.type} onChange={(e) => setParsed((old) => ({ ...old, type: e.target.value, category: null, suggestionSource: "", suggestedCategoryId: null }))}><option value="">{c.chooseType}</option><option value="out">{c.expense}</option><option value="in">{c.income}</option></select></div>
         <div className="pr"><span>{c.amount}</span><input type="number" min="1" value={parsed.amount} onChange={(e) => setParsed((old) => ({ ...old, amount: Number(e.target.value) }))} /></div>
         <div className="pr pr-note"><span>{c.note}</span><textarea value={parsed.note} onChange={(e) => setParsed((old) => ({ ...old, note: e.target.value }))} placeholder={c.notePlaceholder} /></div>
