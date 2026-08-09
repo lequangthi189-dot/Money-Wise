@@ -25,7 +25,7 @@ const FILTER_RONG = {
 
 // Controller: danh sách giao dịch từ Supabase + form thêm/sửa/xoá.
 // Lọc theo từ khoá tìm kiếm (nội dung, danh mục, phương thức, số tiền, ngày).
-export function useTransactions(query, t, userId, onDataChanged) {
+export function useTransactions(query, t, userId, onDataChanged, onTransactionDeleted) {
   const [txns, setTxns] = useState([]);
   const [cats, setCats] = useState([]);
   const [methods, setMethods] = useState([]);
@@ -35,6 +35,7 @@ export function useTransactions(query, t, userId, onDataChanged) {
   const [form, setForm] = useState(FORM_RONG);
   const [editingId, setEditingId] = useState(null);
   const [filters, setFilters] = useState(FILTER_RONG);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   // Không setState đồng bộ ở đây: hàm được gọi thẳng trong useEffect, mọi
   // cập nhật state phải nằm sau await để tránh cascading render.
@@ -150,9 +151,13 @@ export function useTransactions(query, t, userId, onDataChanged) {
     });
   }
 
-  async function remove(tx) {
-    if (saving) return;
-    if (!window.confirm(t.transactions.confirmDelete(tx.name))) return;
+  function remove(tx) {
+    if (!saving) setPendingDelete(tx);
+  }
+
+  async function confirmRemove() {
+    const tx = pendingDelete;
+    if (!tx || saving) return;
     const id = tx.id;
     setSaving(true);
     setError("");
@@ -162,6 +167,8 @@ export function useTransactions(query, t, userId, onDataChanged) {
       if (editingId === id) resetForm();
       await reload();
       await onDataChanged?.();
+      onTransactionDeleted?.(id);
+      setPendingDelete(null);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -218,6 +225,9 @@ export function useTransactions(query, t, userId, onDataChanged) {
     submit,
     edit,
     remove,
+    pendingDelete,
+    confirmRemove,
+    cancelRemove: () => !saving && setPendingDelete(null),
     resetForm,
     reload,
   };

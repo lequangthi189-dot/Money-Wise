@@ -13,9 +13,30 @@ export function fmtSigned(n, type) {
   return (type === "in" ? "+" : "-") + fmtMoney(n);
 }
 
-// "35.000" | "35,000 ₫" -> 35000. Trả NaN nếu không đọc được.
+// Hỗ trợ cả dạng đầy đủ và viết tắt: 35.000, 35k, 1,5tr, 1tr5.
 export function parseMoney(text) {
-  const digits = String(text ?? "").replace(/[^\d]/g, "");
+  const input = String(text ?? "").trim().toLowerCase().replace(/₫|đ/g, "").trim();
+  const compact = input.replace(/\s+/g, "");
+
+  const mixedMillions = compact.match(/^(\d+)tr(\d+)$/);
+  if (mixedMillions) {
+    const whole = Number(mixedMillions[1]);
+    const fractionText = mixedMillions[2];
+    return Math.round((whole + Number(fractionText) / (10 ** fractionText.length)) * 1_000_000);
+  }
+
+  const abbreviated = compact.match(/^(\d+(?:[.,]\d+)?)(k|nghìn|nghin|tr|triệu|trieu|m)$/);
+  if (abbreviated) {
+    const [, rawNumber, unit] = abbreviated;
+    const separator = rawNumber.match(/[.,](\d+)$/);
+    const numeric = separator && separator[1].length <= 2
+      ? Number(rawNumber.replace(",", "."))
+      : Number(rawNumber.replace(/[.,]/g, ""));
+    const multiplier = ["k", "nghìn", "nghin"].includes(unit) ? 1_000 : 1_000_000;
+    return Number.isFinite(numeric) ? Math.round(numeric * multiplier) : NaN;
+  }
+
+  const digits = input.replace(/[^\d]/g, "");
   return digits === "" ? NaN : Number(digits);
 }
 

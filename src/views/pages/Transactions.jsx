@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { useTransactions } from "../../controllers/useTransactions";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 function TransactionSelect({ value, onChange, options, label }) {
   const menuRef = useRef(null);
@@ -29,6 +30,7 @@ export default function Transactions({
   t,
   userId,
   onDataChanged,
+  onTransactionDeleted,
   onOpenChat,
 }) {
   const tr = t.transactions;
@@ -51,14 +53,18 @@ export default function Transactions({
     submit,
     edit,
     remove,
+    pendingDelete,
+    confirmRemove,
+    cancelRemove,
     resetForm,
-  } = useTransactions(query, t, userId, onDataChanged);
+  } = useTransactions(query, t, userId, onDataChanged, onTransactionDeleted);
   const hasFilters = Object.values(filters).some(Boolean);
   const categoryOptions = [{ value: "", label: "—" }, ...cats.map((category) => ({ value: category.id, label: `${category.icon} ${category.name}` }))];
   const methodOptions = [{ value: "", label: "—" }, ...methods.map((method) => ({ value: method.id, label: t.methods[method.mkey] ?? method.name }))];
 
   return (
     <>
+      <ConfirmDialog open={Boolean(pendingDelete)} title={tr.deleteTitle} message={pendingDelete ? tr.confirmDelete(pendingDelete.name) : ""} confirmLabel={tr.deleteAction} cancelLabel={tr.cancel} busy={saving} onConfirm={confirmRemove} onCancel={cancelRemove} />
       <div className="transactions-layout">
         <div className="card glass transaction-form-card">
           <div className="card-h">
@@ -86,8 +92,9 @@ export default function Transactions({
             <input
               value={form.amount}
               onChange={upd("amount")}
-              placeholder="0 ₫"
-              inputMode="numeric"
+              placeholder={tr.amountPlaceholder}
+              inputMode="text"
+              autoComplete="off"
             />
           </div>
           <div className="field">

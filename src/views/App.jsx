@@ -56,7 +56,7 @@ function getInitials(name, email = "") {
 }
 
 export default function App() {
-  const { reload: reloadAppData } = useAppData();
+  const { reload: reloadAppData, removeTransactionLocally } = useAppData();
   const {
     view,
     setView,
@@ -304,6 +304,7 @@ export default function App() {
                   userId={userId}
                   streak={streak}
                   onDataChanged={reloadChangedData}
+                  onTransactionDeleted={removeTransactionLocally}
                   onOpenChat={() => setChatOpen(true)}
                   onOpenTransactions={() => setView("transactions")}
                 />
