@@ -348,7 +348,7 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
       </div></div>}
       {parsedBatch.length > 0 && <div className="msg bot batch-review">
         <b>{c.batchTitle(parsedBatch.length)}</b>
-        {parsedBatch.map((item, index) => <div className="parsed batch-item" key={`${item.note}-${index}`}>
+        {parsedBatch.map((item, index) => <div className="parsed batch-item" key={item.analysisId ?? `batch-${index}`}>
           <small>{c.batchItem(index + 1)}</small>
           <div className="pr"><span>{c.type}</span><select value={item.type} onChange={(e) => updateBatch(index, { type: e.target.value, category: null })}><option value="">{c.chooseType}</option><option value="out">{c.expense}</option><option value="in">{c.income}</option></select></div>
           <div className="pr"><span>{c.amount}</span><input type="number" min="1" value={item.amount} onChange={(e) => updateBatch(index, { amount: Number(e.target.value) })} /></div>
