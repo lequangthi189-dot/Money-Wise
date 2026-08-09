@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Icon } from "./icons";
-import { createChatAnalysis, createTransaction, fetchPaymentMethods, updateChatAnalysis } from "../../models/giaoDichData";
+import { createChatAnalysis, createTransaction, fetchPaymentMethods, suggestTransactionCategory, updateChatAnalysis } from "../../models/giaoDichData";
 import { useAppData } from "../../context/AppDataContext";
 
 const QUICK_ENTRY_CONFIG = {
-  ignoredWords: ["hom", "nay", "qua", "vao", "luc", "ngay", "thang", "nam", "tien", "mat", "vi", "dien", "tu", "the", "ngan", "hang", "chuyen", "khoan", "mua", "tra", "chi", "thu", "nhan", "duoc", "bang", "cho", "mot", "trieu", "nghin"],
   incomeWords: ["thu ", "nhận", "lương", "thưởng", "tiền vào", "bán được", "income", "received", "salary", "earned"],
   expenseWords: ["chi ", "mua", "trả", "đóng", "ăn", "uống", "tiền ra", "expense", "spent", "paid", "bought", "buy"],
   methodAliases: {
@@ -21,43 +20,7 @@ function localDateISO(value) {
   return new Date(value.getTime() - value.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
-function normalizeSuggestionText(value) {
-  return String(value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .toLowerCase();
-}
-
-function suggestionTokens(value, config) {
-  const ignoredWords = new Set(config.ignoredWords ?? []);
-  return new Set(normalizeSuggestionText(value)
-    .replace(/\d[\d.,]*/g, " ")
-    .split(/[^a-z]+/)
-    .filter((word) => word.length > 1 && !ignoredWords.has(word)));
-}
-
-function suggestCategory(text, categories, history, config) {
-  const normalizedText = normalizeSuggestionText(text);
-  const direct = categories.find((item) => normalizedText.includes(normalizeSuggestionText(item.name)));
-  if (direct) return { category: direct, source: "name" };
-
-  const inputTokens = suggestionTokens(text, config);
-  if (!inputTokens.size) return { category: null, source: "" };
-
-  const scores = new Map();
-  history.forEach((transaction) => {
-    const category = categories.find((item) => String(item.id) === String(transaction.categoryId));
-    if (!category) return;
-    const matched = [...suggestionTokens(transaction.name, config)].filter((token) => inputTokens.has(token)).length;
-    if (matched > 0) scores.set(category.id, (scores.get(category.id) ?? 0) + matched);
-  });
-
-  const best = [...scores.entries()].sort((a, b) => b[1] - a[1])[0];
-  return { category: best ? categories.find((item) => item.id === best[0]) ?? null : null, source: best ? "history" : "" };
-}
-
-function parseMessage(text, categories, methods, history, config) {
+function parseMessage(text, methods, config) {
   const words = text.toLowerCase();
   const match = words.match(/(\d[\d.,]*)\s*([a-zA-ZÀ-ỹ]+)?/);
   if (!match) return null;
@@ -70,14 +33,11 @@ function parseMessage(text, categories, methods, history, config) {
 
   const incomeWords = config.incomeWords ?? [];
   const expenseWords = config.expenseWords ?? [];
-  const suggestion = suggestCategory(text, categories, history, config);
-  const matchedCategory = suggestion.category;
   const type = incomeWords.some((word) => words.includes(word))
     ? "in"
     : expenseWords.some((word) => words.includes(word))
       ? "out"
-      : matchedCategory?.type ?? "";
-  const category = matchedCategory?.type === type ? matchedCategory : null;
+      : "";
 
   const methodAliases = config.methodAliases ?? {};
   const method = methods.find((item) =>
@@ -99,7 +59,21 @@ function parseMessage(text, categories, methods, history, config) {
     else if (local) date = `${local[3] ?? today.getFullYear()}-${local[2].padStart(2, "0")}-${local[1].padStart(2, "0")}`;
   }
 
-  return { amount, type, category, method, date, note: text, suggestionSource: category ? suggestion.source : "", suggestedCategoryId: category?.id ?? null, analysisId: null };
+  return { amount, type, category: null, method, date, note: text, suggestionSource: "", suggestedCategoryId: null, analysisId: null };
+}
+
+async function applyBackendSuggestion(value, text, categories) {
+  const suggestion = await suggestTransactionCategory(text, value.type);
+  if (!suggestion) return value;
+  const category = categories.find((item) => String(item.id) === String(suggestion.categoryId)) ?? null;
+  if (!category) return value;
+  return {
+    ...value,
+    type: value.type || suggestion.categoryType || category.type,
+    category,
+    suggestedCategoryId: category.id,
+    suggestionSource: suggestion.source === "LICH_SU" || suggestion.source === "GIAO_DICH_CU" ? "history" : "name",
+  };
 }
 
 function nextQuestion(value, text) {
@@ -110,36 +84,32 @@ function nextQuestion(value, text) {
   return "";
 }
 
-function applyFollowUp(text, current, categories, methods, history, config) {
+async function applyFollowUp(text, current, categories, methods, config) {
   const words = text.toLowerCase();
   let type = current.type;
   if (!type) {
     if (["thu", "income"].includes(words.trim()) || config.incomeWords.some((word) => words.includes(word))) type = "in";
     else if (["chi", "expense"].includes(words.trim()) || config.expenseWords.some((word) => words.includes(word))) type = "out";
   }
-  const suggestion = !current.category ? suggestCategory(text, categories, history, config) : { category: current.category, source: current.suggestionSource };
-  const category = suggestion.category?.type === type ? suggestion.category : current.category;
   const method = current.method ?? methods.find((item) =>
     words.includes(item.name.toLowerCase()) ||
     (config.methodAliases[item.mkey] ?? []).some((alias) => words.includes(alias)),
   ) ?? null;
-  return {
+  const updated = {
     ...current,
     type,
-    category,
     method,
-    suggestionSource: category && !current.category ? suggestion.source : current.suggestionSource,
   };
+  return current.category ? updated : applyBackendSuggestion(updated, text, categories);
 }
 
 export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategories }) {
   const c = t.chat;
-  const { categories: appCategories, transactions: appTransactions } = useAppData();
+  const { categories: appCategories } = useAppData();
   const [text, setText] = useState("");
   const [parsed, setParsed] = useState(null);
   const [categories, setCategories] = useState([]);
   const [methods, setMethods] = useState([]);
-  const [history, setHistory] = useState([]);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -151,7 +121,6 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
         if (!active) return;
         setCategories(appCategories);
         setMethods(paymentMethods);
-        setHistory(appTransactions);
         setMessage("");
       } catch (error) {
         if (active) setMessage(error.message);
@@ -160,12 +129,18 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
 
     loadChatData();
     return () => { active = false; };
-  }, [appCategories, appTransactions]);
+  }, [appCategories]);
 
   async function send() {
     if (!text.trim()) return;
     if (parsed && nextQuestion(parsed, c)) {
-      const updated = applyFollowUp(text, parsed, categories, methods, history, QUICK_ENTRY_CONFIG);
+      let updated;
+      try {
+        updated = await applyFollowUp(text, parsed, categories, methods, QUICK_ENTRY_CONFIG);
+      } catch (error) {
+        setMessage(error.message);
+        return;
+      }
       const question = nextQuestion(updated, c);
       setParsed(updated);
       setText("");
@@ -179,9 +154,15 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
       } catch (error) { console.warn("Không thể cập nhật phân tích chatbot:", error.message); }
       return;
     }
-    const result = parseMessage(text, categories, methods, history, QUICK_ENTRY_CONFIG);
+    let result = parseMessage(text, methods, QUICK_ENTRY_CONFIG);
     if (!result) setMessage(c.noAmount);
     else {
+      try {
+        result = await applyBackendSuggestion(result, text, categories);
+      } catch (error) {
+        setMessage(error.message);
+        return;
+      }
       const question = nextQuestion(result, c);
       try {
         result.analysisId = await createChatAnalysis({
@@ -208,7 +189,6 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
       } catch (analysisError) {
         console.warn("Giao dịch đã lưu nhưng không cập nhật được phân tích chatbot:", analysisError.message);
       }
-      setHistory((old) => [{ name: parsed.note, categoryId: parsed.category.id, type: parsed.type }, ...old]);
       setMessage(c.saved);
       setParsed(null);
       setText("");
