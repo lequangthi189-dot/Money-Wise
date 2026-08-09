@@ -190,6 +190,7 @@ export const i18n = {
       selectDate: "Vui lòng chọn ngày.",
       noteTooLong: "Ghi chú không được vượt quá 255 ký tự.",
       futureDate: "Ngày giao dịch không được lớn hơn hôm nay.",
+      confirmDelete: (name) => `Bạn có chắc muốn xóa giao dịch “${name}” không?`,
     },
 
     chat: {
@@ -528,6 +529,7 @@ export const i18n = {
       selectDate: "Please select a date.",
       noteTooLong: "The note cannot exceed 255 characters.",
       futureDate: "The transaction date cannot be later than today.",
+      confirmDelete: (name) => `Are you sure you want to delete “${name}”?`,
     },
 
     chat: {

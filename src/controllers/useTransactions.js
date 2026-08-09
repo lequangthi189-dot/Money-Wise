@@ -150,8 +150,10 @@ export function useTransactions(query, t, userId, onDataChanged) {
     });
   }
 
-  async function remove(id) {
+  async function remove(tx) {
     if (saving) return;
+    if (!window.confirm(t.transactions.confirmDelete(tx.name))) return;
+    const id = tx.id;
     setSaving(true);
     setError("");
     try {
