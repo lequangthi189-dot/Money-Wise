@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
 import { Icon } from "./icons";
-import { createTransaction, fetchPaymentMethods } from "../../models/giaoDichData";
+import { createChatAnalysis, createTransaction, fetchPaymentMethods, updateChatAnalysis } from "../../models/giaoDichData";
 import { useAppData } from "../../context/AppDataContext";
 
 const QUICK_ENTRY_CONFIG = {
   ignoredWords: ["hom", "nay", "qua", "vao", "luc", "ngay", "thang", "nam", "tien", "mat", "vi", "dien", "tu", "the", "ngan", "hang", "chuyen", "khoan", "mua", "tra", "chi", "thu", "nhan", "duoc", "bang", "cho", "mot", "trieu", "nghin"],
-  incomeWords: ["thu ", "nhận", "lương", "thưởng", "tiền vào", "bán được"],
-  expenseWords: ["chi ", "mua", "trả", "đóng", "ăn", "uống", "tiền ra"],
+  incomeWords: ["thu ", "nhận", "lương", "thưởng", "tiền vào", "bán được", "income", "received", "salary", "earned"],
+  expenseWords: ["chi ", "mua", "trả", "đóng", "ăn", "uống", "tiền ra", "expense", "spent", "paid", "bought", "buy"],
   methodAliases: {
     cash: ["tiền mặt", "cash"],
     ewallet: ["ví điện tử", "momo", "zalo pay", "zalopay", "vnpay"],
     card: ["thẻ", "chuyển khoản", "ngân hàng", "bank"],
   },
-  amountSuffixes: { k: 1000, nghìn: 1000, ngàn: 1000, tr: 1000000, triệu: 1000000 },
-  todayWords: ["hôm nay"],
-  yesterdayWords: ["hôm qua"],
+  amountSuffixes: { k: 1000, nghìn: 1000, ngàn: 1000, tr: 1000000, triệu: 1000000, m: 1000000 },
+  todayWords: ["hôm nay", "today"],
+  yesterdayWords: ["hôm qua", "yesterday"],
 };
 
 function localDateISO(value) {
@@ -99,7 +99,37 @@ function parseMessage(text, categories, methods, history, config) {
     else if (local) date = `${local[3] ?? today.getFullYear()}-${local[2].padStart(2, "0")}-${local[1].padStart(2, "0")}`;
   }
 
-  return { amount, type, category, method, date, note: text, suggestionSource: category ? suggestion.source : "", suggestedCategoryId: category?.id ?? null };
+  return { amount, type, category, method, date, note: text, suggestionSource: category ? suggestion.source : "", suggestedCategoryId: category?.id ?? null, analysisId: null };
+}
+
+function nextQuestion(value, text) {
+  if (!value?.type) return text.askType;
+  if (!value?.category) return text.askCategory;
+  if (!value?.method) return text.askMethod;
+  if (!value?.date) return text.askDate;
+  return "";
+}
+
+function applyFollowUp(text, current, categories, methods, history, config) {
+  const words = text.toLowerCase();
+  let type = current.type;
+  if (!type) {
+    if (["thu", "income"].includes(words.trim()) || config.incomeWords.some((word) => words.includes(word))) type = "in";
+    else if (["chi", "expense"].includes(words.trim()) || config.expenseWords.some((word) => words.includes(word))) type = "out";
+  }
+  const suggestion = !current.category ? suggestCategory(text, categories, history, config) : { category: current.category, source: current.suggestionSource };
+  const category = suggestion.category?.type === type ? suggestion.category : current.category;
+  const method = current.method ?? methods.find((item) =>
+    words.includes(item.name.toLowerCase()) ||
+    (config.methodAliases[item.mkey] ?? []).some((alias) => words.includes(alias)),
+  ) ?? null;
+  return {
+    ...current,
+    type,
+    category,
+    method,
+    suggestionSource: category && !current.category ? suggestion.source : current.suggestionSource,
+  };
 }
 
 export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategories }) {
@@ -133,10 +163,37 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
   }, [appCategories, appTransactions]);
 
   async function send() {
+    if (!text.trim()) return;
+    if (parsed && nextQuestion(parsed, c)) {
+      const updated = applyFollowUp(text, parsed, categories, methods, history, QUICK_ENTRY_CONFIG);
+      const question = nextQuestion(updated, c);
+      setParsed(updated);
+      setText("");
+      setMessage(question || c.readyToConfirm);
+      try {
+        await updateChatAnalysis(updated.analysisId, {
+          amount: updated.amount, type: updated.type, categoryId: updated.category?.id,
+          date: updated.date, methodId: updated.method?.id, question,
+          status: question ? "CHO_BO_SUNG" : "DA_PHAN_TICH",
+        });
+      } catch (error) { console.warn("Không thể cập nhật phân tích chatbot:", error.message); }
+      return;
+    }
     const result = parseMessage(text, categories, methods, history, QUICK_ENTRY_CONFIG);
-    setParsed(result);
     if (!result) setMessage(c.noAmount);
-    else setMessage("");
+    else {
+      const question = nextQuestion(result, c);
+      try {
+        result.analysisId = await createChatAnalysis({
+          userId, text, amount: result.amount, type: result.type, categoryId: result.category?.id,
+          date: result.date, methodId: result.method?.id, question,
+          status: question ? "CHO_BO_SUNG" : "DA_PHAN_TICH",
+        });
+      } catch (error) { console.warn("Không thể lưu phân tích chatbot:", error.message); }
+      setParsed(result);
+      setText("");
+      setMessage(question || c.readyToConfirm);
+    }
   }
 
   async function save() {
@@ -145,7 +202,12 @@ export default function ChatPanel({ t, onClose, userId, onSaved, onOpenCategorie
       return;
     }
     try {
-      await createTransaction({ userId, categoryId: parsed.category.id, methodId: parsed.method.id, type: parsed.type, amount: parsed.amount, date: parsed.date, note: parsed.note });
+      const transactionId = await createTransaction({ userId, categoryId: parsed.category.id, methodId: parsed.method.id, type: parsed.type, amount: parsed.amount, date: parsed.date, note: parsed.note, source: "chatbot" });
+      try {
+        await updateChatAnalysis(parsed.analysisId, { amount: parsed.amount, type: parsed.type, categoryId: parsed.category.id, date: parsed.date, methodId: parsed.method.id, question: "", status: "DA_XAC_NHAN", transactionId });
+      } catch (analysisError) {
+        console.warn("Giao dịch đã lưu nhưng không cập nhật được phân tích chatbot:", analysisError.message);
+      }
       setHistory((old) => [{ name: parsed.note, categoryId: parsed.category.id, type: parsed.type }, ...old]);
       setMessage(c.saved);
       setParsed(null);

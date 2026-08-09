@@ -75,8 +75,9 @@ export async function createTransaction({
   amount,
   date,
   note,
+  source = "manual",
 }) {
-  const { error } = await supabase.from("giao_dich").insert({
+  const { data, error } = await supabase.from("giao_dich").insert({
     ma_nguoi_dung: userId,
     ma_danh_muc: categoryId,
     ma_phuong_thuc: methodId,
@@ -84,7 +85,44 @@ export async function createTransaction({
     so_tien: amount,
     ngay_giao_dich: date,
     noi_dung: note?.trim() || null,
-  });
+    nguon_tao: source === "chatbot" ? "CHATBOT" : "THU_CONG",
+  }).select("ma_giao_dich").single();
+  if (error) throw error;
+  return data.ma_giao_dich;
+}
+
+export async function createChatAnalysis({ userId, text, amount, type, categoryId, date, methodId, question, status }) {
+  const { data, error } = await supabase.from("phan_tich_chatbot").insert({
+    ma_nguoi_dung: userId,
+    noi_dung_nguoi_dung: text.trim(),
+    so_tien_goi_y: amount || null,
+    loai_goi_y: type === "in" ? "THU" : type === "out" ? "CHI" : null,
+    ma_danh_muc_goi_y: categoryId || null,
+    ngay_goi_y: date || null,
+    ma_phuong_thuc_goi_y: methodId || null,
+    cau_hoi_bo_sung: question || null,
+    trang_thai: status,
+  }).select("ma_phan_tich").single();
+  if (error) throw error;
+  return data.ma_phan_tich;
+}
+
+export async function updateChatAnalysis(analysisId, { amount, type, categoryId, date, methodId, question, status, transactionId = null }) {
+  if (!analysisId) return;
+  const payload = {
+    so_tien_goi_y: amount || null,
+    loai_goi_y: type === "in" ? "THU" : type === "out" ? "CHI" : null,
+    ma_danh_muc_goi_y: categoryId || null,
+    ngay_goi_y: date || null,
+    ma_phuong_thuc_goi_y: methodId || null,
+    cau_hoi_bo_sung: question || null,
+    trang_thai: status,
+  };
+  if (transactionId) {
+    payload.ma_giao_dich = transactionId;
+    payload.xac_nhan_luc = new Date().toISOString();
+  }
+  const { error } = await supabase.from("phan_tich_chatbot").update(payload).eq("ma_phan_tich", analysisId);
   if (error) throw error;
 }
 export async function updateTransaction(id, {
