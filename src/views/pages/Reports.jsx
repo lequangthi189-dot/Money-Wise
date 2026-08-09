@@ -10,6 +10,22 @@ export function SharedReportView({ code, t, lang = "vi", theme = "glass", onClos
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const sharedDetails = report?.chi_tiet ?? [];
+  const sharedTotal = sharedDetails.reduce(
+    (sum, row) => sum + Number(row.tong_chi_danh_muc || 0),
+    0,
+  );
+  const sharedDonutBackground = sharedDetails.length && sharedTotal > 0
+    ? `conic-gradient(${sharedDetails.map((row, index) => {
+      const before = sharedDetails.slice(0, index).reduce(
+        (sum, item) => sum + Number(item.tong_chi_danh_muc || 0),
+        0,
+      );
+      const start = (before / sharedTotal) * 100;
+      const end = ((before + Number(row.tong_chi_danh_muc || 0)) / sharedTotal) * 100;
+      return `${DONUT_COLORS[index % DONUT_COLORS.length]} ${start}% ${end}%`;
+    }).join(", ")})`
+    : "var(--surface-2)";
 
   useEffect(() => {
     let alive = true;
@@ -30,7 +46,7 @@ export function SharedReportView({ code, t, lang = "vi", theme = "glass", onClos
   }, [code, r.sharedInvalid]);
 
   return (
-    <div className="root" data-theme={theme} style={{ minHeight: "100vh", padding: 24 }}>
+    <div className="root shared-report-root" data-theme={theme} style={{ minHeight: "100vh", padding: "clamp(12px, 3vw, 24px)" }}>
       <main style={{ width: "min(920px, 100%)", margin: "0 auto" }}>
         <div className="card glass" style={{ marginBottom: 18 }}>
           <div className="card-h">
@@ -60,16 +76,41 @@ export function SharedReportView({ code, t, lang = "vi", theme = "glass", onClos
               <div className="stat glass"><label>{r.totalOut}</label><div className="val sm" style={{ color: "var(--danger)" }}>{money(report.tong_chi, locale)}</div></div>
               <div className="stat glass"><label>{r.endBalance}</label><div className="val sm">{money(report.so_du, locale)}</div></div>
             </div>
-            <div className="card glass" style={{ marginTop: 18 }}>
-              <div className="card-h"><h3>{r.structure}</h3></div>
-              {(report.chi_tiet ?? []).map((row, i) => (
-                <div key={`${row.ten_danh_muc}-${i}`} style={{ display: "flex", gap: 12, margin: "10px 0" }}>
-                  <span style={{ width: 10, height: 10, borderRadius: 9, background: DONUT_COLORS[i % DONUT_COLORS.length] }} />
-                  <span style={{ flex: 1 }}>{row.ten_danh_muc}</span>
-                  <b>{money(row.tong_chi_danh_muc, locale)}</b>
-                  <span>{row.ty_le_phan_tram}%</span>
+            <div className="shared-report-charts">
+              <section className="report-panel glass">
+                <div className="report-panel-head"><h3>{r.structure}</h3><span>{r.donutChart}</span></div>
+                <div className="report-donut-layout">
+                  <div className="report-donut" style={{ background: sharedDonutBackground }}>
+                    <div><b>{money(report.tong_chi, locale)}</b><small>{r.totalSpent}</small></div>
+                  </div>
+                  <div className="report-legend">
+                    {sharedDetails.length ? sharedDetails.map((row, index) => (
+                      <div key={`${row.ten_danh_muc}-${index}`}>
+                        <span style={{ background: DONUT_COLORS[index % DONUT_COLORS.length] }} />
+                        <label>{row.ten_danh_muc}</label>
+                        <b>{Number(row.ty_le_phan_tram || 0).toLocaleString(locale)}%</b>
+                      </div>
+                    )) : <p className="muted">{r.noExpense}</p>}
+                  </div>
                 </div>
-              ))}
+              </section>
+
+              <section className="report-panel glass">
+                <div className="report-panel-head"><h3>{r.structure}</h3><span>{r.barChart}</span></div>
+                <div className="shared-category-bars">
+                  {sharedDetails.length ? sharedDetails.map((row, index) => {
+                    const pct = Math.max(0, Math.min(100, Number(row.ty_le_phan_tram || 0)));
+                    return (
+                      <div className="shared-category-bar-row" key={`${row.ten_danh_muc}-${index}`}>
+                        <div><span>{row.ten_danh_muc}</span><b>{money(row.tong_chi_danh_muc, locale)}</b></div>
+                        <div className="shared-category-track">
+                          <span style={{ width: `${pct}%`, background: DONUT_COLORS[index % DONUT_COLORS.length] }} />
+                        </div>
+                      </div>
+                    );
+                  }) : <p className="muted">{r.noExpense}</p>}
+                </div>
+              </section>
             </div>
           </>
         )}

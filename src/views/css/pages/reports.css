@@ -134,10 +134,19 @@
 .report-share { margin-bottom: 4px; }
 .report-code-lookup { display: flex; gap: 10px; margin-top: 12px; }
 .report-code-lookup input { flex: 1; }
+.shared-report-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.shared-category-bars { display: grid; gap: 14px; }
+.shared-category-bar-row { display: grid; gap: 7px; }
+.shared-category-bar-row > div:first-child { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: .76rem; }
+.shared-category-bar-row > div:first-child span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-dim); }
+.shared-category-bar-row > div:first-child b { flex: 0 0 auto; font-size: .74rem; }
+.shared-category-track { height: 9px; overflow: hidden; border-radius: 999px; background: var(--track); }
+.shared-category-track > span { display: block; height: 100%; min-width: 3px; border-radius: inherit; }
 
 @media (max-width: 900px) {
   .reports-summary { grid-template-columns: 1fr; }
   .reports-charts-row { grid-template-columns: 1fr; }
+  .shared-report-charts { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
   .reports-toolbar { align-items: stretch; flex-direction: column; }
