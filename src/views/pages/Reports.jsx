@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createShareCode, fetchMonthlyReports, fetchReportDetails, fetchSharedReport, PIE_COLORS } from "../../models/reportsData";
+import { createShareCode, DONUT_COLORS, fetchMonthlyReports, fetchReportDetails, fetchSharedReport } from "../../models/reportsData";
 
 const localeFor = (lang) => lang === "en" ? "en-US" : "vi-VN";
 const money = (value, locale) => `${Number(value || 0).toLocaleString(locale)} ₫`;
@@ -64,7 +64,7 @@ export function SharedReportView({ code, t, lang = "vi", theme = "glass", onClos
               <div className="card-h"><h3>{r.structure}</h3></div>
               {(report.chi_tiet ?? []).map((row, i) => (
                 <div key={`${row.ten_danh_muc}-${i}`} style={{ display: "flex", gap: 12, margin: "10px 0" }}>
-                  <span style={{ width: 10, height: 10, borderRadius: 9, background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                  <span style={{ width: 10, height: 10, borderRadius: 9, background: DONUT_COLORS[i % DONUT_COLORS.length] }} />
                   <span style={{ flex: 1 }}>{row.ten_danh_muc}</span>
                   <b>{money(row.tong_chi_danh_muc, locale)}</b>
                   <span>{row.ty_le_phan_tram}%</span>
@@ -103,7 +103,7 @@ export default function Reports({ t, userId, lang = "vi" }) {
       const before = visibleDetails.slice(0, index).reduce((sum, item) => sum + Number(item.tong_chi_danh_muc || 0), 0);
       const start = (before / totalDetails) * 100;
       const end = ((before + Number(row.tong_chi_danh_muc || 0)) / totalDetails) * 100;
-      return `${PIE_COLORS[index % PIE_COLORS.length]} ${start}% ${end}%`;
+      return `${DONUT_COLORS[index % DONUT_COLORS.length]} ${start}% ${end}%`;
     }).join(", ")})`
     : "var(--surface-2)";
   const trendPoints = chartReports.map((row, index) => {
@@ -143,14 +143,14 @@ export default function Reports({ t, userId, lang = "vi" }) {
 
     <div className="reports-charts-row">
       <section className="report-panel glass">
-        <div className="report-panel-head"><h3>{r.structure}</h3><span>{r.pieChart}</span></div>
+        <div className="report-panel-head"><h3>{r.structure}</h3><span>{r.donutChart}</span></div>
         <div className="report-donut-layout">
           <div className="report-donut" style={{ background: donutBackground }}>
             <div><b>{money(selected.tong_chi, locale)}</b><small>{r.totalOut.toLowerCase()}</small></div>
           </div>
           <div className="report-legend">
             {visibleDetails.length ? visibleDetails.map((row, index) => <div key={`${row.danh_muc?.ten_danh_muc}-${index}`}>
-              <span style={{ background: PIE_COLORS[index % PIE_COLORS.length] }} />
+              <span style={{ background: DONUT_COLORS[index % DONUT_COLORS.length] }} />
               <label>{row.danh_muc?.ten_danh_muc || "—"}</label>
               <b>{Number(row.ty_le_phan_tram || 0).toLocaleString(locale)}%</b>
             </div>) : <p className="muted">{r.noExpense}</p>}
