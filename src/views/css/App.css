@@ -249,38 +249,6 @@
   caret-color: var(--accent);
 }
 
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--r-md);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  display: grid;
-  place-items: center;
-  color: var(--text-dim);
-  cursor: pointer;
-  position: relative;
-  transition: all var(--t-fast);
-}
-.icon-btn:hover {
-  background: var(--surface-hover);
-  color: var(--text);
-}
-.icon-btn svg {
-  width: 19px;
-  height: 19px;
-}
-.dot {
-  position: absolute;
-  top: 9px;
-  right: 10px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--danger);
-  border: 2px solid var(--side-bg);
-}
-
 /* content */
 .content {
   padding: 26px;
@@ -435,7 +403,6 @@
   .top-actions { gap: 6px; }
   .search { padding-left: 11px; }
   .search kbd { display: none; }
-  .icon-btn { width: 36px; height: 36px; }
   .content { padding: 12px; }
   .card { padding: 14px; border-radius: 14px; }
   .card-h { gap: 10px; }

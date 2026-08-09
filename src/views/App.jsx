@@ -279,10 +279,6 @@ export default function App() {
                 </div>
               </div>
 
-              <button className="icon-btn">
-                <Icon n="i-bell" />
-                <span className="dot"></span>
-              </button>
             </div>
           </header>
 
