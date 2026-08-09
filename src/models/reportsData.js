@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 
-export const PIE_COLORS = ["#f87171", "#60a5fa", "#fbbf24", "#a78bfa", "#34d399", "#fb7185"];
+export const DONUT_COLORS = ["#f87171", "#60a5fa", "#fbbf24", "#a78bfa", "#34d399", "#fb7185"];
 
 async function refreshCurrentReport() {
   const { data, error } = await supabase.rpc("lam_moi_bao_cao_thang");
