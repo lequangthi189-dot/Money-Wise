@@ -109,6 +109,8 @@
   min-height: 0;
   padding: 16px;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -146,6 +148,7 @@
   padding: 11px;
   font-size: 0.78rem;
 }
+.chatbody::-webkit-scrollbar { display: none; }
 .transaction-review,
 .batch-review {
   width: 100%;
