@@ -88,7 +88,7 @@ export default function Categories({ t, userId, onDataChanged }) {
     handleDeleteCategory,
     handleEditCategory,
     handleCloseForm,
-  } = useCategories(userId, onDataChanged);
+  } = useCategories(userId, onDataChanged, c);
 
   const categories = [...expenseCats, ...incomeCats];
   const defaultCategoryCount = categories.filter((category) => category.isPreset).length;

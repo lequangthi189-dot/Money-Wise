@@ -10,7 +10,7 @@ import {
 
 // Controller: quản lý danh mục thu/chi lấy từ Supabase — thêm, sửa, xoá.
 // Danh mục mặc định (la_mac_dinh) dùng chung cho mọi người nên không sửa/xoá.
-export function useCategories(userId, onDataChanged) {
+export function useCategories(userId, onDataChanged, text) {
   const [cats, setCats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -109,10 +109,12 @@ export function useCategories(userId, onDataChanged) {
     try {
       const canDelete = await canDeleteCategory(id);
       if (canDelete) {
+        if (!window.confirm(text.confirmDelete(cat.name))) return;
         await deleteCategory(id);
       } else {
+        if (!window.confirm(text.confirmHide(cat.name))) return;
         await hideCategory(id);
-        setError("Danh mục đã có dữ liệu nên được ẩn để giữ lịch sử giao dịch.");
+        setError(text.hiddenWithTransactions);
       }
       setCats((list) => list.filter((c) => c.id !== id));
       await onDataChanged?.();
