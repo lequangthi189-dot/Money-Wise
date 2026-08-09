@@ -29,18 +29,19 @@ export function AppDataProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const [cats, buds, txs, gls, st] = await Promise.all([
+      const results = await Promise.allSettled([
         categoryService.fetchCategories(),
         budgetService.fetchBudgets(),
         transactionService.fetchTransactions(),
         goalService.fetchGoals(),
         settingsService.fetchSettings(),
       ]);
-      setCategories(cats);
-      setBudgets(buds);
-      setTransactions(txs);
-      setGoals(gls);
-      setSettings(st);
+      const setters = [setCategories, setBudgets, setTransactions, setGoals, setSettings];
+      results.forEach((result, index) => {
+        if (result.status === "fulfilled") setters[index](result.value);
+      });
+      const failed = results.find((result) => result.status === "rejected");
+      if (failed) setError(failed.reason);
     } catch (e) {
       setError(e);
     } finally {

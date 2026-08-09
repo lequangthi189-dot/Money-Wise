@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { createShareCode, DONUT_COLORS, fetchMonthlyReports, fetchReportDetails, fetchSharedReport, normalizeShareCode } from "../../models/reportsData";
+import { createShareCode, DONUT_COLORS, fetchMonthlyReports, fetchSharedReport, normalizeShareCode } from "../../models/reportsData";
+import { useAppData } from "../../context/AppDataContext";
 
 const localeFor = (lang) => lang === "en" ? "en-US" : "vi-VN";
 const money = (value, locale) => `${Number(value || 0).toLocaleString(locale)} ₫`;
@@ -122,21 +123,44 @@ export function SharedReportView({ code, t, lang = "vi", theme = "glass", onClos
 export default function Reports({ t, userId, lang = "vi" }) {
   const r = t.reports;
   const locale = localeFor(lang);
+  const { categories, transactions } = useAppData();
   const [reports, setReports] = useState([]);
   const [selectedId, setSelectedId] = useState("");
-  const [details, setDetails] = useState([]);
   const [shareCode, setShareCode] = useState("");
   const [lookup, setLookup] = useState("");
   const [shared, setShared] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => { if (userId) fetchMonthlyReports(userId).then((rows) => { setReports(rows); setSelectedId(String(rows[0]?.ma_bao_cao ?? "")); }).catch((e) => setError(e.message)); }, [userId]);
-  useEffect(() => { fetchReportDetails(selectedId).then(setDetails).catch((e) => setError(e.message)); }, [selectedId]);
-  const selected = shared ?? reports.find((row) => String(row.ma_bao_cao) === selectedId) ?? {};
+  const liveReports = useMemo(() => reports.map((report) => {
+    const month = String(report.ky_thang ?? "").slice(0, 7);
+    const monthly = transactions.filter((tx) => tx.dateISO?.slice(0, 7) === month);
+    const totalIncome = monthly.filter((tx) => tx.type === "in").reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+    const totalExpense = monthly.filter((tx) => tx.type === "out").reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+    return { ...report, tong_thu: totalIncome, tong_chi: totalExpense, so_du: totalIncome - totalExpense };
+  }), [reports, transactions]);
+  const selected = shared ?? liveReports.find((row) => String(row.ma_bao_cao) === selectedId) ?? {};
+  const liveDetails = useMemo(() => {
+    if (!selectedId) return [];
+    const month = String(liveReports.find((row) => String(row.ma_bao_cao) === selectedId)?.ky_thang ?? "").slice(0, 7);
+    const grouped = new Map();
+    transactions.filter((tx) => tx.type === "out" && tx.dateISO?.slice(0, 7) === month).forEach((tx) => {
+      const current = grouped.get(tx.categoryId) ?? { amount: 0, name: tx.catName };
+      current.amount += Number(tx.amount || 0);
+      current.name = categories.find((category) => category.id === tx.categoryId)?.name || current.name;
+      grouped.set(tx.categoryId, current);
+    });
+    const total = [...grouped.values()].reduce((sum, item) => sum + item.amount, 0);
+    return [...grouped.values()].map((item) => ({
+      tong_chi_danh_muc: item.amount,
+      ty_le_phan_tram: total > 0 ? Math.round(item.amount / total * 10000) / 100 : 0,
+      danh_muc: { ten_danh_muc: item.name },
+    })).sort((a, b) => b.tong_chi_danh_muc - a.tong_chi_danh_muc);
+  }, [categories, liveReports, selectedId, transactions]);
   const visibleDetails = shared
     ? (shared.chi_tiet ?? []).map((row) => ({ ...row, danh_muc: { ten_danh_muc: row.ten_danh_muc } }))
-    : details;
-  const chartReports = useMemo(() => [...reports].reverse(), [reports]);
+    : liveDetails;
+  const chartReports = useMemo(() => [...liveReports].reverse(), [liveReports]);
   const maxExpense = Math.max(...chartReports.map((row) => Number(row.tong_chi) || 0), 1);
   const totalDetails = visibleDetails.reduce((sum, row) => sum + Number(row.tong_chi_danh_muc || 0), 0);
   const donutBackground = visibleDetails.length && totalDetails > 0
