@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { useTransactions } from "../../controllers/useTransactions";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 function TransactionSelect({ value, onChange, options, label }) {
   const menuRef = useRef(null);
@@ -52,6 +53,9 @@ export default function Transactions({
     submit,
     edit,
     remove,
+    pendingDelete,
+    confirmRemove,
+    cancelRemove,
     resetForm,
   } = useTransactions(query, t, userId, onDataChanged, onTransactionDeleted);
   const hasFilters = Object.values(filters).some(Boolean);
@@ -60,6 +64,7 @@ export default function Transactions({
 
   return (
     <>
+      <ConfirmDialog open={Boolean(pendingDelete)} title={tr.deleteTitle} message={pendingDelete ? tr.confirmDelete(pendingDelete.name) : ""} confirmLabel={tr.deleteAction} cancelLabel={tr.cancel} busy={saving} onConfirm={confirmRemove} onCancel={cancelRemove} />
       <div className="transactions-layout">
         <div className="card glass transaction-form-card">
           <div className="card-h">

@@ -192,6 +192,8 @@ export const i18n = {
       noteTooLong: "Ghi chú không được vượt quá 255 ký tự.",
       futureDate: "Ngày giao dịch không được lớn hơn hôm nay.",
       confirmDelete: (name) => `Bạn có chắc muốn xóa giao dịch “${name}” không?`,
+      deleteTitle: "Xóa giao dịch?",
+      deleteAction: "Xóa giao dịch",
     },
 
     chat: {
@@ -247,6 +249,11 @@ export const i18n = {
       deleteLabel: "Xóa danh mục",
       confirmDelete: (name) => `Bạn có chắc muốn xóa danh mục “${name}” không?`,
       confirmHide: (name) => `Danh mục “${name}” đang có giao dịch. Bạn có muốn ẩn danh mục này để giữ nguyên lịch sử không?`,
+      deleteTitle: "Xóa danh mục?",
+      hideTitle: "Ẩn danh mục?",
+      deleteAction: "Xóa danh mục",
+      hideAction: "Ẩn danh mục",
+      cancelAction: "Hủy",
       hiddenWithTransactions: "Danh mục có giao dịch đã được ẩn để giữ nguyên lịch sử.",
       alreadyExists: (name) => `Danh mục “${name}” đã tồn tại. Vui lòng chọn tên khác.`,
     },
@@ -538,6 +545,8 @@ export const i18n = {
       noteTooLong: "The note cannot exceed 255 characters.",
       futureDate: "The transaction date cannot be later than today.",
       confirmDelete: (name) => `Are you sure you want to delete “${name}”?`,
+      deleteTitle: "Delete transaction?",
+      deleteAction: "Delete transaction",
     },
 
     chat: {
@@ -592,6 +601,11 @@ export const i18n = {
       deleteLabel: "Delete category",
       confirmDelete: (name) => `Are you sure you want to delete the “${name}” category?`,
       confirmHide: (name) => `The “${name}” category has transactions. Do you want to hide it and preserve its history?`,
+      deleteTitle: "Delete category?",
+      hideTitle: "Hide category?",
+      deleteAction: "Delete category",
+      hideAction: "Hide category",
+      cancelAction: "Cancel",
       hiddenWithTransactions: "The category was hidden to preserve its transaction history.",
       alreadyExists: (name) => `The “${name}” category already exists. Please choose another name.`,
     },

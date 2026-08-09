@@ -2,6 +2,7 @@ import { useRef } from "react";
 import "../css/pages/categories-form.css";
 import { CATEGORY_ICONS } from "../../models/danhMucData";
 import { useCategories } from "../../controllers/useCategories";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 function CatCard({ c, type, t, onDelete, onEdit }) {
   return (
@@ -86,6 +87,9 @@ export default function Categories({ t, userId, onDataChanged }) {
     setSelectedIcon,
     handleAddCategory,
     handleDeleteCategory,
+    pendingDelete,
+    confirmDeleteCategory,
+    cancelDeleteCategory,
     handleEditCategory,
     handleCloseForm,
   } = useCategories(userId, onDataChanged, c);
@@ -95,6 +99,17 @@ export default function Categories({ t, userId, onDataChanged }) {
   const customCategoryCount = categories.length - defaultCategoryCount;
 
   return (
+    <>
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        title={pendingDelete?.mode === "hide" ? c.hideTitle : c.deleteTitle}
+        message={pendingDelete ? (pendingDelete.mode === "hide" ? c.confirmHide(pendingDelete.cat.name) : c.confirmDelete(pendingDelete.cat.name)) : ""}
+        confirmLabel={pendingDelete?.mode === "hide" ? c.hideAction : c.deleteAction}
+        cancelLabel={c.cancelAction}
+        busy={saving}
+        onConfirm={confirmDeleteCategory}
+        onCancel={cancelDeleteCategory}
+      />
     <div className="card glass">
       <div className="card-h">
         <div>
@@ -221,6 +236,7 @@ export default function Categories({ t, userId, onDataChanged }) {
       </div>
      
     </div>
+    </>
   );
 }
 

@@ -21,6 +21,7 @@ export function useCategories(userId, onDataChanged, text) {
   const [newType, setNewType] = useState("out");
   const [selectedIcon, setSelectedIcon] = useState("📌");
   const [editingId, setEditingId] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   // Không setState đồng bộ ở đây: hàm được gọi thẳng trong useEffect, mọi
   // cập nhật state phải nằm sau await để tránh cascading render.
@@ -112,18 +113,30 @@ export function useCategories(userId, onDataChanged, text) {
     setError("");
     try {
       const canDelete = await canDeleteCategory(id);
-      if (canDelete) {
-        if (!window.confirm(text.confirmDelete(cat.name))) return;
-        await deleteCategory(id);
-      } else {
-        if (!window.confirm(text.confirmHide(cat.name))) return;
-        await hideCategory(id);
-        setError(text.hiddenWithTransactions);
-      }
-      setCats((list) => list.filter((c) => c.id !== id));
-      await onDataChanged?.();
+      setPendingDelete({ cat, mode: canDelete ? "delete" : "hide" });
     } catch (e) {
       setError(e.message || "Không thể xoá danh mục.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function confirmDeleteCategory() {
+    if (!pendingDelete || saving) return;
+    const { cat, mode } = pendingDelete;
+    setSaving(true);
+    setError("");
+    try {
+      if (mode === "delete") await deleteCategory(cat.id);
+      else {
+        await hideCategory(cat.id);
+        setError(text.hiddenWithTransactions);
+      }
+      setCats((list) => list.filter((item) => item.id !== cat.id));
+      setPendingDelete(null);
+      await onDataChanged?.();
+    } catch (e) {
+      setError(e.message);
     } finally {
       setSaving(false);
     }
@@ -154,6 +167,9 @@ export function useCategories(userId, onDataChanged, text) {
     setSelectedIcon,
     handleAddCategory,
     handleDeleteCategory,
+    pendingDelete,
+    confirmDeleteCategory,
+    cancelDeleteCategory: () => !saving && setPendingDelete(null),
     handleEditCategory,
     handleCloseForm: resetForm,
     reload,
