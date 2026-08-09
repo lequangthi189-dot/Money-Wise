@@ -339,7 +339,6 @@ select option:hover {
 }
 .streak-lost-reasons b, .streak-lost-reasons span { display: block; }
 .streak-lost-reasons b { color: var(--warn); margin-bottom: 3px; }
-.streak-lost-reasons ul { margin: 5px 0 0 16px; }
 
 @media (max-width: 480px) {
   .card-h {

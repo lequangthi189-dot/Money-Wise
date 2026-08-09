@@ -620,7 +620,7 @@ export default function Profile({
                 <div className="streak-lost-reasons">
                   <b>{p.streakLostTitle}</b>
                   <span>{p.streakLostReason(streak.ghiChep.lastDate ? new Date(`${streak.ghiChep.lastDate}T00:00:00`).toLocaleDateString("vi-VN") : p.unknownDate)}</span>
-                  <ul><li>{p.streakLostMissingDay}</li><li>{p.streakLostDeletedDay}</li></ul>
+                  <span>{p.streakLostMissingDay}</span>
                 </div>
               )}
             </div>
