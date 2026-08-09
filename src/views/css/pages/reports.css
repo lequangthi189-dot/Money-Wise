@@ -115,14 +115,14 @@
 .report-panel-head h3 { font-size: .95rem; }
 .report-panel-head > span { color: var(--text-dim); font-size: .72rem; }
 .report-panel-head p { margin: 5px 0 0; font-size: .78rem; }
-.report-donut-layout { display: flex; align-items: center; gap: 28px; min-height: 180px; }
-.report-donut { width: 142px; height: 142px; flex: 0 0 auto; border-radius: 50%; padding: 18px; }
+.report-donut-layout { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 24px; min-height: 120px; }
+.report-donut { width: 112px; height: 112px; flex: 0 0 auto; border-radius: 50%; padding: 14px; }
 .report-donut > div { width: 100%; height: 100%; border-radius: 50%; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.report-donut b { font-size: 1rem; }
-.report-donut small { color: var(--text-dim); font-size: .68rem; }
-.report-legend { flex: 1; display: grid; gap: 10px; min-width: 0; }
-.report-legend > div { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 9px; align-items: center; font-size: .78rem; }
-.report-legend span { width: 10px; height: 10px; border-radius: 3px; }
+.report-donut b { font-size: .92rem; }
+.report-donut small { color: var(--text-dim); font-size: .62rem; }
+.report-legend { display: grid; gap: 8px; min-width: 0; }
+.report-legend > div { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 18px; font-size: .75rem; }
+.report-legend span { width: 8px; height: 8px; border-radius: 2px; }
 .report-legend label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .report-bars { height: 180px; display: flex; align-items: end; gap: 14px; padding-top: 8px; }
 .report-bar-column { height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 8px; }
@@ -142,7 +142,7 @@
 @media (max-width: 560px) {
   .reports-toolbar { align-items: stretch; flex-direction: column; }
   .reports-toolbar select { width: 100%; }
-  .report-donut-layout { align-items: stretch; flex-direction: column; }
+  .report-donut-layout { grid-template-columns: 1fr; align-items: stretch; }
   .report-donut { align-self: center; }
   .report-code-lookup { flex-direction: column; }
 }
