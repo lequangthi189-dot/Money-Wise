@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AUTH_TEXT, AUTH_THEMES } from "../models/authData";
 import { supabase } from "../models/supabase";
 import {
@@ -35,6 +35,31 @@ function translateAuthError(err, tr) {
   return err?.message || tr.errNetwork;
 }
 
+function passwordResetRedirectUrl() {
+  const configured = import.meta.env.VITE_APP_URL?.trim();
+  if (!configured) return window.location.origin;
+
+  try {
+    const url = new URL(configured);
+    const configuredIsLocal = ["localhost", "127.0.0.1"].includes(url.hostname);
+    const currentIsLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+
+    // Không để một biến môi trường cũ kéo bản production quay về localhost.
+    if (configuredIsLocal && !currentIsLocal) return window.location.origin;
+    return url.origin;
+  } catch {
+    return window.location.origin;
+  }
+}
+
+function recoveryErrorFromUrl(tr) {
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const code = params.get("error_code");
+  if (!code) return "";
+  if (code === "otp_expired" || code === "access_denied") return tr.errResetExpired;
+  return params.get("error_description")?.replaceAll("+", " ") || tr.errResetExpired;
+}
+
 // Controller: màn hình đăng nhập/đăng ký/quên mật khẩu.
 // Quản lý form, chế độ (login|register|forgot), kiểm tra hợp lệ và theme/ngôn ngữ.
 export function useAuth({
@@ -65,9 +90,10 @@ export function useAuth({
   // đọc một lần, mà cờ này có thể bật lên SAU khi Auth đã mount (thứ tự sự
   // kiện của supabase-js không đảm bảo). Suy ra mode thay vì lưu, để cờ bật
   // lúc nào cũng vào đúng màn đặt lại mật khẩu.
-  const [modeLocal, setMode] = useState("login");
+  const recoveryUrlError = recoveryErrorFromUrl(tr);
+  const [modeLocal, setMode] = useState(() => recoveryUrlError ? "forgot" : "login");
   const mode = passwordRecovery ? "reset" : modeLocal;
-  const [error, setError] = useState("");
+  const [error, setError] = useState(recoveryUrlError);
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false); // chặn bấm nút 2 lần khi đang gọi API
   const [form, setForm] = useState({
@@ -83,6 +109,11 @@ export function useAuth({
   const isLogin = mode === "login";
   const isForgot = mode === "forgot";
   const isReset = mode === "reset";
+
+  useEffect(() => {
+    if (!recoveryUrlError) return;
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+  }, [recoveryUrlError]);
 
   function switchMode(m) {
     setMode(m);
@@ -198,7 +229,7 @@ export function useAuth({
     try {
       const { error: err } = await supabase.auth.resetPasswordForEmail(
         form.email,
-        { redirectTo: window.location.origin },
+        { redirectTo: passwordResetRedirectUrl() },
       );
       if (err) return setError(translateAuthError(err, tr));
       setInfo(tr.resetSent);
