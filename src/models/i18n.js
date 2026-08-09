@@ -216,6 +216,11 @@ export const i18n = {
       save: "✓ Lưu",
       retry: "Nhập lại",
       placeholder: "Nhập khoản thu hoặc chi…",
+      askType: "Đây là khoản thu hay khoản chi?",
+      askCategory: "Khoản này thuộc danh mục nào?",
+      askMethod: "Bạn thanh toán hoặc nhận tiền bằng phương thức nào?",
+      askDate: "Giao dịch diễn ra ngày nào? Nếu không nhập, hệ thống dùng hôm nay.",
+      readyToConfirm: "Mình đã điền đủ thông tin. Bạn hãy kiểm tra và xác nhận lưu giao dịch.",
     },
 
     // ----- Danh mục -----
@@ -242,6 +247,7 @@ export const i18n = {
 
     // ----- Hạn mức -----
     budgets: {
+      selectMonth: "Chọn tháng",
       totalTitle: (month) => `Hạn mức tổng tháng ${month}`,
       spentOver: (total) => `đã tiêu trên ${total}`,
       usedPct: (pct) => `${pct} đã dùng`,
@@ -548,6 +554,11 @@ export const i18n = {
       save: "✓ Save",
       retry: "Start over",
       placeholder: "Enter an income or expense…",
+      askType: "Is this income or an expense?",
+      askCategory: "Which category does this transaction belong to?",
+      askMethod: "Which payment method did you use?",
+      askDate: "When did the transaction occur? Today is used when no date is provided.",
+      readyToConfirm: "All required information is ready. Review it and confirm to save the transaction.",
     },
 
     categories: {
@@ -572,6 +583,7 @@ export const i18n = {
     },
 
     budgets: {
+      selectMonth: "Select month",
       totalTitle: (month) => `Total budget for month ${month}`,
       spentOver: (total) => `spent of ${total}`,
       usedPct: (pct) => `${pct} used`,

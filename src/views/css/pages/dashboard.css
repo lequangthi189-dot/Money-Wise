@@ -255,3 +255,16 @@
     font-size: 0.78rem;
   }
 }
+.dashboard-view-all {
+  border: 0;
+  padding: 4px 0;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font: inherit;
+}
+
+.dashboard-view-all:hover,
+.dashboard-view-all:focus-visible {
+  color: var(--accent);
+}

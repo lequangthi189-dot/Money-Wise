@@ -309,6 +309,7 @@ export default function App() {
                   streak={streak}
                   onDataChanged={reloadChangedData}
                   onOpenChat={() => setChatOpen(true)}
+                  onOpenTransactions={() => setView("transactions")}
                 />
               )}
             </section>
