@@ -109,6 +109,10 @@ export function AppDataProvider({ children }) {
     return row;
   }, []);
 
+  const removeTransactionLocally = useCallback((id) => {
+    setTransactions((prev) => prev.filter((transaction) => String(transaction.id) !== String(id)));
+  }, []);
+
   const value = useMemo(
     () => ({
       categories,
@@ -125,6 +129,7 @@ export function AppDataProvider({ children }) {
       setCategoryBudget,
       setTotalLimit,
       addTransaction,
+      removeTransactionLocally,
     }),
     [
       categories,
@@ -141,6 +146,7 @@ export function AppDataProvider({ children }) {
       setCategoryBudget,
       setTotalLimit,
       addTransaction,
+      removeTransactionLocally,
     ]
   );
 

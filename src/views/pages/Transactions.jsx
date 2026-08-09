@@ -29,6 +29,7 @@ export default function Transactions({
   t,
   userId,
   onDataChanged,
+  onTransactionDeleted,
   onOpenChat,
 }) {
   const tr = t.transactions;
@@ -52,7 +53,7 @@ export default function Transactions({
     edit,
     remove,
     resetForm,
-  } = useTransactions(query, t, userId, onDataChanged);
+  } = useTransactions(query, t, userId, onDataChanged, onTransactionDeleted);
   const hasFilters = Object.values(filters).some(Boolean);
   const categoryOptions = [{ value: "", label: "—" }, ...cats.map((category) => ({ value: category.id, label: `${category.icon} ${category.name}` }))];
   const methodOptions = [{ value: "", label: "—" }, ...methods.map((method) => ({ value: method.id, label: t.methods[method.mkey] ?? method.name }))];

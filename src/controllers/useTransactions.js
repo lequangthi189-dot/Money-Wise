@@ -25,7 +25,7 @@ const FILTER_RONG = {
 
 // Controller: danh sách giao dịch từ Supabase + form thêm/sửa/xoá.
 // Lọc theo từ khoá tìm kiếm (nội dung, danh mục, phương thức, số tiền, ngày).
-export function useTransactions(query, t, userId, onDataChanged) {
+export function useTransactions(query, t, userId, onDataChanged, onTransactionDeleted) {
   const [txns, setTxns] = useState([]);
   const [cats, setCats] = useState([]);
   const [methods, setMethods] = useState([]);
@@ -162,6 +162,7 @@ export function useTransactions(query, t, userId, onDataChanged) {
       if (editingId === id) resetForm();
       await reload();
       await onDataChanged?.();
+      onTransactionDeleted?.(id);
     } catch (e) {
       setError(e.message);
     } finally {
