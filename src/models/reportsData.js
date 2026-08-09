@@ -39,7 +39,7 @@ export async function createShareCode(reportId) {
 }
 
 export async function fetchSharedReport(code) {
-  const normalizedCode = code.trim().toUpperCase();
+  const normalizedCode = code.trim();
   if (!normalizedCode) return null;
   const { data, error } = await supabase.rpc("xem_bao_cao_qua_ma", {
     p_ma_chia_se: normalizedCode,

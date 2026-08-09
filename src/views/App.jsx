@@ -104,7 +104,7 @@ export default function App() {
     const pathMatch = window.location.pathname.match(/\/share\/([^/?#]+)/i);
     const queryCode = new URLSearchParams(window.location.search).get("share");
     const raw = hashMatch?.[1] ?? pathMatch?.[1] ?? queryCode;
-    return raw ? decodeURIComponent(raw).trim().toUpperCase() : "";
+    return raw ? decodeURIComponent(raw).trim() : "";
   })();
 
   // Đang khôi phục session từ localStorage: chưa biết có đăng nhập hay
