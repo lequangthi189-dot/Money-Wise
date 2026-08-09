@@ -205,7 +205,7 @@ export default function Transactions({
                   <strong className={"amt " + tx.type}>{tx.amount}</strong>
                   <div className="transaction-actions">
                     <button type="button" onClick={() => edit(tx)} disabled={saving} title={tr.actions}><svg width="15" height="15"><use href="#i-edit" /></svg></button>
-                    <button type="button" onClick={() => remove(tx.id)} disabled={saving} title={tr.actions}><svg width="15" height="15"><use href="#i-trash" /></svg></button>
+                    <button type="button" onClick={() => remove(tx)} disabled={saving} title={tr.actions}><svg width="15" height="15"><use href="#i-trash" /></svg></button>
                   </div>
                 </article>
               ))}
