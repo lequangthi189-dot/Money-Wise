@@ -5,7 +5,7 @@ export default function Dashboard({ t, streak, onOpenTransactions }) {
   const {
     legend, donut, goals, recent, totalSpentLabel,
     spentToday, spentWeek, txCountToday,
-    balance, streak: streakDays, streakRecord, budgetAlert, balanceChange, weekChange, monthLabel,
+    balance, streak: streakDays, streakRecord, streakLastDate, budgetAlert, balanceChange, weekChange, monthLabel,
   } = useDashboard(t, streak);
 
   return (
@@ -49,6 +49,9 @@ export default function Dashboard({ t, streak, onOpenTransactions }) {
             {streakDays} <span style={{ fontSize: "1rem", color: "var(--text-dim)" }}>{d.days}</span>
           </div>
           <span className="chg up">{d.record(streakRecord)}</span>
+          {streakDays === 0 && streakRecord > 0 && (
+            <small className="streak-lost-note">{d.streakLostReason(streakLastDate ? new Date(`${streakLastDate}T00:00:00`).toLocaleDateString("vi-VN") : d.unknownDate)}</small>
+          )}
         </div>
       </div>
 
