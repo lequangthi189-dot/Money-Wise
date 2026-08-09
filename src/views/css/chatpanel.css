@@ -199,10 +199,20 @@
   color: var(--accent);
 }
 .parsed .pr input,
-.parsed .pr select {
+.parsed .pr select,
+.parsed .pr textarea {
   width: 62%;
   min-width: 0;
 }
+.parsed .pr textarea {
+  min-height: 64px;
+  max-height: 150px;
+  padding: 8px 10px;
+  resize: vertical;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.parsed .pr-note { align-items: flex-start; }
 .parsed .pbtn {
   display: flex;
   gap: 8px;
@@ -277,5 +287,6 @@
   .msg { max-width: 94%; padding: 9px 11px; }
   .parsed .pr { align-items: flex-start; flex-direction: column; gap: 4px; }
   .parsed .pr input,
-  .parsed .pr select { width: 100%; }
+  .parsed .pr select,
+  .parsed .pr textarea { width: 100%; }
 }
