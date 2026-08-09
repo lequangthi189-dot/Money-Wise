@@ -36,8 +36,11 @@ export function parseMoney(text) {
     return Number.isFinite(numeric) ? Math.round(numeric * multiplier) : NaN;
   }
 
-  const digits = input.replace(/[^\d]/g, "");
-  return digits === "" ? NaN : Number(digits);
+  // Số tiền đầy đủ chỉ được chứa chữ số và dấu phân cách. Không tự ý bỏ chữ
+  // khỏi chuỗi, vì "abc98035" không phải là một số tiền hợp lệ.
+  if (!/^\d+(?:[.,]\d+)*$/.test(compact)) return NaN;
+  const digits = compact.replace(/[.,]/g, "");
+  return Number(digits);
 }
 
 // "2026-06-25" -> "25/06"
