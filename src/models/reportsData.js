@@ -38,8 +38,26 @@ export async function createShareCode(reportId) {
   return data;
 }
 
+function normalizeShareCode(value) {
+  const input = String(value ?? "").trim();
+  if (!input) return "";
+
+  try {
+    const url = new URL(input);
+    const hashMatch = url.hash.match(/^#\/share\/([^/?#]+)/i);
+    const pathMatch = url.pathname.match(/\/share\/([^/?#]+)/i);
+    const queryCode = url.searchParams.get("share");
+    const code = hashMatch?.[1] ?? pathMatch?.[1] ?? queryCode;
+    if (code) return decodeURIComponent(code).trim().toLowerCase();
+  } catch {
+    // Khong phai URL: coi gia tri nhap vao la ma chia se truc tiep.
+  }
+
+  return input.toLowerCase();
+}
+
 export async function fetchSharedReport(code) {
-  const normalizedCode = code.trim();
+  const normalizedCode = normalizeShareCode(code);
   if (!normalizedCode) return null;
   const { data, error } = await supabase.rpc("xem_bao_cao_qua_ma", {
     p_ma_chia_se: normalizedCode,
