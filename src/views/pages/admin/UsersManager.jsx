@@ -4,7 +4,7 @@ import { Icon } from "../../components/icons";
 
 export default function UsersManager({ at, currentEmail }) {
   const u = at.users;
-  const { users, loading, error, toggleBan, toggleAdmin, isSelf } =
+  const { users, loading, error, toggleBan, toggleAdmin, isSelf, isRootAdmin } =
     useAdmin(currentEmail);
 
   return (
@@ -58,6 +58,12 @@ export default function UsersManager({ at, currentEmail }) {
                 const isAdmin = usr.role === ROLES.ADMIN;
                 const isBanned = usr.status === "banned";
                 const self = isSelf(usr);
+                // Admin gốc không bị thu hồi quyền, kể cả bởi admin khác.
+                const rootLocked = isAdmin && isRootAdmin(usr);
+                const adminBlocked = self || rootLocked;
+                const adminBlockedMsg = self
+                  ? u.selfActionBlocked
+                  : u.rootAdminBlocked;
                 return (
                   <tr key={usr.id} style={{ borderTop: "1px solid var(--border)" }}>
                     <td style={tdStyle}>
@@ -103,10 +109,11 @@ export default function UsersManager({ at, currentEmail }) {
                         <button
                           className="btn"
                           style={actionButtonStyle}
-                          disabled={self}
-                          title={self ? u.selfActionBlocked : undefined}
+                          disabled={adminBlocked}
+                          title={adminBlocked ? adminBlockedMsg : undefined}
                           onClick={() => {
-                            if (self) return window.alert(u.selfActionBlocked);
+                            if (adminBlocked)
+                              return window.alert(adminBlockedMsg);
                             const msg = isAdmin
                               ? u.confirmRevokeAdmin(usr.name)
                               : u.confirmMakeAdmin(usr.name);

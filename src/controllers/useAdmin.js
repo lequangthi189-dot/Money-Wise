@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { adminUpdateAccount, fetchUsers } from "../models/quanTriData";
-import { ROLES } from "../models/constants";
+import { ROLES, ROOT_ADMIN_EMAIL } from "../models/constants";
 
 // Controller: danh sách tài khoản cho khu vực quản trị.
 // Mọi thay đổi đi qua RPC quan_tri_cap_nhat_tai_khoan; DB tự chặn admin
-// thao tác lên chính mình, ở đây chặn thêm để nút bị disable từ trước.
+// thao tác lên chính mình và chặn thu hồi quyền của admin gốc, ở đây chặn
+// thêm để nút bị disable từ trước.
 export function useAdmin(currentEmail) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,9 +54,16 @@ export function useAdmin(currentEmail) {
     return true;
   }
 
+  // Admin gốc luôn giữ quyền admin. Chỉ chặn chiều thu hồi, chiều cấp lại
+  // vẫn để mở phòng khi tài khoản này rơi về user vì lý do nào đó.
+  function isRootAdmin(user) {
+    return user.email.toLowerCase() === ROOT_ADMIN_EMAIL.toLowerCase();
+  }
+
   async function toggleAdmin(user) {
     if (isSelf(user)) return false;
     const nextRole = user.role === ROLES.ADMIN ? ROLES.USER : ROLES.ADMIN;
+    if (nextRole === ROLES.USER && isRootAdmin(user)) return false;
     try {
       await adminUpdateAccount(
         user.id,
@@ -71,5 +79,5 @@ export function useAdmin(currentEmail) {
     return true;
   }
 
-  return { users, loading, error, toggleBan, toggleAdmin, isSelf };
+  return { users, loading, error, toggleBan, toggleAdmin, isSelf, isRootAdmin };
 }
