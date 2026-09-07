@@ -17,9 +17,9 @@ Supabase SQL editor.
   when a page fails with `permission denied for table <name>`: that means the
   `authenticated` role is missing a GRANT, since row level security produces
   different errors.
-- `db/bao_ve_admin_goc.sql` — trigger that stops any admin from revoking the root
-  admin's role. The client side check in `src/models/constants.js` only disables the
-  button; this script is the actual protection.
+- `db/bao_ve_admin_goc.sql` — triggers that stop any admin from banning, demoting or
+  deleting the root admin. The client side check in `src/models/constants.js` only
+  disables the buttons; this script is the actual protection.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

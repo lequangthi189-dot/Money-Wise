@@ -38,7 +38,7 @@ export const ADMIN_TEXT = {
       confirmMakeAdmin: (name) => `Cấp quyền admin cho ${name}?`,
       confirmRevokeAdmin: (name) => `Thu hồi quyền admin của ${name}?`,
       selfActionBlocked: "Bạn không thể tự khóa hoặc thu hồi quyền admin của chính mình.",
-      rootAdminBlocked: "Đây là admin chính của hệ thống, không thể thu hồi quyền admin.",
+      rootAdminBlocked: "Đây là admin chính của hệ thống, không thể khóa hoặc thu hồi quyền admin.",
     },
     stats: {
       totalUsers: "Tổng người dùng",
@@ -85,7 +85,7 @@ export const ADMIN_TEXT = {
       confirmMakeAdmin: (name) => `Grant admin to ${name}?`,
       confirmRevokeAdmin: (name) => `Revoke admin from ${name}?`,
       selfActionBlocked: "You cannot ban or revoke your own admin rights.",
-      rootAdminBlocked: "This is the system's main admin; their admin rights cannot be revoked.",
+      rootAdminBlocked: "This is the system's main admin; it cannot be banned and its admin rights cannot be revoked.",
     },
     stats: {
       totalUsers: "Total users",

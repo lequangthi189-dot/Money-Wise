@@ -58,10 +58,13 @@ export default function UsersManager({ at, currentEmail }) {
                 const isAdmin = usr.role === ROLES.ADMIN;
                 const isBanned = usr.status === "banned";
                 const self = isSelf(usr);
-                // Admin gốc không bị thu hồi quyền, kể cả bởi admin khác.
-                const rootLocked = isAdmin && isRootAdmin(usr);
-                const adminBlocked = self || rootLocked;
-                const adminBlockedMsg = self
+                // Admin gốc không bị khoá cũng không bị thu hồi quyền, kể
+                // cả bởi admin khác. Chiều ngược lại (mở khoá, cấp lại quyền)
+                // vẫn để mở.
+                const root = isRootAdmin(usr);
+                const banBlocked = self || (root && !isBanned);
+                const adminBlocked = self || (root && isAdmin);
+                const blockedMsg = self
                   ? u.selfActionBlocked
                   : u.rootAdminBlocked;
                 return (
@@ -93,10 +96,10 @@ export default function UsersManager({ at, currentEmail }) {
                         <button
                           className="btn"
                           style={actionButtonStyle}
-                          disabled={self}
-                          title={self ? u.selfActionBlocked : undefined}
+                          disabled={banBlocked}
+                          title={banBlocked ? blockedMsg : undefined}
                           onClick={() => {
-                            if (self) return window.alert(u.selfActionBlocked);
+                            if (banBlocked) return window.alert(blockedMsg);
                             const msg = isBanned
                               ? u.confirmUnban(usr.name)
                               : u.confirmBan(usr.name);
@@ -110,10 +113,9 @@ export default function UsersManager({ at, currentEmail }) {
                           className="btn"
                           style={actionButtonStyle}
                           disabled={adminBlocked}
-                          title={adminBlocked ? adminBlockedMsg : undefined}
+                          title={adminBlocked ? blockedMsg : undefined}
                           onClick={() => {
-                            if (adminBlocked)
-                              return window.alert(adminBlockedMsg);
+                            if (adminBlocked) return window.alert(blockedMsg);
                             const msg = isAdmin
                               ? u.confirmRevokeAdmin(usr.name)
                               : u.confirmMakeAdmin(usr.name);

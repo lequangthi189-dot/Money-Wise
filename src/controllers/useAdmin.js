@@ -4,8 +4,8 @@ import { ROLES, ROOT_ADMIN_EMAIL } from "../models/constants";
 
 // Controller: danh sách tài khoản cho khu vực quản trị.
 // Mọi thay đổi đi qua RPC quan_tri_cap_nhat_tai_khoan; DB tự chặn admin
-// thao tác lên chính mình và chặn thu hồi quyền của admin gốc, ở đây chặn
-// thêm để nút bị disable từ trước.
+// thao tác lên chính mình, và trigger chặn khoá/hạ quyền/xoá admin gốc; ở
+// đây chặn thêm để nút bị disable từ trước.
 export function useAdmin(currentEmail) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,9 +36,17 @@ export function useAdmin(currentEmail) {
     );
   }
 
+  // Admin gốc: không khoá, không hạ vai trò. Chỉ chặn chiều gây hại — mở
+  // khoá và cấp lại quyền vẫn để mở, phòng khi tài khoản rơi vào trạng thái
+  // đó vì lý do nào đó.
+  function isRootAdmin(user) {
+    return user.email.toLowerCase() === ROOT_ADMIN_EMAIL.toLowerCase();
+  }
+
   async function toggleBan(user) {
     if (isSelf(user)) return false;
     const nextStatus = user.status === "banned" ? "active" : "banned";
+    if (nextStatus === "banned" && isRootAdmin(user)) return false;
     try {
       await adminUpdateAccount(
         user.id,
@@ -52,12 +60,6 @@ export function useAdmin(currentEmail) {
       list.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u)),
     );
     return true;
-  }
-
-  // Admin gốc luôn giữ quyền admin. Chỉ chặn chiều thu hồi, chiều cấp lại
-  // vẫn để mở phòng khi tài khoản này rơi về user vì lý do nào đó.
-  function isRootAdmin(user) {
-    return user.email.toLowerCase() === ROOT_ADMIN_EMAIL.toLowerCase();
   }
 
   async function toggleAdmin(user) {
