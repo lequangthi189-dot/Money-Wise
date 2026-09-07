@@ -17,6 +17,7 @@ import { ADMIN_TEXT } from "../models/adminData";
 import { useApp } from "../controllers/useApp";
 import { Icon, Sprite, FlagVN, FlagGB } from "./components/icons";
 import ChatPanel from "./components/ChatPanel";
+import ChatFab from "./components/ChatFab";
 import SearchBar from "./components/SearchBar";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
@@ -314,9 +315,7 @@ export default function App() {
         </main>
       </div>
 
-      <button className="fab" onClick={() => setChatOpen((o) => !o)}>
-        <Icon n="i-msg" size={26} />
-      </button>
+      <ChatFab label={t.chat.title} onToggle={() => setChatOpen((o) => !o)} />
       {chatOpen && <ChatPanel
         t={t}
         userId={userId}
