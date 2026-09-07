@@ -7,6 +7,14 @@ for example `https://money-wise.example.com`. Add the same origin to Supabase un
 Authentication > URL Configuration > Redirect URLs. Keep the local development URL
 as a separate allowed redirect when needed.
 
+## Database permissions
+
+Supabase table privileges are not stored in this repository. When a page fails with
+`permission denied for table <name>`, the `authenticated` role is missing a GRANT on
+that table — row level security produces different errors. Run the matching script in
+`db/` from the Supabase SQL editor, for example
+`db/fix_quyen_muc_tieu_tiet_kiem.sql` for the savings goals page.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
