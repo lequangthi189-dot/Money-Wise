@@ -18,6 +18,12 @@ export const ROLES = {
   USER: "user",
 };
 
+// Admin gốc của hệ thống: không admin nào được thu hồi quyền admin của tài
+// khoản này. Chặn thật nằm ở trigger tg_chan_thu_hoi_admin_goc dưới DB
+// (xem db/bao_ve_admin_goc.sql) — hằng số ở đây chỉ để tắt nút cho khớp,
+// vì bất kỳ ai cũng có thể gọi thẳng RPC mà không đi qua giao diện.
+export const ROOT_ADMIN_EMAIL = "lqthi4006@gmail.com";
+
 // Menu riêng cho khu vực quản trị (admin). Tách khỏi NAV vì admin không
 // dùng các trang cá nhân (transactions, budgets, goals... của user thường).
 export const ADMIN_NAV = [

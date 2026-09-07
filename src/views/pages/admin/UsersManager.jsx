@@ -4,7 +4,7 @@ import { Icon } from "../../components/icons";
 
 export default function UsersManager({ at, currentEmail }) {
   const u = at.users;
-  const { users, loading, error, toggleBan, toggleAdmin, isSelf } =
+  const { users, loading, error, toggleBan, toggleAdmin, isSelf, isRootAdmin } =
     useAdmin(currentEmail);
 
   return (
@@ -58,6 +58,15 @@ export default function UsersManager({ at, currentEmail }) {
                 const isAdmin = usr.role === ROLES.ADMIN;
                 const isBanned = usr.status === "banned";
                 const self = isSelf(usr);
+                // Admin gốc không bị khoá cũng không bị thu hồi quyền, kể
+                // cả bởi admin khác. Chiều ngược lại (mở khoá, cấp lại quyền)
+                // vẫn để mở.
+                const root = isRootAdmin(usr);
+                const banBlocked = self || (root && !isBanned);
+                const adminBlocked = self || (root && isAdmin);
+                const blockedMsg = self
+                  ? u.selfActionBlocked
+                  : u.rootAdminBlocked;
                 return (
                   <tr key={usr.id} style={{ borderTop: "1px solid var(--border)" }}>
                     <td style={tdStyle}>
@@ -87,10 +96,10 @@ export default function UsersManager({ at, currentEmail }) {
                         <button
                           className="btn"
                           style={actionButtonStyle}
-                          disabled={self}
-                          title={self ? u.selfActionBlocked : undefined}
+                          disabled={banBlocked}
+                          title={banBlocked ? blockedMsg : undefined}
                           onClick={() => {
-                            if (self) return window.alert(u.selfActionBlocked);
+                            if (banBlocked) return window.alert(blockedMsg);
                             const msg = isBanned
                               ? u.confirmUnban(usr.name)
                               : u.confirmBan(usr.name);
@@ -103,10 +112,10 @@ export default function UsersManager({ at, currentEmail }) {
                         <button
                           className="btn"
                           style={actionButtonStyle}
-                          disabled={self}
-                          title={self ? u.selfActionBlocked : undefined}
+                          disabled={adminBlocked}
+                          title={adminBlocked ? blockedMsg : undefined}
                           onClick={() => {
-                            if (self) return window.alert(u.selfActionBlocked);
+                            if (adminBlocked) return window.alert(blockedMsg);
                             const msg = isAdmin
                               ? u.confirmRevokeAdmin(usr.name)
                               : u.confirmMakeAdmin(usr.name);
