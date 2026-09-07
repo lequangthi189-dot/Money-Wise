@@ -60,11 +60,13 @@
 }
 
 /* bảng lịch sử đóng góp & lãi tích lũy */
-/* co theo nội dung: width 100% sẽ kéo giãn cột cho đầy card, các số nằm xa nhau
-   và cột cuối bị dính mép phải. Cha đã có overflow-x nên màn hẹp vẫn cuộn được. */
+/* Bảng chỉ có vài cột số ngắn nên chiều rộng phải chặn hai đầu: để width 100%
+   thì trên card rộng các cột bị kéo giãn ra xa nhau, còn để auto thì bảng co
+   sát nội dung, hụt hẳn so với card. Giãn theo card nhưng dừng ở 900px — vừa
+   đủ thoáng mà vẫn đọc thành một khối. Cha đã có overflow-x nên màn hẹp cuộn. */
 .goal-table {
-  width: auto;
-  max-width: 100%;
+  width: 100%;
+  max-width: 900px;
   border-collapse: collapse;
 }
 .goal-table th,
