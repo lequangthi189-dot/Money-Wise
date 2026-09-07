@@ -110,6 +110,8 @@ export default function Goals({ t, userId, onDataChanged }) {
       </div>
     </div>
     {editingId && <>
+      <div className="card glass" style={{ marginTop: 18, overflowX: "auto" }}><div className="card-h"><h3>{g.interestSchedule}</h3></div><table className="goal-table"><thead><tr><th>{g.period}</th><th className="num">{g.openingBalance}</th><th className="num">{g.duringPeriod}</th><th className="num">{g.interestEarned}</th><th className="num">{g.accumulatedInterest}</th><th className="num">{g.endingTotal}</th></tr></thead><tbody>{schedule.map((row) => <tr key={row.so_thu_tu_ky}><td>{row.so_thu_tu_ky}</td><td className="num">{money(row.so_du_dau_ky)}</td><td className="num">{money(row.so_tien_trong_ky)}</td><td className="num">{money(row.lai_phat_sinh)}</td><td className="num">{money(row.lai_tich_luy)}</td><td className="num">{money(row.tong_cuoi_ky)}</td></tr>)}</tbody></table></div>
+
       <div className="card glass" style={{ marginTop: 18 }}>
         <div className="card-h"><h3>{g.addContributionTitle}</h3></div>
         <div className="grid g-3" style={{ gap: 14 }}>
@@ -124,8 +126,6 @@ export default function Goals({ t, userId, onDataChanged }) {
         <div className="card-h"><h3>{g.contributionHistory}</h3></div>
         {contributions.length ? <table className="goal-table"><thead><tr><th>{g.contributionDate}</th><th className="num">{g.amount}</th><th>{g.note}</th></tr></thead><tbody>{contributions.map((row) => <tr key={row.ma_dong_gop}><td>{new Date(`${row.ngay_dong_gop}T00:00:00`).toLocaleDateString()}</td><td className="num">{money(row.so_tien)}</td><td>{row.ghi_chu || "—"}</td></tr>)}</tbody></table> : <p className="muted">{g.noContributions}</p>}
       </div>
-
-      <div className="card glass" style={{ marginTop: 18, overflowX: "auto" }}><div className="card-h"><h3>{g.interestSchedule}</h3></div><table className="goal-table"><thead><tr><th>{g.period}</th><th className="num">{g.openingBalance}</th><th className="num">{g.duringPeriod}</th><th className="num">{g.interestEarned}</th><th className="num">{g.accumulatedInterest}</th><th className="num">{g.endingTotal}</th></tr></thead><tbody>{schedule.map((row) => <tr key={row.so_thu_tu_ky}><td>{row.so_thu_tu_ky}</td><td className="num">{money(row.so_du_dau_ky)}</td><td className="num">{money(row.so_tien_trong_ky)}</td><td className="num">{money(row.lai_phat_sinh)}</td><td className="num">{money(row.lai_tich_luy)}</td><td className="num">{money(row.tong_cuoi_ky)}</td></tr>)}</tbody></table></div>
     </>}
   </>;
 }
