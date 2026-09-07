@@ -58,3 +58,36 @@
 .goalcard .forecast b {
   color: var(--accent);
 }
+
+/* bảng lịch sử đóng góp & lãi tích lũy */
+.goal-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.goal-table th,
+.goal-table td {
+  padding: 13px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+}
+.goal-table th {
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.goal-table td {
+  font-size: 0.82rem;
+}
+.goal-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+/* cột tiền: căn phải để hàng đơn vị thẳng cột, chữ số đều bề ngang */
+.goal-table .num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
