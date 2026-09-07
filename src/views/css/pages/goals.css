@@ -96,3 +96,44 @@
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+
+/* Bố cục trang theo mockup: khung nội dung canh giữa, chia hai cột — danh sách
+   mục tiêu và các bảng bên trái, form tạo/sửa và form đóng góp bên phải. */
+.goal-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.goal-layout {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+/* Mỗi cột là một chồng card xếp dọc; align-content giữ cho card không bị kéo
+   giãn cho bằng chiều cao cột bên kia. min-width chặn bảng rộng làm phình cột. */
+.goal-col {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  min-width: 0;
+}
+/* Cột phải hẹp nên ô nhập xếp dọc, không dàn ngang như lưới g-3 trước đây.
+   .field sẵn có margin-bottom nên bỏ đi, để gap của grid lo khoảng cách. */
+.goal-form {
+  display: grid;
+  gap: 14px;
+}
+.goal-form .field {
+  margin-bottom: 0;
+}
+.goal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+/* Dưới 900px form bị bóp quá hẹp nên xếp hai cột thành một. */
+@media (max-width: 900px) {
+  .goal-layout {
+    grid-template-columns: 1fr;
+  }
+}
