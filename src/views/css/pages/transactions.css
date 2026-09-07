@@ -7,6 +7,19 @@
   align-items: start;
 }
 .transaction-form-card, .transaction-list-card { min-width: 0; }
+.transaction-form-card textarea {
+  resize: none !important;
+  overflow-y: auto;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none;
+  appearance: none;
+}
+.transaction-form-card textarea::-webkit-scrollbar,
+.transaction-form-card textarea::-webkit-resizer {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
 .transaction-list-head { align-items: center; gap: 18px; }
 .transaction-period-pills { display: flex; align-items: center; justify-content: flex-end; gap: 7px; margin-left: auto; }
 .transaction-period-pills > button,
