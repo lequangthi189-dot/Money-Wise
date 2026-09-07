@@ -60,13 +60,16 @@
 }
 
 /* bảng lịch sử đóng góp & lãi tích lũy */
+/* co theo nội dung: width 100% sẽ kéo giãn cột cho đầy card, các số nằm xa nhau
+   và cột cuối bị dính mép phải. Cha đã có overflow-x nên màn hẹp vẫn cuộn được. */
 .goal-table {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   border-collapse: collapse;
 }
 .goal-table th,
 .goal-table td {
-  padding: 13px 12px;
+  padding: 13px 16px;
   border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: middle;
