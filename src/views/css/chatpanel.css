@@ -10,15 +10,24 @@
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: #fff;
   border: none;
-  cursor: pointer;
+  cursor: grab;
   display: grid;
   place-items: center;
   box-shadow: 0 10px 30px rgba(139, 124, 246, 0.5);
   z-index: 60;
   transition: transform var(--t-fast);
+  /* Kéo trên màn cảm ứng không được để trình duyệt cuộn trang theo. */
+  touch-action: none;
 }
 .fab:hover {
   transform: scale(1.06);
+}
+/* Đang kéo thì bỏ hiệu ứng phóng to để nút bám sát con trỏ. Đặt sau :hover
+   vì hai selector cùng độ ưu tiên, luật viết sau mới thắng. */
+.fab.dragging {
+  cursor: grabbing;
+  transform: none;
+  transition: none;
 }
 .fab svg {
   width: 26px;
